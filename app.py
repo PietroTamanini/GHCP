@@ -6,7 +6,7 @@ import re
 from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = 'sua_chave_secreta_super_segura_aqui_mude_isso'  # ⚠️ MUDE ISSO!
+app.secret_key = 'GHCP-2o25'
 
 # ============================================
 # CONFIGURAÇÃO DO BANCO DE DADOS
@@ -14,6 +14,7 @@ app.secret_key = 'sua_chave_secreta_super_segura_aqui_mude_isso'  # ⚠️ MUDE 
 
 DB_CONFIG = {
     'host': 'localhost',
+    'port': '3406',
     'user': 'root',
     'password': '',  # ⚠️ Coloque sua senha do MySQL aqui
     'database': 'loja_informatica'
@@ -732,10 +733,11 @@ def carrinho():
     total_itens = sum(item['quantidade'] for item in carrinho_items)
     total_preco = sum(item['preco'] * item['quantidade'] for item in carrinho_items)
     
-    return render_template('carinho.html', 
-                         carrinho=carrinho_items, 
+    return render_template('carrinho.html', 
+                         produtos_carrinho=carrinho_items, 
                          total_itens=total_itens, 
-                         total_preco=total_preco)
+                         total_preco=total_preco,
+                         total_geral=total_preco)
 
 
 @app.route('/adicionar-carrinho/<int:id_produto>', methods=['POST'])
@@ -810,24 +812,49 @@ def remover_carrinho(id_produto):
     return redirect(url_for('carrinho'))
 
 
-@app.route('/atualizar-carrinho/<int:id_produto>', methods=['POST'])
-def atualizar_carrinho(id_produto):
-    """Atualizar quantidade de produto no carrinho"""
+# NOVO: A ROTA NÃO EXIGE MAIS O ID NA URL
+@app.route('/atualizar-carrinho', methods=['POST'])
+def atualizar_carrinho():
+    """Atualizar quantidade de produtos no carrinho lendo todos os campos do formulário."""
     if 'carrinho' in session:
         carrinho = session['carrinho']
-        nova_quantidade = int(request.form.get('quantidade', 1))
         
-        for item in carrinho:
-            if item['id_produto'] == id_produto:
-                if nova_quantidade <= 0:
-                    # Remove se quantidade for 0 ou negativa
-                    carrinho.remove(item)
-                else:
-                    item['quantidade'] = nova_quantidade
-                break
+        # Cria um dicionário de IDs para acesso rápido (simplifica a atualização)
+        carrinho_dict = {item['id_produto']: item for item in carrinho}
         
-        session['carrinho'] = carrinho
+        # Lista temporária para reconstruir o carrinho após as mudanças
+        carrinho_atualizado = []
+        
+        # Itera sobre os dados enviados pelo formulário
+        for key, value in request.form.items():
+            if key.startswith('quantidade_'):
+                try:
+                    # Extrai o ID do produto do nome do campo (ex: 'quantidade_123' -> 123)
+                    id_produto = int(key.split('_')[1])
+                    nova_quantidade = int(value)
+                    
+                    if id_produto in carrinho_dict:
+                        item = carrinho_dict[id_produto]
+                        
+                        if nova_quantidade > 0:
+                            # Se a quantidade for válida, atualiza
+                            item['quantidade'] = nova_quantidade
+                            # Adiciona à lista atualizada (se não for removido)
+                            carrinho_atualizado.append(item) 
+                        # Se nova_quantidade <= 0, o item é removido implicitamente por não ser adicionado à lista atualizada
+
+                except ValueError:
+                    # Ignora campos que não são números
+                    continue
+            
+            # Garante que itens não presentes no form (ex: se você tivesse outro campo não quantidade) 
+            # não seriam perdidos, mas com a lógica acima ele deve funcionar.
+            # No seu caso, o carrinho atualizado é a lista de itens válidos do carrinho_dict.
+
+        # O novo carrinho são os itens que sobreviveram ao loop.
+        session['carrinho'] = carrinho_atualizado
         session.modified = True
+        
         flash('✅ Carrinho atualizado!', 'success')
     
     return redirect(url_for('carrinho'))
@@ -839,6 +866,20 @@ def limpar_carrinho():
     session.pop('carrinho', None)
     flash('🗑️ Carrinho limpo!', 'success')
     return redirect(url_for('carrinho'))
+
+@app.route('/pix')
+def pix():
+    return render_template('pix.html')
+
+@app.route('/boleto')
+def boleto():
+    return render_template('boleto.html')
+
+@app.route('/cartoes_credito')
+def cartoes_credito():
+    return render_template('cartoes_credito.html')
+
+
 
 
 # ============================================

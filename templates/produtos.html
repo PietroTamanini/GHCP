@@ -117,9 +117,17 @@
             {% for produto in produtos %}
             <div class="product-card">
                 
-                <div class="product-img-placeholder">
-                    <span></span>
-                </div>
+                {% if produto.imagem %}
+                    <img src="{{ url_for('static', filename='img/' ~ produto.imagem) }}" 
+                        alt="{{ produto.nome }}" 
+                        class="img-fluid" 
+                        style="height: 180px; object-fit: cover; border-bottom: 1px solid var(--border);">
+                {% else %}
+                    <img src="{{ url_for('static', filename='img/sem-foto.png') }}" 
+                        alt="Imagem padrão" 
+                        class="img-fluid" 
+                        style="height: 180px; object-fit: cover; border-bottom: 1px solid var(--border);">
+                {% endif %}
                 
                 <div class="product-card-body">
                     <p class="marca">{{ produto.marca }}</p>

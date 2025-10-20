@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% set titulo = "Rastrear Pedido" %}
+
+{% block conteudo %}
+<div class="card">
+    <div class="card-header">
+        <h2>📦 Rastrear Pedido</h2>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="/rastrear">
+            <div class="form-group">
+                <label>Código de Rastreio</label>
+                <input type="text" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Rastrear</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

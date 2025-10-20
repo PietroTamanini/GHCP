@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% set titulo = "Contato - Fale Conosco" %}
+
+{% block conteudo %}
+<div class="card">
+    <div class="card-header">
+        <h2>📞 Contato</h2>
+    </div>
+    <div class="card-body">
+        <p>Entre em contato conosco para dúvidas, sugestões ou suporte.</p>
+        <p><strong>E-mail:</strong> contato@ghcp.com.br</p>
+        <p><strong>Telefone:</strong> (11) 99999-9999</p>
+        <p><strong>Endereço:</strong> Rua Exemplo, 123 - São Paulo/SP</p>
+        <form method="POST" action="/enviar-contato">
+            <div class="form-group">
+                <label>Nome</label>
+                <input type="text" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>E-mail</label>
+                <input type="email" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>Mensagem</label>
+                <textarea class="form-control" rows="5" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Enviar</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
