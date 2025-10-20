@@ -97,14 +97,14 @@
     <h1>🛒 Seu Carrinho de Compras</h1>
 </div>
 
-{% if produtos_carrinho %}
-<form action="{{ url_for('atualizar_carrinho') }}" method="POST">
+{% if carrinho %}
+<div class="row">
     <div class="row">
         
         <div class="col-md-8">
             <h2 class="card-header">Itens Selecionados</h2>
             
-            {% for item in produtos_carrinho %}
+            {% for item in carrinho %}
             <div class="cart-item">
                 
                 <div class="item-details">
@@ -112,31 +112,17 @@
                     <p>Marca: {{ item.marca }}</p>
                 </div>
                 
-                <div class="item-price">
-                    R$ {{ "{:,.2f}".format(item.preco).replace(",", "X").replace(".", ",").replace("X", ".") }}
-                </div>
-                
-                <div class="item-quantity">
-                    <input type="number" name="quantidade_{{ item.id_produto }}" value="{{ item.quantidade }}" min="1" class="form-control-sm">
-                </div>
-                
-                <div class="item-subtotal">
-                    R$ {{ "{:,.2f}".format(item.subtotal).replace(",", "X").replace(".", ",").replace("X", ".") }}
-                </div>
-                
-                <div class="item-remove">
-                    <form action="{{ url_for('remover_item', id_produto=item.id_produto) }}" method="POST" style="margin: 0;">
-                        <button type="submit" class="btn btn-danger btn-sm" title="Remover Item">
-                            &times;
-                        </button>
-                    </form>
-                </div>
+                <div class="item-price">R$ {{ "%.2f"|format(item.preco) }}</div>
+                <form action="{{ url_for('atualizar_carrinho', id_produto=item.id_produto) }}" method="POST" class="item-quantity" style="display:flex; align-items:center; gap:8px;">
+                    <input type="number" name="quantidade" value="{{ item.quantidade }}" min="0" class="form-control-sm">
+                    <button type="submit" class="btn btn-sm">Atualizar</button>
+                </form>
+                <div class="item-subtotal">R$ {{ "%.2f"|format(item.preco * item.quantidade) }}</div>
+                <form action="{{ url_for('remover_carrinho', id_produto=item.id_produto) }}" method="POST" style="margin: 0;">
+                    <button type="submit" class="btn btn-danger btn-sm" title="Remover Item">&times;</button>
+                </form>
             </div>
             {% endfor %}
-            
-            <button type="submit" class="btn btn-primary" style="margin-top: 20px;">
-                Atualizar Carrinho
-            </button>
         </div>
         
         <div class="col-md-4">
@@ -144,21 +130,21 @@
                 <h3>Resumo do Pedido</h3>
                 
                 <div class="summary-line">
-                    <span>Subtotal ({{ produtos_carrinho|length }} itens)</span>
-                    <span>R$ {{ "{:,.2f}".format(total_geral).replace(",", "X").replace(".", ",").replace("X", ".") }}</span>
+                    <span>Itens</span>
+                    <span>{{ total_itens }}</span>
                 </div>
                 
                 <div class="summary-line">
-                    <span>Frete</span>
-                    <span style="color: var(--success); font-weight: bold;">Grátis</span>
+                    <span>Total parcial</span>
+                    <span>R$ {{ "%.2f"|format(total_preco) }}</span>
                 </div>
                 
                 <div class="total-line">
                     <span>Total a Pagar</span>
-                    <span>R$ {{ "{:,.2f}".format(total_geral).replace(",", "X").replace(".", ",").replace("X", ".") }}</span>
+                    <span>R$ {{ "%.2f"|format(total_preco) }}</span>
                 </div>
                 
-                <a href="{{ url_for('comprar', id_produto='0') }}" class="btn btn-success" style="width: 100%; margin-top: 20px;">
+                <a href="#" class="btn btn-success" style="width: 100%; margin-top: 20px;">
                     Finalizar Compra
                 </a>
                 
@@ -169,7 +155,6 @@
         </div>
         
     </div>
-</form>
 
 {% else %}
 <div class="empty-cart">

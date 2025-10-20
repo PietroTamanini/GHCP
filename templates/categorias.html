@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block conteudo %}
+<h2 class="card-header">Categorias</h2>
+{% if categorias and categorias|length > 0 %}
+<ul class="card">
+  {% for c in categorias %}
+  <li style="padding:6px 0;">{{ c.categoria }} ({{ c.total_produtos }} produtos)</li>
+  {% endfor %}
+</ul>
+{% else %}
+<div class="card">Nenhuma categoria encontrada.</div>
+{% endif %}
+{% endblock %}

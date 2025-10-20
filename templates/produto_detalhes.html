@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block conteudo %}
+<div class="card">
+  <h2 class="card-header">{{ produto.nome }}</h2>
+  <div class="product-info">
+    <p><strong>Marca:</strong> {{ produto.marca }}</p>
+    <p><strong>Categoria:</strong> {{ produto.categoria }}</p>
+    <p><strong>Preço:</strong> R$ {{ '%.2f'|format(produto.preco) }}</p>
+    <p>{{ produto.descricao }}</p>
+    <form method="POST" action="{{ url_for('adicionar_carrinho', id_produto=produto.id_produto) }}">
+      <input type="number" name="quantidade" min="1" value="1" class="form-control" style="max-width:120px; display:inline-block; margin-right:8px;">
+      <button type="submit" class="btn">Adicionar ao carrinho</button>
+    </form>
+  </div>
+</div>
+
+{% if avaliacoes and avaliacoes|length > 0 %}
+<div class="card">
+  <h2 class="card-header">Avaliações</h2>
+  <div>
+    {% for a in avaliacoes %}
+    <div style="padding:12px 0; border-bottom:1px solid var(--border);">
+      <strong>{{ a.cliente_nome }}</strong>
+      <span style="margin-left:8px;">Nota: {{ a.nota }}/5</span>
+      <div>{{ a.titulo }}</div>
+      <p style="margin:6px 0 0 0; color: var(--text-light);">{{ a.comentario }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block conteudo %}
+<div class="card" style="text-align:center;">
+  <h2 class="card-header">Erro interno do servidor</h2>
+  <div class="card-body">
+    <p>Algo deu errado. Nossa equipe já foi notificada.</p>
+    <a href="{{ url_for('inicio') }}" class="btn" style="margin-top:16px;">Voltar</a>
+  </div>
+</div>
+{% endblock %}

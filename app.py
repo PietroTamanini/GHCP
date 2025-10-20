@@ -1,22 +1,27 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
+import os
 import mysql.connector
 from werkzeug.security import generate_password_hash, check_password_hash
+try:
+    import bcrypt  # para compatibilidade com hashes $2b$
+except Exception:
+    bcrypt = None
 from functools import wraps
 import re
 from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = 'sua_chave_secreta_super_segura_aqui_mude_isso'  # ⚠️ MUDE ISSO!
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'dev-secret-change-me')
 
 # ============================================
 # CONFIGURAÇÃO DO BANCO DE DADOS
 # ============================================
 
 DB_CONFIG = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': '',  # ⚠️ Coloque sua senha do MySQL aqui
-    'database': 'loja_informatica'
+    'host': os.environ.get('DB_HOST', 'localhost'),
+    'user': os.environ.get('DB_USER', 'root'),
+    'password': os.environ.get('DB_PASSWORD', ''),
+    'database': os.environ.get('DB_NAME', 'loja_informatica')
 }
 
 def get_db_connection():
@@ -69,6 +74,23 @@ def validar_email(email):
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return re.match(pattern, email) is not None
 
+
+def verificar_senha_hash(hash_armazenado: str, senha_clara: str) -> bool:
+    """Verifica senha suportando pbkdf2 da Werkzeug e opcionalmente bcrypt ($2b$)."""
+    if not hash_armazenado:
+        return False
+    try:
+        if check_password_hash(hash_armazenado, senha_clara):
+            return True
+    except Exception:
+        pass
+    if bcrypt and isinstance(hash_armazenado, str) and hash_armazenado.startswith('$2b$'):
+        try:
+            return bcrypt.checkpw(senha_clara.encode('utf-8'), hash_armazenado.encode('utf-8'))
+        except Exception:
+            return False
+    return False
+
 def formatar_cpf(cpf):
     """Formata CPF para o padrão XXX.XXX.XXX-XX"""
     cpf = re.sub(r'\D', '', cpf)
@@ -108,11 +130,12 @@ def inicio():
         
         produtos = cursor.fetchall()
         
-        return render_template('index.html', produtos=produtos)
+        # Passar também como produtos_destaque para compatibilidade com o template
+        return render_template('index.html', produtos=produtos, produtos_destaque=produtos)
     
     except mysql.connector.Error as err:
         flash(f'Erro ao carregar produtos: {err}', 'error')
-        return render_template('index.html', produtos=[])
+        return render_template('index.html', produtos=[], produtos_destaque=[])
     
     finally:
         if conn and conn.is_connected():
@@ -157,7 +180,7 @@ def login():
             
             usuario = cursor.fetchone()
             
-            if usuario and check_password_hash(usuario['senha'], senha):
+            if usuario and verificar_senha_hash(usuario['senha'], senha):
                 if not usuario['ativo']:
                     flash('⚠️ Sua conta está desativada. Entre em contato com o suporte.', 'warning')
                     return render_template('login.html')
@@ -376,9 +399,11 @@ def minha_conta():
         cursor.execute("""
             SELECT c.*, 
                    COUNT(DISTINCT p.id_pedido) as total_pedidos,
-                   COALESCE(SUM(CASE WHEN p.status != 'cancelado' THEN p.total ELSE 0 END), 0) as total_gasto
+                   COALESCE(SUM(CASE WHEN p.status != 'cancelado' THEN p.total ELSE 0 END), 0) as total_gasto,
+                   COUNT(DISTINCT a.id_avaliacao) as total_avaliacoes
             FROM clientes c
             LEFT JOIN pedidos p ON c.id_cliente = p.id_cliente
+            LEFT JOIN avaliacoes a ON c.id_cliente = a.id_cliente
             WHERE c.id_cliente = %s
             GROUP BY c.id_cliente
         """, (session['usuario_id'],))
@@ -510,7 +535,7 @@ def alterar_senha():
         cursor.execute("SELECT senha FROM clientes WHERE id_cliente = %s", (session['usuario_id'],))
         resultado = cursor.fetchone()
         
-        if not resultado or not check_password_hash(resultado['senha'], senha_atual):
+        if not resultado or not verificar_senha_hash(resultado['senha'], senha_atual):
             flash('❌ Senha atual incorreta.', 'error')
             return redirect(url_for('minha_conta'))
         
@@ -623,6 +648,63 @@ def excluir_endereco(id_endereco):
 
 
 # ============================================
+# PREFERÊNCIAS DO USUÁRIO
+# ============================================
+
+@app.route('/atualizar-preferencias', methods=['POST'])
+@login_required
+def atualizar_preferencias():
+    """Atualizar preferências do usuário (notificações, tema, etc.)"""
+    email_notificacoes = request.form.get('email_notificacoes') == 'on'
+    sms_notificacoes = request.form.get('sms_notificacoes') == 'on'
+    ofertas_personalizadas = request.form.get('ofertas_personalizadas') == 'on'
+    tema_escuro = request.form.get('tema_escuro') == 'on'
+
+    try:
+        conn = get_db_connection()
+        if not conn:
+            flash('Erro ao conectar ao banco de dados.', 'error')
+            return redirect(url_for('minha_conta'))
+
+        cursor = conn.cursor()
+
+        # Garante que o registro de preferências exista
+        cursor.execute("SELECT id_preferencia FROM preferencias WHERE id_cliente = %s", (session['usuario_id'],))
+        pref = cursor.fetchone()
+        if not pref:
+            cursor.execute(
+                """
+                INSERT INTO preferencias (id_cliente, email_notificacoes, sms_notificacoes, ofertas_personalizadas, tema_escuro)
+                VALUES (%s, %s, %s, %s, %s)
+                """,
+                (session['usuario_id'], email_notificacoes, sms_notificacoes, ofertas_personalizadas, tema_escuro)
+            )
+        else:
+            cursor.execute(
+                """
+                UPDATE preferencias
+                SET email_notificacoes = %s,
+                    sms_notificacoes = %s,
+                    ofertas_personalizadas = %s,
+                    tema_escuro = %s
+                WHERE id_cliente = %s
+                """,
+                (email_notificacoes, sms_notificacoes, ofertas_personalizadas, tema_escuro, session['usuario_id'])
+            )
+
+        conn.commit()
+        flash('✅ Preferências atualizadas!', 'success')
+
+    except mysql.connector.Error as err:
+        flash(f'Erro ao atualizar preferências: {err}', 'error')
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+
+    return redirect(url_for('minha_conta'))
+
+# ============================================
 # ROTAS DE PRODUTOS E CARRINHO
 # ============================================
 
@@ -727,15 +809,15 @@ def carrinho():
     """Página do carrinho"""
     # Carrinho será gerenciado via sessão
     carrinho_items = session.get('carrinho', [])
-    
+
     # Calcular totais
     total_itens = sum(item['quantidade'] for item in carrinho_items)
     total_preco = sum(item['preco'] * item['quantidade'] for item in carrinho_items)
-    
-    return render_template('carinho.html', 
-                         carrinho=carrinho_items, 
-                         total_itens=total_itens, 
-                         total_preco=total_preco)
+
+    return render_template('carinho.html',
+                           carrinho=carrinho_items,
+                           total_itens=total_itens,
+                           total_preco=total_preco)
 
 
 @app.route('/adicionar-carrinho/<int:id_produto>', methods=['POST'])
@@ -778,7 +860,8 @@ def adicionar_carrinho(id_produto):
                 'preco': float(produto['preco']),
                 'quantidade': quantidade,
                 'imagem': produto['imagem'],
-                'categoria': produto['categoria']
+                'categoria': produto['categoria'],
+                'marca': produto.get('marca') if isinstance(produto, dict) else None
             })
         
         session['carrinho'] = carrinho

@@ -18,7 +18,7 @@
         OFERTA EXCLUSIVA GHCP!
     </h1>
     <h2 style="font-size: 1.8rem; margin-bottom: 25px; font-weight: 500;">
-        Toda a linha de Periféricos com até **35%** de Desconto!
+        Toda a linha de Periféricos com até <strong>35%</strong> de Desconto!
     </h2>
     <p style="font-size: 1.1rem; margin-bottom: 40px; opacity: 0.8;">
         Mouse, Teclado, Headset e Câmeras: Upgrade garantido para seu setup!
@@ -164,7 +164,8 @@
 
 <div class="product-grid">
     
-    {% for produto in produtos_destaque %}
+{% set lista = produtos_destaque if produtos_destaque is defined else produtos %}
+{% for produto in lista %}
     
     {% set preco_original = produto.preco %}
     {% set desconto = produto.desconto if produto.desconto is defined else 0 %}
@@ -191,7 +192,7 @@
                 {% endif %}
             </div>
             <div class="product-actions">
-                <a href="{{ url_for('comprar', id_produto=produto.id_produto) }}" class="btn btn-sm">
+                <a href="{{ url_for('detalhes_produto', id_produto=produto.id_produto) }}" class="btn btn-sm">
                     Ver Detalhes
                 </a>
                 

@@ -53,7 +53,7 @@
         background-color: var(--secondary);
     }
     .product-img-placeholder {
-        background: linear-gradient(135deg, var(--primary-light), var(--secondary-light));
+        background: linear-gradient(135deg, var(--primary-light), var(--secondary));
         height: 180px;
         display: flex;
         align-items: center;
@@ -79,7 +79,7 @@
 
 <div class="row">
     
-    <div class="col-lg-3">
+    <div class="col-lg-3" style="display:none;">
         <div class="filter-sidebar">
             <h4 class="text-primary mb-3">Filtrar Produtos</h4>
             <div class="mb-3">
@@ -111,7 +111,7 @@
         {% endif %}
         {% endwith %}
 
-        {% if produtos %}
+        {% if produtos and produtos|length > 0 %}
         <div class="product-grid">
             
             {% for produto in produtos %}

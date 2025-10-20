@@ -464,7 +464,7 @@
     <main class="conteudo">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                <ul class="flashes">
+                <ul class="flashes" role="status" aria-live="polite">
                     {% for category, message in messages %}
                         <li class="{{ category }}">{{ message }}</li>
                     {% endfor %}

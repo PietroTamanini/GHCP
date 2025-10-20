@@ -17,11 +17,11 @@
         <div class="profile-card">
             <div class="profile-header">
                 <div class="avatar">
-                    <span>{{ usuario.nome[0].upper() if usuario.nome else 'U' }}</span>
+                    <span>{{ cliente.nome[0].upper() if cliente.nome else 'U' }}</span>
                 </div>
                 <div class="profile-info">
-                    <h2>{{ usuario.nome }}</h2>
-                    <p class="user-email">{{ usuario.email }}</p>
+                    <h2>{{ cliente.nome }}</h2>
+                    <p class="user-email">{{ cliente.email }}</p>
                     <span class="badge badge-success">Conta Ativa</span>
                 </div>
             </div>
@@ -30,21 +30,21 @@
                 <div class="stat-item">
                     <div class="stat-icon">📦</div>
                     <div class="stat-info">
-                        <span class="stat-number">{{ total_pedidos or 0 }}</span>
+                        <span class="stat-number">{{ cliente.total_pedidos or 0 }}</span>
                         <span class="stat-label">Pedidos</span>
                     </div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-icon">⭐</div>
                     <div class="stat-info">
-                        <span class="stat-number">{{ avaliacoes or 0 }}</span>
+                        <span class="stat-number">{{ cliente.total_avaliacoes or 0 }}</span>
                         <span class="stat-label">Avaliações</span>
                     </div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-icon">💳</div>
                     <div class="stat-info">
-                        <span class="stat-number">R$ {{ total_gasto|default('0,00') }}</span>
+                        <span class="stat-number">R$ {{ (cliente.total_gasto or 0)|string }}</span>
                         <span class="stat-label">Total Gasto</span>
                     </div>
                 </div>
@@ -78,7 +78,7 @@
             </nav>
             
             <div class="sidebar-footer">
-                <a href="/logout" class="btn-logout">
+                <a href="{{ url_for('logout') }}" class="btn-logout">
                     <span>🚪</span>
                     <span>Sair da Conta</span>
                 </a>
@@ -98,44 +98,44 @@
                         </button>
                     </div>
                     
-                    <form id="form-dados" class="account-form" method="POST" action="/atualizar_dados">
+                    <form id="form-dados" class="account-form" method="POST" action="{{ url_for('atualizar_perfil') }}">
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Nome Completo *</label>
-                                <input type="text" name="nome" class="form-control" value="{{ usuario.nome }}" readonly>
+                                <input type="text" name="nome" class="form-control" value="{{ cliente.nome }}" readonly>
                             </div>
                             
                             <div class="form-group">
                                 <label>CPF *</label>
-                                <input type="text" name="cpf" class="form-control" value="{{ usuario.cpf }}" readonly>
+                                <input type="text" name="cpf" class="form-control" value="{{ cliente.cpf }}" readonly>
                             </div>
                         </div>
                         
                         <div class="form-row">
                             <div class="form-group">
                                 <label>E-mail *</label>
-                                <input type="email" name="email" class="form-control" value="{{ usuario.email }}" readonly>
+                                <input type="email" name="email" class="form-control" value="{{ cliente.email }}" readonly>
                             </div>
                             
                             <div class="form-group">
                                 <label>Telefone *</label>
-                                <input type="tel" name="telefone" class="form-control" value="{{ usuario.telefone }}" readonly>
+                                <input type="tel" name="telefone" class="form-control" value="{{ cliente.telefone }}" readonly>
                             </div>
                         </div>
                         
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Data de Nascimento</label>
-                                <input type="date" name="data_nascimento" class="form-control" value="{{ usuario.data_nascimento }}" readonly>
+                                <input type="date" name="data_nascimento" class="form-control" value="{{ cliente.data_nascimento }}" readonly>
                             </div>
                             
                             <div class="form-group">
                                 <label>Gênero</label>
                                 <select name="genero" class="form-control" disabled>
                                     <option value="">Selecione</option>
-                                    <option value="M" {% if usuario.genero == 'M' %}selected{% endif %}>Masculino</option>
-                                    <option value="F" {% if usuario.genero == 'F' %}selected{% endif %}>Feminino</option>
-                                    <option value="O" {% if usuario.genero == 'O' %}selected{% endif %}>Outro</option>
+                                    <option value="M" {% if cliente.genero == 'M' %}selected{% endif %}>Masculino</option>
+                                    <option value="F" {% if cliente.genero == 'F' %}selected{% endif %}>Feminino</option>
+                                    <option value="O" {% if cliente.genero == 'O' %}selected{% endif %}>Outro</option>
                                 </select>
                             </div>
                         </div>
@@ -181,7 +181,9 @@
                                 </div>
                                 <div class="address-actions">
                                     <button class="btn-icon" title="Editar">✏️</button>
-                                    <button class="btn-icon" title="Excluir">🗑️</button>
+                                    <form method="POST" action="{{ url_for('excluir_endereco', id_endereco=endereco.id_endereco) }}">
+                                        <button type="submit" class="btn-icon" title="Excluir">🗑️</button>
+                                    </form>
                                     {% if not endereco.principal %}
                                     <button class="btn-icon" title="Tornar principal">⭐</button>
                                     {% endif %}
@@ -252,26 +254,26 @@
                 <div class="card">
                     <div class="card-header">
                         <h2>📦 Histórico de Pedidos</h2>
-                        <a href="/meus_pedidos/1" class="btn btn-sm">Ver Todos</a>
+                        <a href="#" class="btn btn-sm">Ver Todos</a>
                     </div>
                     
                     <div class="orders-list">
                         {% if pedidos %}
-                            {% for pedido in pedidos[:5] %}
+                            {% for pedido in pedidos %}
                             <div class="order-item">
                                 <div class="order-info">
                                     <div class="order-number">
-                                        <strong>Pedido #{{ pedido.id }}</strong>
-                                        <span class="order-date">{{ pedido.data }}</span>
+                                        <strong>Pedido #{{ pedido.id_pedido }}</strong>
+                                        <span class="order-date">{{ pedido.data_pedido }}</span>
                                     </div>
                                     <div class="order-status">
-                                        <span class="badge badge-{{ pedido.status_class }}">{{ pedido.status }}</span>
+                                        <span class="badge badge-info">{{ pedido.status }}</span>
                                     </div>
                                 </div>
                                 <div class="order-details">
-                                    <p>{{ pedido.itens }} item(s) • R$ {{ pedido.total }}</p>
+                                    <p>{{ pedido.total_itens or '?' }} item(s) • R$ {{ pedido.total }}</p>
                                 </div>
-                                <a href="/pedido/{{ pedido.id }}" class="btn btn-sm btn-outline">Detalhes</a>
+                                <a href="#" class="btn btn-sm btn-outline">Detalhes</a>
                             </div>
                             {% endfor %}
                         {% else %}
@@ -279,7 +281,7 @@
                             <div class="empty-icon">📦</div>
                             <h3>Nenhum pedido realizado</h3>
                             <p>Comece a comprar agora mesmo!</p>
-                            <a href="/loja" class="btn">
+                            <a href="{{ url_for('listar_produtos') }}" class="btn">
                                 <span>🛍️</span> Ir para Loja
                             </a>
                         </div>
@@ -295,14 +297,14 @@
                         <h2>⚙️ Preferências</h2>
                     </div>
                     
-                    <form class="preferences-form" method="POST" action="/atualizar_preferencias">
+                    <form class="preferences-form" method="POST" action="{{ url_for('atualizar_preferencias') }}">
                         <div class="preference-item">
                             <div class="preference-info">
                                 <h3>📧 Notificações por E-mail</h3>
                                 <p>Receba atualizações sobre seus pedidos e promoções</p>
                             </div>
                             <label class="toggle">
-                                <input type="checkbox" name="email_notificacoes" {% if preferencias.email_notificacoes %}checked{% endif %}>
+                                <input type="checkbox" name="email_notificacoes" {% if preferencias and preferencias.email_notificacoes %}checked{% endif %}>
                                 <span class="toggle-slider"></span>
                             </label>
                         </div>
@@ -313,7 +315,7 @@
                                 <p>Receba SMS sobre entregas e novidades</p>
                             </div>
                             <label class="toggle">
-                                <input type="checkbox" name="sms_notificacoes" {% if preferencias.sms_notificacoes %}checked{% endif %}>
+                                <input type="checkbox" name="sms_notificacoes" {% if preferencias and preferencias.sms_notificacoes %}checked{% endif %}>
                                 <span class="toggle-slider"></span>
                             </label>
                         </div>
@@ -324,7 +326,7 @@
                                 <p>Receba ofertas baseadas no seu histórico de compras</p>
                             </div>
                             <label class="toggle">
-                                <input type="checkbox" name="ofertas_personalizadas" {% if preferencias.ofertas_personalizadas %}checked{% endif %}>
+                                <input type="checkbox" name="ofertas_personalizadas" {% if preferencias and preferencias.ofertas_personalizadas %}checked{% endif %}>
                                 <span class="toggle-slider"></span>
                             </label>
                         </div>
@@ -335,7 +337,7 @@
                                 <p>Alternar entre modo claro e escuro</p>
                             </div>
                             <label class="toggle">
-                                <input type="checkbox" name="tema_escuro" id="temaPref">
+                                <input type="checkbox" name="tema_escuro" id="temaPref" {% if preferencias and preferencias.tema_escuro %}checked{% endif %}>
                                 <span class="toggle-slider"></span>
                             </label>
                         </div>
@@ -360,7 +362,7 @@
             <h2>🔑 Alterar Senha</h2>
             <button class="modal-close" onclick="closeModal('modalSenha')">✕</button>
         </div>
-        <form method="POST" action="/alterar_senha">
+        <form method="POST" action="{{ url_for('alterar_senha') }}">
             <div class="form-group">
                 <label>Senha Atual *</label>
                 <input type="password" name="senha_atual" class="form-control" required>
@@ -388,7 +390,7 @@
             <h2>📍 Adicionar Endereço</h2>
             <button class="modal-close" onclick="closeModal('modalNovoEndereco')">✕</button>
         </div>
-        <form method="POST" action="/adicionar_endereco">
+        <form method="POST" action="{{ url_for('adicionar_endereco') }}">
             <div class="form-row">
                 <div class="form-group">
                     <label>Tipo de Endereço *</label>
@@ -1212,11 +1214,11 @@
     // Sincronizar tema com preferência
     const temaPref = document.getElementById('temaPref');
     if (temaPref) {
-        temaPref.checked = document.body.classList.contains('dark-theme');
-        
+        temaPref.checked = document.documentElement.classList.contains('dark-theme');
         temaPref.addEventListener('change', function() {
-            document.body.classList.toggle('dark-theme');
-            sessionStorage.setItem('theme', this.checked ? 'dark-theme' : '');
+            document.documentElement.classList.toggle('dark-theme');
+            const isDark = document.documentElement.classList.contains('dark-theme');
+            sessionStorage.setItem('theme', isDark ? 'dark' : 'light');
         });
     }
 

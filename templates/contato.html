@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block conteudo %}
+<div class="card">
+  <h2 class="card-header">Contato</h2>
+  <form>
+    <div class="form-group">
+      <label>Seu e-mail</label>
+      <input class="form-control" type="email" placeholder="voce@email.com" />
+    </div>
+    <div class="form-group">
+      <label>Mensagem</label>
+      <textarea class="form-control" rows="4" placeholder="Como podemos ajudar?"></textarea>
+    </div>
+    <button class="btn">Enviar</button>
+  </form>
+</div>
+{% endblock %}

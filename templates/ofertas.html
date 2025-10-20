@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block conteudo %}
+<h2 class="card-header">Ofertas</h2>
+<div class="product-grid">
+  {% for produto in produtos %}
+  <div class="card">
+    <h4>{{ produto.nome }}</h4>
+    <div>R$ {{ '%.2f'|format(produto.preco) }}</div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
