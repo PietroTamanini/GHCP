@@ -1,0 +1,153 @@
+{% extends 'base.html' %} 
+
+{% set titulo = titulo %}
+
+{% block conteudo %}
+
+<style>
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 30px;
+        margin-top: 30px;
+    }
+    .product-card {
+        background: var(--glass);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        transition: transform 0.3s, box-shadow 0.3s;
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+    .product-card-body {
+        padding: 15px;
+        flex-grow: 1;
+    }
+    .product-card h5 {
+        font-size: 1.2rem;
+        color: var(--primary-dark);
+        margin-bottom: 5px;
+        min-height: 40px; 
+    }
+    .product-card p.marca {
+        color: var(--text-light);
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+    }
+    .product-card .price {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--danger);
+        margin-top: 10px;
+    }
+    .product-card-footer {
+        padding: 15px;
+        border-top: 1px solid var(--border);
+        background-color: var(--secondary);
+    }
+    .product-img-placeholder {
+        background: linear-gradient(135deg, var(--primary-light), var(--secondary-light));
+        height: 180px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: var(--primary-dark);
+        border-bottom: 1px solid var(--border);
+    }
+    .filter-sidebar {
+        background: var(--glass);
+        padding: 20px;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-sm);
+    }
+</style>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="text-center display-4 text-primary" style="font-weight: 700;">Nosso Catálogo Completo</h1>
+        <p class="text-center text-secondary">Encontre aqui o que há de melhor em tecnologia.</p>
+    </div>
+</div>
+
+<div class="row">
+    
+    <div class="col-lg-3">
+        <div class="filter-sidebar">
+            <h4 class="text-primary mb-3">Filtrar Produtos</h4>
+            <div class="mb-3">
+                <label for="search" class="form-label">Buscar por Nome</label>
+                <input type="text" id="search" class="form-control" placeholder="Ex: Monitor, Mouse">
+            </div>
+            <div class="mb-3">
+                <label for="marca" class="form-label">Marca</label>
+                <select id="marca" class="form-select">
+                    <option value="">Todas as Marcas</option>
+                    <option value="MarcaX">Marca X</option>
+                    <option value="MarcaY">Marca Y</option>
+                    <!-- Adicionar marcas dinamicamente no futuro -->
+                </select>
+            </div>
+            <button class="btn btn-secondary w-100">Aplicar Filtros</button>
+        </div>
+    </div>
+    
+    <div class="col-lg-9">
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'success' if category == 'sucesso' else 'danger' if category == 'erro' else 'info' }}" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% if produtos %}
+        <div class="product-grid">
+            
+            {% for produto in produtos %}
+            <div class="product-card">
+                
+                <div class="product-img-placeholder">
+                    <span></span>
+                </div>
+                
+                <div class="product-card-body">
+                    <p class="marca">{{ produto.marca }}</p>
+                    <h5>{{ produto.nome }}</h5>
+                    <div class="price">
+                        R$ {{ "{:,.2f}".format(produto.preco).replace(",", "X").replace(".", ",").replace("X", ".") }}
+                    </div>
+                </div>
+                
+                <div class="product-card-footer">
+                    <form action="{{ url_for('adicionar_carrinho', id_produto=produto.id_produto) }}" method="POST">
+                        <button type="submit" class="btn btn-primary w-100">
+                            Adicionar ao Carrinho
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+            
+        </div>
+        
+        {% else %}
+        <div class="alert alert-warning text-center" role="alert">
+            Nenhum produto encontrado no catálogo.
+        </div>
+        {% endif %}
+        
+    </div>
+</div>
+
+{% endblock %}

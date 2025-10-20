@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block titulo %}Loja de Produtos{% endblock %}
+</head>
+<body>
+
+    <header>
+        <h1>GHCP Tech - Produtos</h1>
+        <p>Monte seu setup com qualidade!</p>
+    </header>
+
+    <div class="container">
+        {% for produto in compras %}
+        <div class="card">
+            <h3>{{ produto.nome }}</h3>
+            <p class="price">R$ {{ produto.preco }}</p>
+            <form action="/comprar/{{ produto.id_produto }}" method="POST">
+                <button type="submit">Adicionar ao Carrinho</button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+
+    <a href="/produtos" class="botao-voltar">Voltar</a>
+
+    <footer>
+        <p>&copy; 2025 GHCP Tech - Todos os direitos reservados</p>
+    </footer>
+
+</body>
+{% endblock %}
+</html>

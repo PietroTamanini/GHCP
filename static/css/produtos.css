@@ -1,0 +1,48 @@
+body {
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    background-color: #f2f2f2;
+}
+.container {
+    background-color: white;
+    width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+
+}
+
+.card {
+    border: 1px solid #ddd;
+    background-color: white;
+    padding: 10px;
+    margin-bottom: 10px;
+    }
+
+.preço {
+    color: green;
+    font-weight: bold;
+}
+
+.categoria {
+    color: #666;
+    font-size: 15px;
+}
+
+.botao {
+    background-color: green;
+    color: white;
+    padding: 10px;
+    padding-bottom: 6px;
+    width: 20px;
+    border-radius: 5px;
+    
+}
+
+.botao:hover {
+    background-color: rgb(9, 117, 9);
+}

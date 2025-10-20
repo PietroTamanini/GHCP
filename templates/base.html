@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Loja de Informática GHCP - Os melhores produtos de tecnologia">
+    <title>{{ titulo if titulo else "Loja GHCP - Informática e Tecnologia" }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='logos/favicon.ico') }}">
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+    :root {
+        --primary: #0066ff;
+        --primary-dark: #0052cc;
+        --primary-light: #3385ff;
+        --secondary: #f5f7fa;
+        --accent: #ff6b35;
+        --success: #00d084;
+        --warning: #ffb800;
+        --danger: #ff3366;
+        --info: #00b8d4;
+        --dark: #1a1d29;
+        --text: #2d3748;
+        --text-light: #718096;
+        --border: #e2e8f0;
+        --glass: rgba(255, 255, 255, 0.9);
+        --shadow-sm: 0 2px 8px rgba(0, 102, 255, 0.08);
+        --shadow: 0 8px 30px rgba(0, 102, 255, 0.12);
+        --shadow-lg: 0 20px 60px rgba(0, 102, 255, 0.2);
+        --radius: 16px;
+        --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .dark-theme {
+        --primary: #3385ff;
+        --primary-dark: #0066ff;
+        --primary-light: #5c9fff;
+        --secondary: #0f111a;
+        --accent: #ff7849;
+        --dark: #1a1d29;
+        --text: #e2e8f0;
+        --text-light: #a0aec0;
+        --border: #2d3748;
+        --glass: rgba(26, 29, 41, 0.9);
+        --shadow-sm: 0 2px 8px rgba(51, 133, 255, 0.15);
+        --shadow: 0 8px 30px rgba(51, 133, 255, 0.25);
+        --shadow-lg: 0 20px 60px rgba(51, 133, 255, 0.35);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: 'Inter', sans-serif;
+        background: var(--secondary);
+        color: var(--text);
+        transition: background 0.3s ease;
+        padding-top: 80px;
+        line-height: 1.6;
+        overflow-x: hidden;
+    }
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background:
+            radial-gradient(circle at 20% 50%, rgba(0,102,255,0.05) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(255,107,53,0.05) 0%, transparent 50%),
+            radial-gradient(circle at 40% 20%, rgba(0,208,132,0.03) 0%, transparent 50%);
+        z-index: -1;
+        pointer-events: none;
+    }
+    .dark-theme body::before {
+        background:
+            radial-gradient(circle at 20% 50%, rgba(51,133,255,0.08) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(255,120,73,0.08) 0%, transparent 50%);
+    }
+
+    /* Navbar */
+    .navbar {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%;
+        background: var(--glass);
+        backdrop-filter: blur(20px) saturate(180%);
+        box-shadow: 0 4px 30px rgba(0,0,0,0.08);
+        z-index: 1000;
+        border-bottom: 1px solid var(--border);
+    }
+    .navbar-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 16px 40px;
+        display: flex;
+        align-items: center;
+        gap: 40px;
+    }
+
+    /* LOGO */
+    .logo { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+
+    .logo-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+        background: none;
+    }
+
+    .logo-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .logo:hover .logo-icon {
+        transform: rotate(-5deg) scale(1.05);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .logo-text {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .logo-text a {
+        color: var(--text);
+        text-decoration: none;
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .logo-subtitle {
+        font-size: 10px;
+        color: var(--text-light);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Links */
+    .nav-links {
+        list-style: none;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        justify-content: center;
+        flex: 1;
+        margin: 0 20px;
+    }
+
+    .nav-links li a {
+        color: var(--text);
+        text-decoration: none;
+        padding: 10px 18px;
+        border-radius: 10px;
+        transition: var(--transition);
+        font-weight: 600;
+        font-size: 14px;
+        position: relative;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    .nav-links li a::before {
+        content: '';
+        position: absolute;
+        top:0; left:0;
+        width:100%; height:100%;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+        opacity:0;
+        transition: var(--transition);
+        border-radius:10px;
+        z-index:-1;
+    }
+
+    .nav-links li a:hover::before,
+    .nav-links li a.active::before { opacity:1; }
+
+    .nav-links li a:hover,
+    .nav-links li a.active {
+        color:white;
+        transform: translateY(-2px);
+    }
+
+    /* Ícones */
+    .icons {
+        display:flex;
+        align-items:center;
+        gap:12px;
+        flex-shrink:0;
+        margin-left:auto;
+    }
+
+    .icon {
+        color: var(--text);
+        text-decoration:none;
+        font-size:14px;
+        font-weight:600;
+        transition: var(--transition);
+        padding:10px 16px;
+        border-radius:10px;
+        display:flex;
+        align-items:center;
+        gap:8px;
+        background: var(--secondary);
+        border:2px solid var(--border);
+        white-space:nowrap;
+    }
+
+    .icon:hover {
+        background: var(--primary);
+        color:white;
+        transform:translateY(-2px);
+        box-shadow:var(--shadow);
+        border-color:var(--primary);
+    }
+
+    .theme-toggle {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+        border:none;
+        cursor:pointer;
+        font-size:20px;
+        width:45px;
+        height:45px;
+        border-radius:50%;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        transition:var(--transition);
+        box-shadow:var(--shadow);
+    }
+
+    .theme-toggle:hover {
+        transform: rotate(180deg) scale(1.1);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .menu-toggle {
+        display:none;
+        background: var(--primary);
+        border:none;
+        color:white;
+        font-size:24px;
+        cursor:pointer;
+        width:45px;
+        height:45px;
+        border-radius:10px;
+        box-shadow:var(--shadow);
+        flex-shrink:0;
+    }
+
+    @media (max-width:968px){
+        .menu-toggle { display:flex; order:1; }
+        .nav-links {
+            display:none;
+            position:absolute;
+            top:80px; left:0; right:0;
+            background:var(--glass);
+            backdrop-filter:blur(20px);
+            flex-direction:column;
+            padding:20px;
+            border-radius:0 0 var(--radius) var(--radius);
+            box-shadow:var(--shadow-lg);
+            border:1px solid var(--border);
+            border-top:none;
+            margin:0;
+            order:3;
+            width:100%;
+        }
+        .nav-links.active { display:flex; }
+        .nav-links li a {
+            width:100%;
+            display:block;
+            text-align:center;
+            padding:15px 20px;
+            font-size:16px;
+        }
+        .icons { margin-left:0; order:2; gap:8px; }
+        .icon span { display:none; }
+        .icon { padding:10px; width:45px; height:45px; justify-content:center; }
+    }
+
+    main.conteudo {
+        max-width:1400px;
+        margin:0 auto;
+        padding:40px;
+        min-height:calc(100vh - 200px);
+        animation:fadeIn 0.6s ease;
+    }
+
+    @keyframes fadeIn {
+        from{opacity:0; transform:translateY(30px);}
+        to{opacity:1; transform:translateY(0);}
+    }
+
+    footer {
+        background:var(--dark);
+        color:white;
+        padding:60px 40px 30px;
+        margin-top:80px;
+        position:relative;
+        overflow:hidden;
+    }
+
+    footer::before {
+        content:'';
+        position:absolute;
+        top:0; left:0;
+        width:100%; height:4px;
+        background:linear-gradient(90deg, var(--primary) 0%, var(--accent) 50%, var(--success) 100%);
+    }
+
+    .footer-content { max-width:1400px; margin:0 auto; }
+
+    .footer-grid {
+        display:grid;
+        grid-template-columns:repeat(auto-fit, minmax(200px,1fr));
+        gap:40px;
+        margin-bottom:40px;
+    }
+
+    .footer-section h3 {
+        margin-bottom:20px;
+        font-size:16px;
+        font-weight:700;
+        color:var(--primary-light);
+    }
+
+    .footer-links {
+        display:flex;
+        flex-direction:column;
+        gap:12px;
+    }
+
+    .footer-links a {
+        color:rgba(255,255,255,0.8);
+        text-decoration:none;
+        font-size:14px;
+        display:flex;
+        align-items:center;
+        gap:8px;
+        transition:var(--transition);
+    }
+
+    .footer-links a::before {
+        content:'→';
+        opacity:0;
+        transform:translateX(-10px);
+        transition:var(--transition);
+    }
+
+    .footer-links a:hover {
+        color:var(--primary-light);
+        transform:translateX(5px);
+    }
+
+    .footer-links a:hover::before {
+        opacity:1;
+        transform:translateX(0);
+    }
+
+    .footer-bottom {
+        border-top:1px solid rgba(255,255,255,0.1);
+        padding-top:30px;
+        text-align:center;
+    }
+
+    .footer-bottom p {
+        color:rgba(255,255,255,0.6);
+        font-size:14px;
+        margin-bottom:8px;
+    }
+
+    /* Flash messages */
+    .flashes { list-style:none; padding:0; margin-bottom:24px; }
+    .flashes li {
+        padding:18px 24px;
+        margin-bottom:12px;
+        border-radius:12px;
+        display:flex;
+        align-items:center;
+        gap:14px;
+        animation:slideIn 0.4s ease;
+        font-weight:600;
+        border-left:4px solid;
+        box-shadow:var(--shadow-sm);
+    }
+
+    @keyframes slideIn {
+        from{opacity:0; transform:translateX(-30px);}
+        to{opacity:1; transform:translateX(0);}
+    }
+
+    .flashes li.error {
+        background:linear-gradient(135deg,var(--danger) 0%,#e62958 100%);
+        color:white; border-color:#cc0033;
+    }
+    .flashes li.error::before { content:"⚠️"; }
+
+    .flashes li.warning {
+        background:linear-gradient(135deg,var(--warning) 0%,#e6a700 100%);
+        color:white; border-color:#cc9900;
+    }
+    .flashes li.warning::before { content:"⚡"; }
+
+    .flashes li.success {
+        background:linear-gradient(135deg,var(--success) 0%,#00b36e 100%);
+        color:white; border-color:#00995c;
+    }
+    .flashes li.success::before { content:"✓"; }
+
+    .flashes li.info {
+        background:linear-gradient(135deg,var(--info) 0%,#009fb7 100%);
+        color:white; border-color:#0086a0;
+    }
+    .flashes li.info::before { content:"ℹ️"; }
+</style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="logo">
+                <div class="logo-text">
+                    <a href="{{ url_for('inicio') }}">Loja GHCP</a>
+                    <span class="logo-subtitle">Informática e Tecnologia</span>
+                </div>
+            </div>
+
+            <button class="menu-toggle" id="menuToggle">☰</button>
+
+            <ul class="nav-links" id="navLinks">
+                {% block menu %}
+                    <li><a href="{{ url_for('inicio') }}" class="nav-link">Início</a></li>
+                    <li><a href="{{ url_for('listar_produtos') }}" class="nav-link">Produtos</a></li>
+                {% endblock %}
+            </ul>
+
+            <div class="icons">
+                <button class="theme-toggle" id="themeToggle" aria-label="Alternar tema">🌙</button>
+
+                {% if session.get('usuario_id') %}
+                    <a href="{{ url_for('minha_conta') }}" class="icon"><span>👤</span><span>{{ session['usuario_nome'] }}</span></a>
+                    <a href="{{ url_for('logout') }}" class="icon"><span>🚪</span><span>Sair</span></a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="icon"><span>👤</span><span>Entrar</span></a>
+                {% endif %}
+                
+                <a href="{{ url_for('carrinho') }}" class="icon"><span>🛒</span><span>Carrinho</span></a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="conteudo">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flashes">
+                    {% for category, message in messages %}
+                        <li class="{{ category }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        {% block conteudo %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-grid">
+                <div class="footer-section">
+                    <h3>🛍️ Institucional</h3>
+                    <div class="footer-links">
+                        <a href="/sobre">Sobre a GHCP</a>
+                        <a href="/contato">Contato</a>
+                        <a href="/trabalhe-conosco">Trabalhe Conosco</a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3>📦 Atendimento</h3>
+                    <div class="footer-links">
+                        <a href="/faq">Perguntas Frequentes</a>
+                        <a href="/rastreio">Rastrear Pedido</a>
+                        <a href="/trocas">Trocas e Devoluções</a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3>🔒 Segurança</h3>
+                    <div class="footer-links">
+                        <a href="/termos">Termos de Uso</a>
+                        <a href="/privacidade">Política de Privacidade</a>
+                        <a href="/cookies">Política de Cookies</a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3>💳 Pagamento</h3>
+                    <div class="footer-links">
+                        <a href="#">Cartões de Crédito</a>
+                        <a href="#">Boleto Bancário</a>
+                        <a href="#">PIX</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p style="font-weight:600; font-size:15px; color:rgba(255,255,255,0.9); margin-bottom:12px;">© 2025 Loja de Informática GHCP - Tecnologia de Ponta</p>
+                <p>Desenvolvido com ❤️ por Guilherme Silveira | Henrique Nau | Caetano Petry | Pietro Tamanini</p>
+                <p style="margin-top:12px; font-size:12px;">🔒 Ambiente 100% Seguro | 📦 Entrega Garantida | ⭐ Atendimento Premium</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Tema
+        const themeToggle = document.getElementById('themeToggle');
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+
+        const currentTheme = sessionStorage.getItem('theme') || 'light';
+        if(currentTheme === 'dark'){ document.documentElement.classList.add('dark-theme'); themeToggle.textContent='☀️'; }
+
+        themeToggle.addEventListener('click', ()=>{
+            document.documentElement.classList.toggle('dark-theme');
+            if(document.documentElement.classList.contains('dark-theme')) {
+                themeToggle.textContent='☀️';
+                sessionStorage.setItem('theme','dark');
+            } else {
+                themeToggle.textContent='🌙';
+                sessionStorage.setItem('theme','light');
+            }
+        });
+
+        // Menu mobile
+        menuToggle.addEventListener('click', ()=>{
+            navLinks.classList.toggle('active');
+        });
+
+        // Nav ativo
+        const currentPath = window.location.pathname;
+        document.querySelectorAll('.nav-link').forEach(link=>{
+            if(currentPath.startsWith(link.getAttribute('href'))){
+                link.classList.add('active');
+            }
+        });
+
+        // Auto remover flash
+        setTimeout(()=>{ document.querySelectorAll('.flashes li').forEach(el=>el.remove()); }, 5000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+{% extends 'base.html' %} 
+
+{% set titulo = "Loja GHCP - Ofertas Imperdíveis de Tecnologia" %}
+
+{% block conteudo %}
+
+<section class="hero-section" style="
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white;
+    padding: 60px 40px;
+    border-radius: var(--radius);
+    margin-bottom: 40px;
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+    animation: fadeIn 0.8s ease;
+">
+    <h1 style="font-size: 3.5rem; margin-bottom: 10px; font-weight: 900; letter-spacing: -1px;">
+        OFERTA EXCLUSIVA GHCP!
+    </h1>
+    <h2 style="font-size: 1.8rem; margin-bottom: 25px; font-weight: 500;">
+        Toda a linha de Periféricos com até **35%** de Desconto!
+    </h2>
+    <p style="font-size: 1.1rem; margin-bottom: 40px; opacity: 0.8;">
+        Mouse, Teclado, Headset e Câmeras: Upgrade garantido para seu setup!
+    </p>
+    <a href="{{ url_for('listar_produtos') }}" class="btn" style="
+        padding: 15px 40px;
+        font-size: 1.1rem;
+        background: linear-gradient(135deg, var(--accent) 0%, #ff4b1f 100%);
+        box-shadow: 0 4px 15px rgba(255, 107, 53, 0.5);
+    ">
+        🔥 Ver Periféricos em Oferta
+    </a>
+</section>
+
+<style>
+    .highlight-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+        margin-bottom: 60px;
+    }
+    .highlight-card {
+        background: var(--glass);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 30px;
+        text-align: center;
+        transition: var(--transition);
+        box-shadow: var(--shadow-sm);
+        backdrop-filter: blur(10px);
+    }
+    .highlight-card:hover {
+        transform: translateY(-8px) scale(1.01);
+        box-shadow: var(--shadow);
+    }
+    .highlight-card h3 {
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+        color: var(--primary-dark);
+        font-weight: 800;
+    }
+    .highlight-card p {
+        color: var(--text-light);
+        margin-bottom: 20px;
+    }
+    .highlight-icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+    }
+
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 30px;
+    }
+    .product-card {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        transition: var(--transition);
+        box-shadow: var(--shadow-sm);
+        background: white;
+    }
+    .dark-theme .product-card {
+        background: var(--dark);
+    }
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow);
+    }
+    .product-image {
+        height: 200px;
+        background-color: var(--secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 50px;
+        border-bottom: 1px solid var(--border);
+        color: var(--primary-dark);
+        font-weight: bold;
+        text-align: center;
+        padding: 10px;
+    }
+    .product-info {
+        padding: 20px;
+    }
+    .product-info h4 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: var(--text);
+    }
+    .price-old {
+        color: var(--text-light);
+        text-decoration: line-through;
+        font-size: 0.9rem;
+        margin-right: 10px;
+    }
+    .price-new {
+        color: var(--danger);
+        font-size: 1.5rem;
+        font-weight: 800;
+    }
+    .product-actions {
+        margin-top: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+</style>
+
+<h2 class="card-header" style="border: none; margin-bottom: 20px;">
+    <span>🚀</span>
+    Por que comprar na GHCP?
+</h2>
+<div class="highlight-grid">
+    <div class="highlight-card">
+        <span class="highlight-icon" style="color: var(--success);">📦</span>
+        <h3>Entrega Rápida</h3>
+        <p>Receba seu pedido em até 48h em capitais selecionadas.</p>
+        <a href="{{ url_for('prazos') }}" class="btn btn-outline btn-sm">Ver Prazos</a>
+    </div>
+    
+    <div class="highlight-card">
+        <span class="highlight-icon" style="color: var(--primary);">⭐</span>
+        <h3>Produtos Top</h3>
+        <p>Apenas as melhores marcas e com garantia de 1 ano GHCP.</p>
+        <a href="{{ url_for('marcas') }}" class="btn btn-outline btn-sm">Nossas Marcas</a>
+    </div>
+    
+    <div class="highlight-card">
+        <span class="highlight-icon" style="color: var(--accent);">🔒</span>
+        <h3>Pagamento Facilitado</h3>
+        <p>Parcele em até 12x sem juros ou pague com Pix com 10% de desconto.</p>
+        <a href="{{ url_for('condicoes') }}" class="btn btn-outline btn-sm">Ver Condições</a>
+    </div>
+</div>
+
+<h2 class="card-header">
+    <span>💰</span>
+    Ofertas do Dia
+</h2>
+
+<div class="product-grid">
+    
+    {% for produto in produtos_destaque %}
+    
+    {% set preco_original = produto.preco %}
+    {% set desconto = produto.desconto if produto.desconto is defined else 0 %}
+    {% set preco_com_desconto = preco_original * (1 - desconto / 100) %}
+    
+    <div class="product-card">
+        <div class="product-image">
+            [Imagem do {{ produto.nome }}]
+        </div>
+        <div class="product-info">
+            {% if desconto > 0 %}
+                <span class="badge badge-danger">{{ desconto }}% OFF</span>
+            {% else %}
+                <span class="badge badge-info">Novo</span>
+            {% endif %}
+            
+            <h4>{{ produto.nome }}</h4>
+            <div class="prices">
+                {% if desconto > 0 %}
+                    <span class="price-old">R$ {{ "%.2f"|format(preco_original) }}</span>
+                    <span class="price-new">R$ {{ "%.2f"|format(preco_com_desconto) }}</span>
+                {% else %}
+                    <span class="price-new" style="color: var(--primary-dark);">R$ {{ "%.2f"|format(preco_original) }}</span>
+                {% endif %}
+            </div>
+            <div class="product-actions">
+                <a href="{{ url_for('comprar', id_produto=produto.id_produto) }}" class="btn btn-sm">
+                    Ver Detalhes
+                </a>
+                
+                <form method="POST" action="{{ url_for('adicionar_carrinho', id_produto=produto.id_produto) }}">
+                    <button type="submit" class="btn btn-accent btn-sm">
+                        <span>+</span> Carrinho
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    {% endfor %}
+    
+</div>
+
+<div style="text-align: center; margin-top: 50px;">
+    <a href="{{ url_for('listar_produtos') }}" class="btn" style="padding: 15px 50px;">
+        Ver Todo o Catálogo
+    </a>
+</div>
+
+{% endblock %}

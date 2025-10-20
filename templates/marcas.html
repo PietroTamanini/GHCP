@@ -1,0 +1,121 @@
+{% extends 'base.html' %} 
+
+{% set titulo = titulo %}
+
+{% block conteudo %}
+
+<style>
+    .page-header {
+        background-color: var(--secondary);
+        padding: 40px 20px;
+        margin-bottom: 40px;
+        border-radius: var(--radius);
+        text-align: center;
+        box-shadow: var(--shadow-sm);
+    }
+    .page-header h1 {
+        font-size: 2.5rem;
+        color: var(--primary-dark);
+        margin-bottom: 10px;
+    }
+    .page-header p {
+        color: var(--text-light);
+        font-size: 1.1rem;
+    }
+    .brand-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 30px;
+    }
+    .brand-card {
+        background: var(--glass);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        text-align: center;
+        transition: var(--transition);
+        box-shadow: var(--shadow-sm);
+        cursor: pointer;
+    }
+    .brand-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+    .brand-logo {
+        font-size: 4rem;
+        margin-bottom: 10px;
+    }
+    .brand-card h3 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--primary-dark);
+    }
+    .brand-card p {
+        font-size: 0.9rem;
+        color: var(--text-light);
+    }
+</style>
+
+<div class="page-header">
+    <h1><span style="color: var(--primary);">⭐</span> Nossas Marcas e Garantias</h1>
+    <p>Trabalhamos apenas com as líderes mundiais em tecnologia para garantir a melhor qualidade para você.</p>
+</div>
+
+<h2 class="card-header">Fabricantes Parceiros</h2>
+
+<div class="brand-grid">
+    <div class="brand-card">
+        <div class="brand-logo">💻</div>
+        <h3>Intel</h3>
+        <p>Líder em processadores e componentes de alto desempenho.</p>
+    </div>
+    <div class="brand-card">
+        <div class="brand-logo">🎮</div>
+        <h3>NVIDIA</h3>
+        <p>Acelere seus jogos e trabalho com as melhores placas de vídeo.</p>
+    </div>
+    <div class="brand-card">
+        <div class="brand-logo">🖱️</div>
+        <h3>Logitech</h3>
+        <p>Periféricos com design, conforto e durabilidade inigualáveis.</p>
+    </div>
+    <div class="brand-card">
+        <div class="brand-logo">🎧</div>
+        <h3>HyperX</h3>
+        <p>Foco em áudio e acessórios para o mundo gamer.</p>
+    </div>
+    <div class="brand-card">
+        <div class="brand-logo">💾</div>
+        <h3>Samsung</h3>
+        <p>Componentes de memória (SSD e RAM) com excelência.</p>
+    </div>
+    <div class="brand-card">
+        <div class="brand-logo">💽</div>
+        <h3>Seagate</h3>
+        <p>Soluções em armazenamento de alta capacidade e performance.</p>
+    </div>
+    <div class="brand-card">
+        <div class="brand-logo">🖥️</div>
+        <h3>Dell</h3>
+        <p>Monitores e desktops com foco em produtividade e design.</p>
+    </div>
+    <div class="brand-card">
+        <div class="brand-logo">⚡</div>
+        <h3>Corsair</h3>
+        <p>Fontes, gabinetes e refrigeração líquida premium.</p>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 50px;">
+    <h2 class="card-header" style="background-color: var(--success-light); border-bottom: 1px solid var(--success);">
+        ✅ Garantia GHCP Tech Store
+    </h2>
+    <div class="card-body">
+        <p>Todos os produtos vendidos pela GHCP possuem garantia de **1 ano** diretamente conosco contra defeitos de fabricação, além da garantia padrão oferecida pelo fabricante.</p>
+        <p>Isso garante que, em caso de problemas, o processo de troca ou reparo seja rápido e sem burocracia.</p>
+        <a href="#" class="btn btn-outline-success" style="margin-top: 15px;">Acessar Central de Garantia</a>
+    </div>
+</div>
+
+{% endblock %}
