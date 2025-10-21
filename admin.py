@@ -7,9 +7,13 @@ from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
 import json
 
+
+
 # Configurações de upload
 UPLOAD_FOLDER = 'static/uploads/produtos'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS

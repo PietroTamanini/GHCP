@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{# Adiciona o link "Garantia" no menu e marca como ativo #}
+{% block menu %}
+    <li><a href="{{ url_for('inicio') }}" class="nav-link">Início</a></li>
+    <li><a href="{{ url_for('listar_produtos') }}" class="nav-link">Produtos</a></li>
+    <li><a href="{{ url_for('suporte') }}" class="nav-link">Suporte</a></li>
+
+{% endblock %}
+
+
+{# Conteúdo principal da página de garantia #}
+{% block conteudo %}
+<style>
+    /* Estilos simples para a página de garantia */
+    .garantia-container {
+        max-width: 900px;
+        margin: 0 auto;
+        background: var(--glass);
+        padding: 30px 40px;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border);
+    }
+    .garantia-container h1 {
+        color: var(--primary);
+        text-align: center;
+        font-size: 2.5em;
+        font-weight: 800;
+        margin-bottom: 30px;
+    }
+    .garantia-container h2 {
+        color: var(--text);
+        font-size: 1.6em;
+        font-weight: 700;
+        border-bottom: 2px solid var(--border);
+        padding-bottom: 10px;
+        margin-top: 30px;
+        margin-bottom: 20px;
+    }
+    .garantia-container p, 
+    .garantia-container li {
+        line-height: 1.8;
+        color: var(--text-light);
+        margin-bottom: 12px;
+    }
+    .garantia-container ul {
+        padding-left: 25px;
+    }
+    .garantia-container a {
+        color: var(--primary);
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .garantia-container a:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<div class="garantia-container">
+    <h1>Central de Garantia</h1>
+
+    <p>Na Loja GHCP, temos um compromisso com a qualidade e a sua satisfação. Todos os nossos produtos passam por um rigoroso controle de qualidade. Abaixo, detalhamos nossa política de garantia para que você saiba exatamente como proceder caso precise de suporte.</p>
+
+    <h2>Prazo da Garantia</h2>
+    <p>Todos os produtos comercializados em nossa loja possuem uma <strong>garantia mínima de 90 (noventa) dias</strong> (garantia legal) contra defeitos de fabricação, a contar da data de recebimento do produto.</p>
+    <p>Muitos de nossos produtos também possuem uma garantia estendida diretamente com o fabricante, cujo prazo pode ser consultado na página de cada produto.</p>
+
+    <h2>O que a Garantia Cobre?</h2>
+    <ul>
+        <li>Defeitos de fabricação ou vícios de material.</li>
+        <li>Problemas de funcionamento que não foram causados por mau uso.</li>
+        <li>Componentes que apresentem falhas dentro do período de garantia.</li>
+    </ul>
+
+    <h2>O que a Garantia NÃO Cobre?</h2>
+    <ul>
+        <li>Danos causados por mau uso, como quedas, contato com líquidos ou picos de energia.</li>
+        <li>Danos causados por instalação ou configuração incorreta.</li>
+        <li>Desgaste natural de peças e componentes.</li>
+        <li>Produtos com lacre de garantia violado.</li>
+    </ul>
+
+    <h2>Como Acionar sua Garantia?</h2>
+    <p>Se o seu produto apresentou algum problema e está dentro do prazo de garantia, o primeiro passo é entrar em contato com a nossa equipe.</p>
+    <p>Por favor, acesse nossa <strong><a href="{{ url_for('suporte') }}">Página de Suporte</a></strong> e envie uma mensagem detalhando o ocorrido. Não se esqueça de informar o número do seu pedido para agilizar o atendimento.</p>
+</div>
+
+{% endblock %}

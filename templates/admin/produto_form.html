@@ -126,47 +126,55 @@
 </div>
 
 <script>
-function removerImagem(imagem) {
-    const previewItem = event.target.closest('.preview-item');
-    previewItem.remove();
+    function removerImagem(imagem) {
+        const previewItem = event.target.closest('.preview-item');
+        previewItem.remove();
     
-    // Adicionar input hidden para marcar imagem para remoção
-    const form = document.querySelector('form');
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = 'imagens_remover';
-    input.value = imagem;
-    form.appendChild(input);
-}
-
-// Preview de novas imagens
-document.getElementById('imagens').addEventListener('change', function(e) {
-    const preview = document.querySelector('.image-preview') || createPreviewContainer();
+        // marca imagem para remoção
+        const form = document.querySelector('form');
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'imagens_remover';
+        input.value = imagem;
+        form.appendChild(input);
+    }
     
-    Array.from(e.target.files).forEach(file => {
-        if (!file.type.startsWith('image/')) return;
-        
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const previewItem = document.createElement('div');
-            previewItem.className = 'preview-item';
-            previewItem.innerHTML = `
-                <img src="${e.target.result}" alt="Preview">
-                <button type="button" class="preview-remove" onclick="this.parentElement.remove()">×</button>
-            `;
-            preview.appendChild(previewItem);
-        };
-        reader.readAsDataURL(file);
+    document.getElementById('imagens').addEventListener('change', function(e) {
+        // usa o preview existente, sem duplicar
+        let preview = document.querySelector('.image-preview');
+        if (!preview) {
+            preview = createPreviewContainer();
+        }
+    
+        // limpa previews de arquivos novos (sem apagar as imagens existentes)
+        preview.querySelectorAll('.preview-item[data-novo="true"]').forEach(item => item.remove());
+    
+        Array.from(e.target.files).forEach(file => {
+            if (!file.type.startsWith('image/')) return;
+    
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                const previewItem = document.createElement('div');
+                previewItem.className = 'preview-item';
+                previewItem.dataset.novo = "true"; // marca como nova imagem
+                previewItem.innerHTML = `
+                    <img src="${ev.target.result}" alt="Preview">
+                    <button type="button" class="preview-remove" onclick="this.parentElement.remove()">×</button>
+                `;
+                preview.appendChild(previewItem);
+            };
+            reader.readAsDataURL(file);
+        });
     });
-});
-
-function createPreviewContainer() {
-    const container = document.createElement('div');
-    container.className = 'image-preview';
-    document.querySelector('.image-upload').after(container);
-    return container;
-}
-</script>
+    
+    function createPreviewContainer() {
+        const container = document.createElement('div');
+        container.className = 'image-preview';
+        document.querySelector('.image-upload').after(container);
+        return container;
+    }
+    </script>
+    
 
 <style>
 .image-preview {

@@ -472,3 +472,19 @@ CREATE INDEX IF NOT EXISTS idx_produto_estoque ON produto(estoque);
 CREATE INDEX IF NOT EXISTS idx_pedidos_data_status ON pedidos(data_pedido, status);
 CREATE INDEX IF NOT EXISTS idx_clientes_data_cadastro ON clientes(data_cadastro);
 CREATE INDEX IF NOT EXISTS idx_itens_pedido_preco ON itens_pedido(preco_unitario)
+
+-- ============================================
+-- TABELA DE SUPORTE AO CLIENTE
+-- ============================================
+
+DROP TABLE IF EXISTS suporte;
+CREATE TABLE suporte (
+    id_suporte INT PRIMARY KEY AUTO_INCREMENT,
+    nome VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    mensagem TEXT NOT NULL,
+    data_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('pendente', 'respondido', 'fechado') DEFAULT 'pendente',
+    INDEX idx_email (email),
+    INDEX idx_status (status)
+);

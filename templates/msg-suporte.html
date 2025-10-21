@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% set titulo = "Mensagem Enviada" %}
+
+{% block conteudo %}
+<section style="max-width:600px; margin:0 auto; text-align:center; background:var(--glass); padding:60px 40px; border-radius:var(--radius); box-shadow:var(--shadow);">
+    <h1 style="font-size:32px; font-weight:800; color:var(--success); margin-bottom:20px;">✅ Mensagem Enviada com Sucesso!</h1>
+    <p style="font-size:16px; color:var(--text-light); margin-bottom:30px;">
+        Agradecemos por entrar em contato com o suporte da <strong>Loja GHCP</strong>.<br>
+        Nossa equipe responderá sua mensagem o mais rápido possível.
+    </p>
+    <a href="{{ url_for('suporte') }}" 
+       style="display:inline-block; padding:14px 28px; border:none; border-radius:10px; background:linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color:white; font-size:16px; font-weight:600; text-decoration:none; transition:var(--transition);">
+        Voltar para a Página Inicial
+    </a>
+</section>
+{% endblock %}

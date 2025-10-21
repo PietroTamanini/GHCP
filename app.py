@@ -5,8 +5,13 @@ from functools import wraps
 import re
 import os
 import json
+
+
+
+
 from datetime import datetime
 from werkzeug.utils import secure_filename
+
 
 app = Flask(__name__)
 app.secret_key = 'GHCP-2o25'
@@ -14,6 +19,9 @@ app.secret_key = 'GHCP-2o25'
 # ============================================
 # CONFIGURAÇÃO DO BANCO DE DADOS
 # ============================================
+
+
+
 
 DB_CONFIG = {
     'host': 'localhost',
@@ -37,44 +45,6 @@ def get_db_connection():
     except mysql.connector.Error as err:
         print(f"Erro ao conectar ao banco de dados: {err}")
         return None
-
-# ============================================
-# FUNÇÃO PARA CRIAR ADMIN PADRÃO (CORREÇÃO)
-# ============================================
-
-def criar_admin_padrao():
-    """Cria o usuário admin padrão se não existir"""
-    try:
-        conn = get_db_connection()
-        if not conn:
-            print("❌ Erro ao conectar ao banco para criar admin padrão")
-            return
-        
-        cursor = conn.cursor(dictionary=True)
-        
-        cursor.execute("SELECT id_funcionario FROM funcionarios WHERE email = 'admin@ghcp.com'")
-        admin_existe = cursor.fetchone()
-        
-        if not admin_existe:
-            senha_hash = generate_password_hash('admin123')
-            
-            cursor.execute("""
-                INSERT INTO funcionarios (nome, email, senha, cargo, ativo)
-                VALUES (%s, %s, %s, %s, %s)
-            """, ('Administrador', 'admin@ghcp.com', senha_hash, 'admin', True))
-            
-            conn.commit()
-            print("✅ Admin padrão criado com sucesso!")
-            print("📧 Email: admin@ghcp.com")
-            print("🔑 Senha: admin123")
-        else:
-            print("ℹ️ Admin padrão já existe no banco")
-        
-        cursor.close()
-        conn.close()
-        
-    except mysql.connector.Error as err:
-        print(f"❌ Erro ao criar admin padrão: {err}")
 
 # ============================================
 # DECORATORS E FUNÇÕES AUXILIARES
@@ -437,11 +407,12 @@ def minha_conta():
         preferencias = cursor.fetchone()
         
         return render_template('minha_conta.html', 
-                             cliente=cliente, 
-                             pedidos=pedidos,
-                             enderecos=enderecos,
-                             preferencias=preferencias)
-    
+                       cliente=cliente, 
+                       usuario=cliente,  
+                       pedidos=pedidos,
+                       enderecos=enderecos,
+                       preferencias=preferencias)
+
     except mysql.connector.Error as err:
         flash(f'Erro ao carregar dados: {err}', 'error')
         return redirect(url_for('inicio'))
@@ -1519,6 +1490,14 @@ def admin_detalhes_diagnostico(id_diagnostico):
             cursor.close()
             conn.close()
 
+def suporte():
+    return render_template("suporte.html")
+
+@app.route('/msg-suporte')
+def mensagem_suporte():
+    return render_template('msg-suporte.html')
+        
+
 # ============================================
 # ROTAS PÚBLICAS PARA DIAGNÓSTICO
 # ============================================
@@ -1624,6 +1603,62 @@ def api_relatorio_diagnostico(id_diagnostico):
             cursor.close()
             conn.close()
 
+# area do suporte
+
+@app.route("/suporte", methods=["GET", "POST"])
+def suporte():
+    if request.method == "POST":
+        nome = request.form.get("nome")
+        email = request.form.get("email")
+        mensagem = request.form.get("mensagem")
+
+        if not (nome and email and mensagem):
+            flash("Preencha todos os campos corretamente.", "warning")
+            return render_template("suporte.html", titulo="Suporte")
+
+        conn = None
+        cursor = None
+        try:
+            conn = get_db_connection()
+            if conn is None:
+                flash("Não foi possível conectar ao banco de dados.", "danger")
+                return render_template("suporte.html", titulo="Suporte")
+
+            cursor = conn.cursor()
+            sql = "INSERT INTO suporte (nome, email, mensagem) VALUES (%s, %s, %s)"
+            cursor.execute(sql, (nome, email, mensagem))
+            conn.commit()
+
+            flash("Mensagem enviada com sucesso!", "success")
+            return redirect(url_for("suporte_sucesso"))
+
+        except mysql.connector.Error as err:
+            # A linha mais importante para debugar! Verifique seu console.
+            print(f"[ERRO MySQL] Falha ao inserir dados de suporte: {err}")
+            if conn:
+                conn.rollback() # Desfaz a tentativa de inserção
+            flash("Ocorreu um erro ao enviar sua mensagem. Tente novamente.", "danger")
+            return render_template("suporte.html", titulo="Suporte")
+
+        finally:
+            # Garante que cursor e conexão sejam fechados
+            if cursor:
+                cursor.close()
+            if conn and conn.is_connected():
+                conn.close()
+
+    # Método GET
+    return render_template("suporte.html", titulo="Suporte")
+
+@app.route("/msg-suporte")
+def suporte_sucesso():
+    return render_template("msg-suporte.html", titulo="Mensagem Enviada")
+
+@app.route('/central-garantia')
+def garantia():
+    return render_template('central-garantia.html', titulo="Central de Garantia")
+
+
 # ============================================
 # ROTAS INSTITUCIONAIS E INFORMATIVAS
 # ============================================
@@ -1671,10 +1706,6 @@ def prazos():
 @app.route('/formas-pagamento')
 def formas_pagamento():
     return render_template('formas_pagamento.html')
-
-@app.route('/garantia')
-def garantia():
-    return render_template('garantia.html')
 
 @app.route('/marcas')
 def marcas():
@@ -1819,6 +1850,39 @@ def blog():
 @app.route('/newsletter')
 def newsletter():
     return render_template('newsletter.html')
+def criar_admin_padrao():
+    """Cria o usuário admin padrão se não existir"""
+    try:
+        conn = get_db_connection()
+        if not conn:
+            print("❌ Erro ao conectar ao banco para criar admin padrão")
+            return
+        
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute("SELECT id_funcionario FROM funcionarios WHERE email = 'admin@ghcp.com'")
+        admin_existe = cursor.fetchone()
+        
+        if not admin_existe:
+            senha_hash = generate_password_hash('admin123')
+            
+            cursor.execute("""
+                INSERT INTO funcionarios (nome, email, senha, cargo, ativo)
+                VALUES (%s, %s, %s, %s, %s)
+            """, ('Administrador', 'admin@ghcp.com', senha_hash, 'admin', True))
+            
+            conn.commit()
+            print("✅ Admin padrão criado com sucesso!")
+            print("📧 Email: admin@ghcp.com")
+            print("🔑 Senha: admin123")
+        else:
+            print("ℹ️ Admin padrão já existe no banco")
+        
+        cursor.close()
+        conn.close()
+        
+    except mysql.connector.Error as err:
+        print(f"❌ Erro ao criar admin padrão: {err}")
 
 # ============================================
 # TRATAMENTO DE ERROS
@@ -1840,21 +1904,10 @@ if __name__ == '__main__':
     print("=" * 60)
     print("🚀 Loja GHCP - Sistema de E-commerce + Admin")
     print("=" * 60)
-    
     criar_admin_padrao()
-    
     print("✅ Servidor Flask iniciado com sucesso!")
     print(f"🌐 Site: http://localhost:5000")
-    print(f"📝 Login Cliente: http://localhost:5000/login")
     print(f"🛡️ Admin: http://localhost:5000/admin/login")
-    print(f"👤 Minha Conta: http://localhost:5000/minha-conta")
-    print(f"🛒 Carrinho: http://localhost:5000/carrinho")
-    print(f"🔧 Diagnóstico: http://localhost:5000/diagnostico")
-    print(f"🔍 Teste Admin: http://localhost:5000/admin/testar-credenciais")
-    print("=" * 60)
-    print("🛡️ Credenciais Admin:")
-    print("📧 Email: admin@ghcp.com")
-    print("🔑 Senha: admin123")
     print("=" * 60)
     
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
