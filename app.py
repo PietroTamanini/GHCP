@@ -19,7 +19,7 @@ DB_CONFIG = {
     'host': 'localhost',
     'port': '3306',
     'user': 'root',
-    'password': '',  # ⚠️ Coloque sua senha do MySQL aqui
+    'password': '',
     'database': 'loja_informatica'
 }
 
@@ -37,6 +37,44 @@ def get_db_connection():
     except mysql.connector.Error as err:
         print(f"Erro ao conectar ao banco de dados: {err}")
         return None
+
+# ============================================
+# FUNÇÃO PARA CRIAR ADMIN PADRÃO (CORREÇÃO)
+# ============================================
+
+def criar_admin_padrao():
+    """Cria o usuário admin padrão se não existir"""
+    try:
+        conn = get_db_connection()
+        if not conn:
+            print("❌ Erro ao conectar ao banco para criar admin padrão")
+            return
+        
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute("SELECT id_funcionario FROM funcionarios WHERE email = 'admin@ghcp.com'")
+        admin_existe = cursor.fetchone()
+        
+        if not admin_existe:
+            senha_hash = generate_password_hash('admin123')
+            
+            cursor.execute("""
+                INSERT INTO funcionarios (nome, email, senha, cargo, ativo)
+                VALUES (%s, %s, %s, %s, %s)
+            """, ('Administrador', 'admin@ghcp.com', senha_hash, 'admin', True))
+            
+            conn.commit()
+            print("✅ Admin padrão criado com sucesso!")
+            print("📧 Email: admin@ghcp.com")
+            print("🔑 Senha: admin123")
+        else:
+            print("ℹ️ Admin padrão já existe no banco")
+        
+        cursor.close()
+        conn.close()
+        
+    except mysql.connector.Error as err:
+        print(f"❌ Erro ao criar admin padrão: {err}")
 
 # ============================================
 # DECORATORS E FUNÇÕES AUXILIARES
@@ -68,18 +106,15 @@ def validar_cpf(cpf):
     if len(cpf) != 11:
         return False
     
-    # Verificar se todos os dígitos são iguais
     if cpf == cpf[0] * 11:
         return False
     
-    # Validação do primeiro dígito verificador
     soma = sum(int(cpf[i]) * (10 - i) for i in range(9))
     digito1 = (soma * 10 % 11) % 10
     
     if digito1 != int(cpf[9]):
         return False
     
-    # Validação do segundo dígito verificador
     soma = sum(int(cpf[i]) * (11 - i) for i in range(10))
     digito2 = (soma * 10 % 11) % 10
     
@@ -119,7 +154,6 @@ def inicio():
         
         cursor = conn.cursor(dictionary=True)
         
-        # Buscar produtos em destaque
         cursor.execute("""
             SELECT * FROM produto 
             WHERE ativo = TRUE 
@@ -143,7 +177,6 @@ def inicio():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """Página e processamento de login"""
-    # Se já estiver logado, redireciona
     if 'usuario_id' in session:
         return redirect(url_for('inicio'))
     
@@ -151,7 +184,6 @@ def login():
         email = request.form.get('email', '').strip().lower()
         senha = request.form.get('senha', '')
         
-        # Validações básicas
         if not email or not senha:
             flash('❌ Por favor, preencha todos os campos.', 'error')
             return render_template('login.html')
@@ -168,7 +200,6 @@ def login():
             
             cursor = conn.cursor(dictionary=True)
             
-            # Buscar usuário pelo email
             cursor.execute("""
                 SELECT id_cliente, nome, email, senha, ativo 
                 FROM clientes 
@@ -182,14 +213,12 @@ def login():
                     flash('⚠️ Sua conta está desativada. Entre em contato com o suporte.', 'warning')
                     return render_template('login.html')
                 
-                # Login bem-sucedido
                 session['usuario_id'] = usuario['id_cliente']
                 session['usuario_nome'] = usuario['nome']
                 session['usuario_email'] = usuario['email']
                 
                 flash(f'🎉 Bem-vindo de volta, {usuario["nome"]}!', 'success')
                 
-                # Redirecionar para página anterior ou início
                 next_page = request.args.get('next')
                 if next_page:
                     return redirect(next_page)
@@ -210,7 +239,6 @@ def login():
 @app.route('/cadastro', methods=['POST'])
 def cadastro():
     """Processamento de cadastro"""
-    # Coletar dados do formulário
     nome = request.form.get('nome', '').strip()
     email = request.form.get('email', '').strip().lower()
     cpf = request.form.get('cpf', '').strip()
@@ -221,7 +249,6 @@ def cadastro():
     confirmar_senha = request.form.get('confirmar_senha', '')
     aceitar_termos = request.form.get('aceitar_termos')
     
-    # Validações
     if not all([nome, email, cpf, senha, confirmar_senha]):
         flash('❌ Por favor, preencha todos os campos obrigatórios.', 'error')
         return redirect(url_for('login'))
@@ -246,7 +273,6 @@ def cadastro():
         flash('❌ CPF inválido.', 'error')
         return redirect(url_for('login'))
     
-    # Formatar CPF
     cpf_formatado = formatar_cpf(cpf)
     
     try:
@@ -257,22 +283,18 @@ def cadastro():
         
         cursor = conn.cursor()
         
-        # Verificar se email já existe
         cursor.execute("SELECT id_cliente FROM clientes WHERE email = %s", (email,))
         if cursor.fetchone():
             flash('❌ Este e-mail já está cadastrado.', 'error')
             return redirect(url_for('login'))
         
-        # Verificar se CPF já existe
         cursor.execute("SELECT id_cliente FROM clientes WHERE cpf = %s", (cpf_formatado,))
         if cursor.fetchone():
             flash('❌ Este CPF já está cadastrado.', 'error')
             return redirect(url_for('login'))
         
-        # Hash da senha
         senha_hash = generate_password_hash(senha)
         
-        # Inserir novo cliente
         cursor.execute("""
             INSERT INTO clientes (nome, email, senha, cpf, telefone, data_nascimento, genero)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -283,7 +305,6 @@ def cadastro():
         conn.commit()
         cliente_id = cursor.lastrowid
         
-        # Criar preferências padrão
         cursor.execute("""
             INSERT INTO preferencias (id_cliente, email_notificacoes, ofertas_personalizadas)
             VALUES (%s, TRUE, TRUE)
@@ -291,7 +312,6 @@ def cadastro():
         
         conn.commit()
         
-        # Login automático após cadastro
         session['usuario_id'] = cliente_id
         session['usuario_nome'] = nome
         session['usuario_email'] = email
@@ -347,21 +367,9 @@ def recuperar_senha():
                     flash('⚠️ Esta conta está desativada. Entre em contato com o suporte.', 'warning')
                     return render_template('recuperar_senha.html')
                 
-                # Aqui você implementaria o envio de email com token
-                # Por enquanto, vamos apenas registrar a solicitação no banco
-                
-                # IMPORTANTE: Em produção, você deve:
-                # 1. Gerar um token único
-                # 2. Salvar o token no banco com prazo de validade
-                # 3. Enviar email com link contendo o token
-                # 4. Criar rota para resetar senha com o token
-                
                 flash('✅ Se o e-mail estiver cadastrado, você receberá as instruções de recuperação em breve.', 'success')
-                
-                # Log da tentativa (opcional)
                 print(f"[RECUPERAÇÃO] Solicitação para: {email} - {usuario['nome']}")
             else:
-                # Por segurança, não informar se o email existe ou não
                 flash('✅ Se o e-mail estiver cadastrado, você receberá as instruções de recuperação em breve.', 'success')
             
             return redirect(url_for('login'))
@@ -388,7 +396,6 @@ def minha_conta():
         
         cursor = conn.cursor(dictionary=True)
         
-        # Buscar dados do cliente
         cursor.execute("""
             SELECT c.*, 
                    COUNT(DISTINCT p.id_pedido) as total_pedidos,
@@ -405,7 +412,6 @@ def minha_conta():
             flash('Erro ao carregar dados do usuário.', 'error')
             return redirect(url_for('inicio'))
         
-        # Buscar pedidos recentes
         cursor.execute("""
             SELECT * FROM pedidos 
             WHERE id_cliente = %s 
@@ -415,7 +421,6 @@ def minha_conta():
         
         pedidos = cursor.fetchall()
         
-        # Buscar endereços
         cursor.execute("""
             SELECT * FROM enderecos 
             WHERE id_cliente = %s 
@@ -424,7 +429,6 @@ def minha_conta():
         
         enderecos = cursor.fetchall()
         
-        # Buscar preferências
         cursor.execute("""
             SELECT * FROM preferencias 
             WHERE id_cliente = %s
@@ -477,7 +481,6 @@ def atualizar_perfil():
         
         conn.commit()
         
-        # Atualizar sessão
         session['usuario_nome'] = nome
         
         flash('✅ Perfil atualizado com sucesso!', 'success')
@@ -520,7 +523,6 @@ def alterar_senha():
         
         cursor = conn.cursor(dictionary=True)
         
-        # Verificar senha atual
         cursor.execute("SELECT senha FROM clientes WHERE id_cliente = %s", (session['usuario_id'],))
         resultado = cursor.fetchone()
         
@@ -528,7 +530,6 @@ def alterar_senha():
             flash('❌ Senha atual incorreta.', 'error')
             return redirect(url_for('minha_conta'))
         
-        # Atualizar senha (o trigger vai registrar no histórico automaticamente)
         nova_senha_hash = generate_password_hash(nova_senha)
         cursor.execute("""
             UPDATE clientes 
@@ -538,7 +539,7 @@ def alterar_senha():
         
         conn.commit()
         
-        flash('🔒 Senha alterada com sucesso!', 'success')
+        flash('🔐 Senha alterada com sucesso!', 'success')
     
     except mysql.connector.Error as err:
         flash(f'Erro ao alterar senha: {err}', 'error')
@@ -610,7 +611,6 @@ def excluir_endereco(id_endereco):
         
         cursor = conn.cursor()
         
-        # Verificar se o endereço pertence ao usuário
         cursor.execute("""
             DELETE FROM enderecos 
             WHERE id_endereco = %s AND id_cliente = %s
@@ -648,7 +648,6 @@ def listar_produtos():
         
         cursor = conn.cursor(dictionary=True)
         
-        # Filtros
         categoria = request.args.get('categoria')
         marca = request.args.get('marca')
         busca = request.args.get('busca')
@@ -673,7 +672,6 @@ def listar_produtos():
         cursor.execute(query, params)
         produtos = cursor.fetchall()
         
-        # Buscar categorias e marcas para filtros
         cursor.execute("SELECT DISTINCT categoria FROM produto WHERE ativo = TRUE ORDER BY categoria")
         categorias = [row['categoria'] for row in cursor.fetchall()]
         
@@ -709,7 +707,6 @@ def detalhes_produto(id_produto):
             flash('❌ Produto não encontrado.', 'error')
             return redirect(url_for('listar_produtos'))
         
-        # Buscar avaliações do produto
         cursor.execute("""
             SELECT a.*, c.nome as cliente_nome 
             FROM avaliacoes a
@@ -734,14 +731,12 @@ def detalhes_produto(id_produto):
 @app.route('/carrinho')
 def carrinho():
     """Página do carrinho"""
-    # Carrinho será gerenciado via sessão
     carrinho_items = session.get('carrinho', [])
     
-    # Calcular totais
     total_itens = sum(item['quantidade'] for item in carrinho_items)
     total_preco = sum(item['preco'] * item['quantidade'] for item in carrinho_items)
     
-    return render_template('carrinho.html', produtos_carrinho=carrinho_items, total_itens=total_itens, total_preco=total_preco,total_geral=total_preco)
+    return render_template('carrinho.html', produtos_carrinho=carrinho_items, total_itens=total_itens, total_preco=total_preco, total_geral=total_preco)
 
 @app.route('/adicionar-carrinho/<int:id_produto>', methods=['POST'])
 def adicionar_carrinho(id_produto):
@@ -754,7 +749,6 @@ def adicionar_carrinho(id_produto):
         
         cursor = conn.cursor(dictionary=True)
         
-        # Buscar informações do produto
         cursor.execute("SELECT * FROM produto WHERE id_produto = %s AND ativo = TRUE", (id_produto,))
         produto = cursor.fetchone()
         
@@ -762,21 +756,17 @@ def adicionar_carrinho(id_produto):
             flash('❌ Produto não encontrado.', 'error')
             return redirect(url_for('listar_produtos'))
         
-        # Inicializar carrinho na sessão se não existir
         if 'carrinho' not in session:
             session['carrinho'] = []
         
-        # Verificar se o produto já está no carrinho
         carrinho = session['carrinho']
         produto_no_carrinho = next((item for item in carrinho if item['id_produto'] == id_produto), None)
         
         quantidade = int(request.form.get('quantidade', 1))
         
         if produto_no_carrinho:
-            # Atualizar quantidade se já estiver no carrinho
             produto_no_carrinho['quantidade'] += quantidade
         else:
-            # Adicionar novo item ao carrinho
             carrinho.append({
                 'id_produto': produto['id_produto'],
                 'nome': produto['nome'],
@@ -806,7 +796,6 @@ def remover_carrinho(id_produto):
     """Remover produto do carrinho"""
     if 'carrinho' in session:
         carrinho = session['carrinho']
-        # Filtrar itens, removendo o produto especificado
         session['carrinho'] = [item for item in carrinho if item['id_produto'] != id_produto]
         session.modified = True
         flash('🗑️ Produto removido do carrinho!', 'success')
@@ -815,21 +804,15 @@ def remover_carrinho(id_produto):
 
 @app.route('/atualizar-carrinho', methods=['POST'])
 def atualizar_carrinho():
-    """Atualizar quantidade de produtos no carrinho lendo todos os campos do formulário."""
+    """Atualizar quantidade de produtos no carrinho"""
     if 'carrinho' in session:
         carrinho = session['carrinho']
-        
-        # Cria um dicionário de IDs para acesso rápido (simplifica a atualização)
         carrinho_dict = {item['id_produto']: item for item in carrinho}
-        
-        # Lista temporária para reconstruir o carrinho após as mudanças
         carrinho_atualizado = []
         
-        # Itera sobre os dados enviados pelo formulário
         for key, value in request.form.items():
             if key.startswith('quantidade_'):
                 try:
-                    # Extrai o ID do produto do nome do campo (ex: 'quantidade_123' -> 123)
                     id_produto = int(key.split('_')[1])
                     nova_quantidade = int(value)
                     
@@ -837,21 +820,11 @@ def atualizar_carrinho():
                         item = carrinho_dict[id_produto]
                         
                         if nova_quantidade > 0:
-                            # Se a quantidade for válida, atualiza
                             item['quantidade'] = nova_quantidade
-                            # Adiciona à lista atualizada (se não for removido)
-                            carrinho_atualizado.append(item) 
-                        # Se nova_quantidade <= 0, o item é removido implicitamente por não ser adicionado à lista atualizada
-
+                            carrinho_atualizado.append(item)
                 except ValueError:
-                    # Ignora campos que não são números
                     continue
-            
-            # Garante que itens não presentes no form (ex: se você tivesse outro campo não quantidade) 
-            # não seriam perdidos, mas com a lógica acima ele deve funcionar.
-            # No seu caso, o carrinho atualizado é a lista de itens válidos do carrinho_dict.
-
-        # O novo carrinho são os itens que sobreviveram ao loop.
+        
         session['carrinho'] = carrinho_atualizado
         session.modified = True
         
@@ -879,12 +852,12 @@ def cartoes():
     return render_template('cartoes-credito.html')
 
 # ============================================
-# ROTAS DO PAINEL ADMINISTRATIVO
+# ROTAS DO PAINEL ADMINISTRATIVO (CORRIGIDO)
 # ============================================
 
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
-    """Login do administrador"""
+    """Login do administrador - CORRIGIDO"""
     if request.method == 'POST':
         email = request.form.get('email', '').strip().lower()
         senha = request.form.get('senha', '')
@@ -909,12 +882,10 @@ def admin_login():
             admin = cursor.fetchone()
             
             if admin and check_password_hash(admin['senha'], senha):
-                # Login bem-sucedido
                 session['admin_id'] = admin['id_funcionario']
                 session['admin_nome'] = admin['nome']
                 session['admin_cargo'] = admin['cargo']
                 
-                # Atualizar último login
                 cursor.execute("""
                     UPDATE funcionarios 
                     SET ultimo_login = NOW() 
@@ -958,7 +929,6 @@ def admin_dashboard():
         
         cursor = conn.cursor(dictionary=True)
         
-        # Estatísticas gerais
         cursor.execute("SELECT COUNT(*) as total FROM clientes WHERE ativo = TRUE")
         total_clientes = cursor.fetchone()['total']
         
@@ -986,7 +956,6 @@ def admin_dashboard():
         """)
         diagnosticos_pendentes = cursor.fetchone()['total']
         
-        # Produtos com estoque baixo
         cursor.execute("""
             SELECT * FROM produto 
             WHERE estoque <= 5 AND ativo = TRUE 
@@ -995,7 +964,6 @@ def admin_dashboard():
         """)
         estoque_baixo = cursor.fetchall()
         
-        # Pedidos recentes
         cursor.execute("""
             SELECT p.*, c.nome as cliente_nome 
             FROM pedidos p
@@ -1005,7 +973,6 @@ def admin_dashboard():
         """)
         pedidos_recentes = cursor.fetchall()
         
-        # Diagnosticos recentes
         cursor.execute("""
             SELECT * FROM diagnosticos 
             ORDER BY data_entrada DESC 
@@ -1044,7 +1011,6 @@ def admin_produtos():
         
         cursor = conn.cursor(dictionary=True)
         
-        # Filtros
         categoria = request.args.get('categoria')
         busca = request.args.get('busca')
         
@@ -1064,7 +1030,6 @@ def admin_produtos():
         cursor.execute(query, params)
         produtos = cursor.fetchall()
         
-        # Buscar categorias para filtro
         cursor.execute("SELECT DISTINCT categoria FROM produto ORDER BY categoria")
         categorias = [row['categoria'] for row in cursor.fetchall()]
         
@@ -1106,25 +1071,21 @@ def admin_novo_produto():
             
             cursor = conn.cursor()
             
-            # Processar upload de imagens
             imagens = []
             if 'imagens' in request.files:
                 files = request.files.getlist('imagens')
                 for file in files:
                     if file and allowed_file(file.filename):
                         filename = secure_filename(file.filename)
-                        # Criar nome único
                         from uuid import uuid4
                         unique_filename = f"{uuid4().hex}_{filename}"
                         filepath = os.path.join(UPLOAD_FOLDER, unique_filename)
                         
-                        # Criar diretório se não existir
                         os.makedirs(os.path.dirname(filepath), exist_ok=True)
                         file.save(filepath)
                         
                         imagens.append(unique_filename)
             
-            # Inserir produto
             cursor.execute("""
                 INSERT INTO produto 
                 (nome, marca, preco, descricao, estoque, categoria, imagens, peso, dimensoes, destaque)
@@ -1136,7 +1097,6 @@ def admin_novo_produto():
             
             conn.commit()
             
-            # Registrar log
             cursor.execute("""
                 INSERT INTO logs_sistema (id_funcionario, acao, modulo, descricao)
                 VALUES (%s, 'CADASTRO', 'PRODUTOS', %s)
@@ -1180,12 +1140,10 @@ def admin_editar_produto(id_produto):
             destaque = request.form.get('destaque') == 'on'
             ativo = request.form.get('ativo') == 'on'
             
-            # Buscar imagens atuais
             cursor.execute("SELECT imagens FROM produto WHERE id_produto = %s", (id_produto,))
             produto_atual = cursor.fetchone()
             imagens = json.loads(produto_atual['imagens']) if produto_atual['imagens'] else []
             
-            # Processar novas imagens
             if 'imagens' in request.files:
                 files = request.files.getlist('imagens')
                 for file in files:
@@ -1200,11 +1158,9 @@ def admin_editar_produto(id_produto):
                         
                         imagens.append(unique_filename)
             
-            # Remover imagens selecionadas
             imagens_remover = request.form.getlist('imagens_remover')
             imagens = [img for img in imagens if img not in imagens_remover]
             
-            # Atualizar produto
             cursor.execute("""
                 UPDATE produto 
                 SET nome = %s, marca = %s, preco = %s, descricao = %s, 
@@ -1217,7 +1173,6 @@ def admin_editar_produto(id_produto):
             
             conn.commit()
             
-            # Registrar log
             cursor.execute("""
                 INSERT INTO logs_sistema (id_funcionario, acao, modulo, descricao)
                 VALUES (%s, 'EDICAO', 'PRODUTOS', %s)
@@ -1228,19 +1183,12 @@ def admin_editar_produto(id_produto):
             return redirect(url_for('admin_produtos'))
         
         else:
-            # Carregar dados do produto
             cursor.execute("SELECT * FROM produto WHERE id_produto = %s", (id_produto,))
             produto = cursor.fetchone()
             
             if not produto:
                 flash('❌ Produto não encontrado.', 'error')
                 return redirect(url_for('admin_produtos'))
-            
-            # Converter imagens JSON para lista
-            if produto['imagens']:
-                produto['imagens'] = json.loads(produto['imagens'])
-            else:
-                produto['imagens'] = []
             
             return render_template('admin/produto_form.html', produto=produto)
     
@@ -1265,7 +1213,6 @@ def admin_clientes():
         
         cursor = conn.cursor(dictionary=True)
         
-        # Filtros
         busca = request.args.get('busca')
         
         query = "SELECT * FROM clientes WHERE 1=1"
@@ -1303,7 +1250,6 @@ def admin_detalhes_cliente(id_cliente):
         
         cursor = conn.cursor(dictionary=True)
         
-        # Dados do cliente
         cursor.execute("SELECT * FROM clientes WHERE id_cliente = %s", (id_cliente,))
         cliente = cursor.fetchone()
         
@@ -1311,7 +1257,6 @@ def admin_detalhes_cliente(id_cliente):
             flash('❌ Cliente não encontrado.', 'error')
             return redirect(url_for('admin_clientes'))
         
-        # Pedidos do cliente
         cursor.execute("""
             SELECT * FROM pedidos 
             WHERE id_cliente = %s 
@@ -1319,7 +1264,6 @@ def admin_detalhes_cliente(id_cliente):
         """, (id_cliente,))
         pedidos = cursor.fetchall()
         
-        # Endereços
         cursor.execute("""
             SELECT * FROM enderecos 
             WHERE id_cliente = %s 
@@ -1401,13 +1345,11 @@ def admin_novo_funcionario():
             
             cursor = conn.cursor()
             
-            # Verificar se email já existe
             cursor.execute("SELECT id_funcionario FROM funcionarios WHERE email = %s", (email,))
             if cursor.fetchone():
                 flash('❌ Este e-mail já está cadastrado.', 'error')
                 return render_template('admin/funcionario_form.html')
             
-            # Hash da senha
             senha_hash = generate_password_hash(senha)
             
             cursor.execute("""
@@ -1417,7 +1359,6 @@ def admin_novo_funcionario():
             
             conn.commit()
             
-            # Registrar log
             cursor.execute("""
                 INSERT INTO logs_sistema (id_funcionario, acao, modulo, descricao)
                 VALUES (%s, 'CADASTRO', 'FUNCIONARIOS', %s)
@@ -1449,19 +1390,15 @@ def admin_relatorios():
         
         cursor = conn.cursor(dictionary=True)
         
-        # Relatório mensal
         cursor.execute("SELECT * FROM view_relatorios_mensais LIMIT 12")
         relatorios_mensais = cursor.fetchall()
         
-        # Produtos mais vendidos
         cursor.execute("SELECT * FROM view_produtos_mais_vendidos LIMIT 10")
         produtos_mais_vendidos = cursor.fetchall()
         
-        # Clientes mais ativos
         cursor.execute("SELECT * FROM view_clientes_ativos LIMIT 10")
         clientes_ativos = cursor.fetchall()
         
-        # Estoque crítico
         cursor.execute("SELECT * FROM view_estoque_critico")
         estoque_critico = cursor.fetchall()
         
@@ -1492,7 +1429,6 @@ def admin_diagnosticos():
         
         cursor = conn.cursor(dictionary=True)
         
-        # Filtros
         status = request.args.get('status')
         
         query = "SELECT d.*, f.nome as tecnico_nome FROM diagnosticos d LEFT JOIN funcionarios f ON d.tecnico_responsavel = f.id_funcionario WHERE 1=1"
@@ -1546,7 +1482,6 @@ def admin_detalhes_diagnostico(id_diagnostico):
                   float(orcamento) if orcamento else 0, 
                   observacoes, session['admin_id'], id_diagnostico))
             
-            # Se status for concluído, registrar data
             if status == 'concluido':
                 cursor.execute("""
                     UPDATE diagnosticos 
@@ -1560,7 +1495,6 @@ def admin_detalhes_diagnostico(id_diagnostico):
             return redirect(url_for('admin_diagnosticos'))
         
         else:
-            # Carregar dados do diagnóstico
             cursor.execute("""
                 SELECT d.*, f.nome as tecnico_nome 
                 FROM diagnosticos d 
@@ -1614,7 +1548,6 @@ def diagnostico():
             
             cursor = conn.cursor()
             
-            # Verificar se é cliente
             id_cliente = None
             if session.get('usuario_id'):
                 cursor.execute("SELECT id_cliente FROM clientes WHERE id_cliente = %s", (session['usuario_id'],))
@@ -1665,7 +1598,6 @@ def api_relatorio_diagnostico(id_diagnostico):
         if not diagnostico:
             return jsonify({'error': 'Diagnóstico não encontrado'}), 404
         
-        # Formatar relatório
         relatorio = {
             'id_diagnostico': diagnostico['id_diagnostico'],
             'cliente': diagnostico['nome_cliente'],
@@ -1698,67 +1630,54 @@ def api_relatorio_diagnostico(id_diagnostico):
 
 @app.route('/sobre')
 def sobre():
-    """Página Sobre a GHCP"""
     return render_template('sobre.html')
 
 @app.route('/contato')
 def contato():
-    """Página de Contato"""
     return render_template('contato.html')
 
 @app.route('/trabalhe-conosco')
 def trabalhe_conosco():
-    """Página Trabalhe Conosco"""
     return render_template('trabalhe_conosco.html')
 
 @app.route('/faq')
 def faq():
-    """Página de Perguntas Frequentes"""
     return render_template('faq.html')
 
 @app.route('/rastreio')
 def rastreio():
-    """Página de Rastreamento de Pedido"""
     return render_template('rastreio.html')
 
 @app.route('/trocas')
 def trocas():
-    """Página de Trocas e Devoluções"""
     return render_template('trocas.html')
 
 @app.route('/termos')
 def termos():
-    """Página de Termos de Uso"""
     return render_template('termos.html')
 
 @app.route('/privacidade')
 def privacidade():
-    """Página de Política de Privacidade"""
     return render_template('privacidade.html')
 
 @app.route('/cookies')
 def cookies():
-    """Página de Política de Cookies"""
     return render_template('cookies.html')
 
 @app.route('/prazos')
 def prazos():
-    """Página de Prazos de Entrega"""
     return render_template('prazos.html')
 
 @app.route('/formas-pagamento')
 def formas_pagamento():
-    """Página de Formas de Pagamento"""
     return render_template('formas_pagamento.html')
 
 @app.route('/garantia')
 def garantia():
-    """Página de Garantia"""
     return render_template('garantia.html')
 
 @app.route('/marcas')
 def marcas():
-    """Página de Marcas Parceiras"""
     try:
         conn = get_db_connection()
         if not conn:
@@ -1767,7 +1686,6 @@ def marcas():
         
         cursor = conn.cursor(dictionary=True)
         
-        # Buscar todas as marcas distintas
         cursor.execute("""
             SELECT marca, COUNT(*) as total_produtos, 
                    MIN(preco) as preco_minimo, 
@@ -1793,7 +1711,6 @@ def marcas():
 
 @app.route('/categorias')
 def categorias():
-    """Página de Categorias"""
     try:
         conn = get_db_connection()
         if not conn:
@@ -1802,7 +1719,6 @@ def categorias():
         
         cursor = conn.cursor(dictionary=True)
         
-        # Buscar todas as categorias distintas
         cursor.execute("""
             SELECT categoria, COUNT(*) as total_produtos
             FROM produto 
@@ -1826,7 +1742,6 @@ def categorias():
 
 @app.route('/ofertas')
 def ofertas():
-    """Página de Ofertas Especiais"""
     try:
         conn = get_db_connection()
         if not conn:
@@ -1835,7 +1750,6 @@ def ofertas():
         
         cursor = conn.cursor(dictionary=True)
         
-        # Buscar produtos em oferta (você pode adicionar um campo 'em_oferta' na tabela)
         cursor.execute("""
             SELECT * FROM produto 
             WHERE ativo = TRUE 
@@ -1858,7 +1772,6 @@ def ofertas():
 
 @app.route('/lancamentos')
 def lancamentos():
-    """Página de Lançamentos"""
     try:
         conn = get_db_connection()
         if not conn:
@@ -1867,7 +1780,6 @@ def lancamentos():
         
         cursor = conn.cursor(dictionary=True)
         
-        # Buscar produtos mais recentes
         cursor.execute("""
             SELECT * FROM produto 
             WHERE ativo = TRUE 
@@ -1890,28 +1802,119 @@ def lancamentos():
 
 @app.route('/condicoes')
 def condicoes():
-    """Página de Condições Comerciais"""
     return render_template('condicoes.html')
 
 @app.route('/monte-seu-pc')
 def monte_seu_pc():
-    """Página Monte Seu PC"""
     return render_template('monte_seu_pc.html')
 
 @app.route('/assistencia')
 def assistencia():
-    """Página de Assistência Técnica"""
     return render_template('assistencia.html')
 
 @app.route('/blog')
 def blog():
-    """Página do Blog"""
     return render_template('blog.html')
 
 @app.route('/newsletter')
 def newsletter():
-    """Página de Newsletter"""
     return render_template('newsletter.html')
+
+# ============================================
+# ROTA DE TESTE PARA VERIFICAR ADMIN
+# ============================================
+
+@app.route('/admin/testar-credenciais')
+def testar_credenciais():
+    try:
+        conn = get_db_connection()
+        if not conn:
+            return "<h2>❌ Erro ao conectar ao banco</h2>"
+        
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute("SELECT * FROM funcionarios WHERE email = 'admin@ghcp.com'")
+        admin = cursor.fetchone()
+        
+        if admin:
+            senha_correta = check_password_hash(admin['senha'], 'admin123')
+            
+            resultado = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Teste Admin - GHCP</title>
+                <style>
+                    body {{ font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }}
+                    .container {{ max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
+                    h2 {{ color: #2c3e50; }}
+                    .info {{ background: #e3f2fd; padding: 15px; border-left: 4px solid #2196f3; margin: 10px 0; }}
+                    .success {{ background: #e8f5e9; padding: 15px; border-left: 4px solid #4caf50; margin: 10px 0; }}
+                    .error {{ background: #ffebee; padding: 15px; border-left: 4px solid #f44336; margin: 10px 0; }}
+                    pre {{ background: #263238; color: #aed581; padding: 15px; border-radius: 5px; overflow-x: auto; }}
+                    a {{ display: inline-block; background: #2196f3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 20px; }}
+                    a:hover {{ background: #1976d2; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h2>✅ Admin encontrado no banco!</h2>
+                    
+                    <div class="info">
+                        <p><strong>ID:</strong> {admin['id_funcionario']}</p>
+                        <p><strong>Nome:</strong> {admin['nome']}</p>
+                        <p><strong>Email:</strong> {admin['email']}</p>
+                        <p><strong>Cargo:</strong> {admin['cargo']}</p>
+                        <p><strong>Ativo:</strong> {admin['ativo']}</p>
+                    </div>
+                    
+                    <div class="{'success' if senha_correta else 'error'}">
+                        <p><strong>Senha 'admin123' válida:</strong> {'✅ SIM - PODE FAZER LOGIN!' if senha_correta else '❌ NÃO - SENHA INCORRETA!'}</p>
+                    </div>
+                    
+                    {'<div class="error"><h3>⚠️ AÇÃO NECESSÁRIA</h3><p>A senha no banco não corresponde a "admin123". Execute o SQL abaixo:</p><pre>UPDATE funcionarios SET senha = "' + generate_password_hash("admin123") + '" WHERE email = "admin@ghcp.com";</pre></div>' if not senha_correta else ''}
+                    
+                    <a href="/admin/login">🚀 Ir para Login do Admin</a>
+                </div>
+            </body>
+            </html>
+            """
+            return resultado
+        else:
+            return f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Teste Admin - GHCP</title>
+                <style>
+                    body {{ font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }}
+                    .container {{ max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
+                    h2 {{ color: #c62828; }}
+                    .error {{ background: #ffebee; padding: 15px; border-left: 4px solid #f44336; margin: 10px 0; }}
+                    pre {{ background: #263238; color: #aed581; padding: 15px; border-radius: 5px; overflow-x: auto; }}
+                    a {{ display: inline-block; background: #2196f3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 20px; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h2>❌ Admin NÃO encontrado no banco!</h2>
+                    <div class="error">
+                        <p>Execute este SQL no MySQL para criar:</p>
+                        <pre>INSERT INTO funcionarios (nome, email, senha, cargo, ativo)
+VALUES ('Administrador', 'admin@ghcp.com', '{generate_password_hash('admin123')}', 'admin', TRUE);</pre>
+                    </div>
+                    <p><strong>Ou reinicie o servidor Flask que ele criará automaticamente.</strong></p>
+                    <a href="/">Voltar para Home</a>
+                </div>
+            </body>
+            </html>
+            """
+        
+        cursor.close()
+        conn.close()
+        
+    except mysql.connector.Error as err:
+        return f"<h2>❌ Erro: {err}</h2>"
 
 # ============================================
 # TRATAMENTO DE ERROS
@@ -1919,12 +1922,10 @@ def newsletter():
 
 @app.errorhandler(404)
 def page_not_found(e):
-    """Página não encontrada"""
     return render_template('404.html'), 404
 
 @app.errorhandler(500)
 def internal_server_error(e):
-    """Erro interno do servidor"""
     return render_template('500.html'), 500
 
 # ============================================
@@ -1935,20 +1936,23 @@ if __name__ == '__main__':
     print("=" * 60)
     print("🚀 Loja GHCP - Sistema de E-commerce + Admin")
     print("=" * 60)
+    
+    criar_admin_padrao()
+    
     print("✅ Servidor Flask iniciado com sucesso!")
     print(f"🌐 Site: http://localhost:5000")
-    print(f"🔐 Login Cliente: http://localhost:5000/login")
-    print(f"👑 Admin: http://localhost:5000/admin/login")
+    print(f"📝 Login Cliente: http://localhost:5000/login")
+    print(f"🛡️ Admin: http://localhost:5000/admin/login")
     print(f"👤 Minha Conta: http://localhost:5000/minha-conta")
     print(f"🛒 Carrinho: http://localhost:5000/carrinho")
     print(f"🔧 Diagnóstico: http://localhost:5000/diagnostico")
+    print(f"🔍 Teste Admin: http://localhost:5000/admin/testar-credenciais")
     print("=" * 60)
-    print("👑 Credenciais Admin:")
+    print("🛡️ Credenciais Admin:")
     print("📧 Email: admin@ghcp.com")
     print("🔑 Senha: admin123")
     print("=" * 60)
     
-    # Criar diretório de uploads se não existir
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     
     app.run(debug=True, host='0.0.0.0', port=5000)
