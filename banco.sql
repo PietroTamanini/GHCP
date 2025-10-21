@@ -246,147 +246,12 @@ CREATE TABLE logs_sistema (
 );
 
 -- ============================================
--- DADOS DE EXEMPLO
--- ============================================
-
--- Inserir produtos de exemplo
-INSERT INTO produto (nome, marca, preco, descricao, estoque, categoria, imagem, destaque) VALUES
-('Notebook Dell Inspiron 15', 'Dell', 3500.00, 'Notebook potente com Intel Core i7, 16GB RAM, SSD 512GB, ideal para trabalho e jogos', 10, 'Notebooks', 'notebook-dell.jpg', TRUE),
-('Mouse Logitech MX Master 3', 'Logitech', 450.00, 'Mouse ergonômico sem fio com sensor de alta precisão', 50, 'Periféricos', 'mouse-logitech.jpg', FALSE),
-('Teclado Mecânico RGB Gamer', 'Corsair', 550.00, 'Teclado mecânico com switch Cherry MX e iluminação RGB customizável', 30, 'Periféricos', 'teclado-corsair.jpg', TRUE),
-('Monitor 27" 4K Samsung', 'Samsung', 1800.00, 'Monitor 4K UHD com HDR, 60Hz, perfeito para design e edição', 15, 'Monitores', 'monitor-samsung.jpg', FALSE),
-('SSD 1TB NVMe Kingston', 'Kingston', 500.00, 'Armazenamento ultra-rápido NVMe Gen 4, leitura 7000MB/s', 20, 'Armazenamento', 'ssd-kingston.jpg', TRUE),
-('Placa de Vídeo RTX 3060', 'NVIDIA', 2500.00, 'Placa de vídeo GeForce RTX 3060 12GB para gaming em alta performance', 5, 'Hardware', 'placa-video-nvidia.jpg', TRUE),
-('Headset Gamer HyperX Cloud', 'HyperX', 350.00, 'Headset com som surround 7.1, microfone removível', 25, 'Periféricos', 'headset-hyperx.jpg', FALSE),
-('Webcam Full HD Logitech', 'Logitech', 280.00, 'Webcam 1080p com microfone embutido, ideal para videoconferências', 35, 'Periféricos', 'webcam-logitech.jpg', FALSE),
-('Mousepad Gamer Extra Grande', 'Razer', 120.00, 'Mousepad 90x40cm com base antiderrapante', 100, 'Periféricos', 'mousepad-razer.jpg', FALSE),
-('Cadeira Gamer DT3 Sports', 'DT3', 1200.00, 'Cadeira ergonômica reclinável até 180°, suporta até 120kg', 8, 'Móveis', 'cadeira-dt3.jpg', TRUE);
-
--- Atualizar produtos com imagens JSON
-UPDATE produto SET imagens = JSON_ARRAY(imagem) WHERE imagem IS NOT NULL;
-
--- Inserir clientes de exemplo (senhas são hash de "123456")
-INSERT INTO clientes (nome, email, senha, cpf, telefone, data_nascimento, genero, ativo) VALUES
-('João Silva', 'joao.silva@email.com', 'scrypt:32768:8:1$PNtK8OG0bE3YV3oM$5e4d813a9e7e6e2d7c6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6', '123.456.789-00', '(11) 99999-9999', '1990-05-15', 'M', TRUE),
-('Maria Santos', 'maria.santos@email.com', 'scrypt:32768:8:1$PNtK8OG0bE3YV3oM$5e4d813a9e7e6e2d7c6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6', '987.654.321-00', '(11) 88888-8888', '1985-08-20', 'F', TRUE),
-('Pedro Oliveira', 'pedro.oliveira@email.com', 'scrypt:32768:8:1$PNtK8OG0bE3YV3oM$5e4d813a9e7e6e2d7c6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6', '456.789.123-00', '(11) 77777-7777', '1992-12-10', 'M', TRUE);
-
--- Inserir endereços de exemplo
-INSERT INTO enderecos (id_cliente, tipo, destinatario, cep, estado, cidade, bairro, rua, numero, complemento, principal) VALUES
-(1, 'Casa', 'João Silva', '01234-567', 'SP', 'São Paulo', 'Centro', 'Rua das Flores', '123', 'Apto 45', TRUE),
-(2, 'Trabalho', 'Maria Santos', '04567-890', 'SP', 'São Paulo', 'Jardins', 'Av. Paulista', '1000', 'Sala 501', TRUE),
-(3, 'Casa', 'Pedro Oliveira', '03456-789', 'SP', 'São Paulo', 'Moema', 'Rua das Acácias', '456', 'Casa 2', TRUE);
-
--- Inserir preferências de exemplo
-INSERT INTO preferencias (id_cliente, email_notificacoes, ofertas_personalizadas) VALUES
-(1, TRUE, TRUE),
-(2, TRUE, FALSE),
-(3, FALSE, TRUE);
-
--- Inserir funcionários com senhas CORRETAS para "admin123"
-INSERT INTO funcionarios (nome, email, senha, cargo) VALUES 
-('Administrador', 'admin@ghcp.com', 'scrypt:32768:8:1$PNtK8OG0bE3YV3oM$5e4d813a9e7e6e2d7c6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6', 'admin'),
-('Gerente Loja', 'gerente@ghcp.com', 'scrypt:32768:8:1$PNtK8OG0bE3YV3oM$5e4d813a9e7e6e2d7c6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6', 'gerente'),
-('Técnico Suporte', 'suporte@ghcp.com', 'scrypt:32768:8:1$PNtK8OG0bE3YV3oM$5e4d813a9e7e6e2d7c6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6', 'suporte');
-
--- Inserir pedidos de exemplo
-INSERT INTO pedidos (id_cliente, id_endereco, total, status, forma_pagamento) VALUES
-(1, 1, 3950.00, 'entregue', 'cartao_credito'),
-(2, 2, 850.00, 'enviado', 'pix'),
-(3, 3, 1200.00, 'aprovado', 'boleto');
-
--- Inserir itens dos pedidos
-INSERT INTO itens_pedido (id_pedido, id_produto, quantidade, preco_unitario) VALUES
-(1, 1, 1, 3500.00), -- Notebook Dell
-(1, 2, 1, 450.00),  -- Mouse Logitech
-(2, 3, 1, 550.00),  -- Teclado Corsair
-(2, 7, 1, 300.00),  -- Headset HyperX (com desconto)
-(3, 10, 1, 1200.00); -- Cadeira Gamer
-
--- Inserir avaliações de exemplo
-INSERT INTO avaliacoes (id_cliente, id_produto, nota, titulo, comentario) VALUES
-(1, 1, 5, 'Excelente notebook!', 'Performance incrível, atende todas as minhas necessidades de trabalho e entretenimento.'),
-(2, 3, 4, 'Bom teclado', 'Teclado muito bom, iluminação RGB linda, só achei um pouco alto.'),
-(1, 2, 5, 'Mouse perfeito', 'Ergonômico e preciso, melhor mouse que já usei para trabalho.');
-
--- Inserir diagnósticos de exemplo
-INSERT INTO diagnosticos (id_cliente, nome_cliente, email, telefone, tipo_equipamento, marca, modelo, problema, sintomas, status) VALUES
-(1, 'João Silva', 'joao.silva@email.com', '(11) 99999-9999', 'Notebook', 'Dell', 'Inspiron 15', 'Não liga', 'Quando pressiono o botão power, nada acontece. A luz do carregador fica acesa normalmente.', 'recebido'),
-(2, 'Maria Santos', 'maria.santos@email.com', '(11) 88888-8888', 'Desktop', 'Positivo', 'Casa', 'Lentidão extrema', 'Demora mais de 10 minutos para ligar. Travamentos constantes durante o uso.', 'em_analise'),
-(NULL, 'Carlos Oliveira', 'carlos.tech@email.com', '(11) 77777-7777', 'All-in-One', 'Lenovo', 'IdeaCentre', 'Tela azul', 'Aparece tela azul com erro SYSTEM_THREAD_EXCEPTION_NOT_HANDLED após 5 minutos de uso.', 'diagnosticado');
-
--- Inserir logs de exemplo
-INSERT INTO logs_sistema (id_funcionario, acao, modulo, descricao) VALUES
-(1, 'CADASTRO', 'PRODUTOS', 'Produto cadastrado: Mouse Gamer RGB'),
-(1, 'LOGIN', 'AUTENTICACAO', 'Login realizado por Administrador'),
-(1, 'EDICAO', 'CLIENTES', 'Cliente atualizado: João Silva'),
-(2, 'CADASTRO', 'DIAGNOSTICOS', 'Diagnóstico criado para Maria Santos');
-
--- Inserir cupons de exemplo
-INSERT INTO cupons (codigo, desconto_percentual, valor_minimo, data_inicio, data_fim, limite_uso) VALUES
-('PRIMEIRACOMPRA', 10.00, 100.00, '2024-01-01', '2024-12-31', 1),
-('TECNOLOGIA2024', 15.00, 500.00, '2024-01-01', '2024-06-30', 100),
-('FRETEGRATIS', NULL, 200.00, '2024-01-01', '2024-12-31', NULL);
-
--- ============================================
--- TRIGGERS
--- ============================================
-
-DELIMITER //
-
--- Trigger para registrar histórico de senhas
-CREATE TRIGGER after_cliente_senha_update
-AFTER UPDATE ON clientes
-FOR EACH ROW
-BEGIN
-    IF OLD.senha != NEW.senha THEN
-        INSERT INTO historico_senhas (id_cliente, senha_antiga, ip_alteracao)
-        VALUES (NEW.id_cliente, OLD.senha, '127.0.0.1');
-    END IF;
-END//
-
--- Trigger para atualizar estoque quando um pedido é feito
-CREATE TRIGGER after_pedido_insert
-AFTER INSERT ON itens_pedido
-FOR EACH ROW
-BEGIN
-    UPDATE produto 
-    SET estoque = estoque - NEW.quantidade 
-    WHERE id_produto = NEW.id_produto;
-END//
-
--- Trigger para restaurar estoque quando um pedido é cancelado
-CREATE TRIGGER after_pedido_cancel
-AFTER UPDATE ON pedidos
-FOR EACH ROW
-BEGIN
-    IF NEW.status = 'cancelado' AND OLD.status != 'cancelado' THEN
-        UPDATE produto p
-        JOIN itens_pedido ip ON p.id_produto = ip.id_produto
-        SET p.estoque = p.estoque + ip.quantidade
-        WHERE ip.id_pedido = NEW.id_pedido;
-    END IF;
-END//
-
--- Trigger para logs automáticos de login
-CREATE TRIGGER after_funcionario_login
-AFTER UPDATE ON funcionarios
-FOR EACH ROW
-BEGIN
-    IF NEW.ultimo_login IS NOT NULL AND (OLD.ultimo_login IS NULL OR NEW.ultimo_login != OLD.ultimo_login) THEN
-        INSERT INTO logs_sistema (id_funcionario, acao, modulo, descricao)
-        VALUES (NEW.id_funcionario, 'LOGIN', 'AUTENTICACAO', CONCAT('Login realizado por ', NEW.nome));
-    END IF;
-END//
-
-DELIMITER ;
-
--- ============================================
 -- VIEWS
 -- ============================================
 
 -- View para relatório de vendas
-CREATE OR REPLACE VIEW view_vendas AS
+DROP VIEW IF EXISTS view_vendas;
+CREATE VIEW view_vendas AS
 SELECT 
     p.id_pedido,
     c.nome as cliente_nome,
@@ -400,7 +265,8 @@ JOIN itens_pedido ip ON p.id_pedido = ip.id_pedido
 GROUP BY p.id_pedido;
 
 -- View para produtos mais vendidos
-CREATE OR REPLACE VIEW view_produtos_mais_vendidos AS
+DROP VIEW IF EXISTS view_produtos_mais_vendidos;
+CREATE VIEW view_produtos_mais_vendidos AS
 SELECT 
     p.id_produto,
     p.nome,
@@ -415,7 +281,8 @@ GROUP BY p.id_produto
 ORDER BY total_vendido DESC;
 
 -- View para clientes mais ativos
-CREATE OR REPLACE VIEW view_clientes_ativos AS
+DROP VIEW IF EXISTS view_clientes_ativos;
+CREATE VIEW view_clientes_ativos AS
 SELECT 
     c.id_cliente,
     c.nome,
@@ -429,7 +296,8 @@ GROUP BY c.id_cliente
 ORDER BY total_gasto DESC;
 
 -- View para estoque baixo
-CREATE OR REPLACE VIEW view_estoque_baixo AS
+DROP VIEW IF EXISTS view_estoque_baixo;
+CREATE VIEW view_estoque_baixo AS
 SELECT 
     id_produto,
     nome,
@@ -440,8 +308,9 @@ FROM produto
 WHERE estoque <= 5 AND ativo = TRUE
 ORDER BY estoque ASC;
 
--- View para relatórios mensais
-CREATE OR REPLACE VIEW view_relatorios_mensais AS
+-- View para relatórios mensais (CORRIGIDA)
+DROP VIEW IF EXISTS view_relatorios_mensais;
+CREATE VIEW view_relatorios_mensais AS
 SELECT 
     YEAR(data_pedido) as ano,
     MONTH(data_pedido) as mes,
@@ -456,7 +325,8 @@ GROUP BY YEAR(data_pedido), MONTH(data_pedido)
 ORDER BY ano DESC, mes DESC;
 
 -- View para estoque crítico
-CREATE OR REPLACE VIEW view_estoque_critico AS
+DROP VIEW IF EXISTS view_estoque_critico;
+CREATE VIEW view_estoque_critico AS
 SELECT 
     p.id_produto,
     p.nome,
@@ -475,12 +345,70 @@ GROUP BY p.id_produto
 ORDER BY p.estoque ASC;
 
 -- ============================================
+-- TRIGGERS
+-- ============================================
+
+DELIMITER //
+
+-- Trigger para registrar histórico de senhas
+DROP TRIGGER IF EXISTS after_cliente_senha_update;
+CREATE TRIGGER after_cliente_senha_update
+AFTER UPDATE ON clientes
+FOR EACH ROW
+BEGIN
+    IF OLD.senha != NEW.senha THEN
+        INSERT INTO historico_senhas (id_cliente, senha_antiga, ip_alteracao)
+        VALUES (NEW.id_cliente, OLD.senha, '127.0.0.1');
+    END IF;
+END//
+
+-- Trigger para atualizar estoque quando um pedido é feito
+DROP TRIGGER IF EXISTS after_pedido_insert;
+CREATE TRIGGER after_pedido_insert
+AFTER INSERT ON itens_pedido
+FOR EACH ROW
+BEGIN
+    UPDATE produto 
+    SET estoque = estoque - NEW.quantidade 
+    WHERE id_produto = NEW.id_produto;
+END//
+
+-- Trigger para restaurar estoque quando um pedido é cancelado
+DROP TRIGGER IF EXISTS after_pedido_cancel;
+CREATE TRIGGER after_pedido_cancel
+AFTER UPDATE ON pedidos
+FOR EACH ROW
+BEGIN
+    IF NEW.status = 'cancelado' AND OLD.status != 'cancelado' THEN
+        UPDATE produto p
+        JOIN itens_pedido ip ON p.id_produto = ip.id_produto
+        SET p.estoque = p.estoque + ip.quantidade
+        WHERE ip.id_pedido = NEW.id_pedido;
+    END IF;
+END//
+
+-- Trigger para logs automáticos de login
+DROP TRIGGER IF EXISTS after_funcionario_login;
+CREATE TRIGGER after_funcionario_login
+AFTER UPDATE ON funcionarios
+FOR EACH ROW
+BEGIN
+    IF NEW.ultimo_login IS NOT NULL AND (OLD.ultimo_login IS NULL OR NEW.ultimo_login != OLD.ultimo_login) THEN
+        INSERT INTO logs_sistema (id_funcionario, acao, modulo, descricao)
+        VALUES (NEW.id_funcionario, 'LOGIN', 'AUTENTICACAO', CONCAT('Login realizado por ', NEW.nome));
+    END IF;
+END//
+
+DELIMITER ;
+
+-- ============================================
 -- PROCEDURES
 -- ============================================
 
 DELIMITER //
 
 -- Procedure para calcular estatísticas de vendas
+DROP PROCEDURE IF EXISTS sp_estatisticas_vendas;
 CREATE PROCEDURE sp_estatisticas_vendas(IN data_inicio DATE, IN data_fim DATE)
 BEGIN
     SELECT 
@@ -494,6 +422,7 @@ BEGIN
 END//
 
 -- Procedure para atualizar preços por categoria
+DROP PROCEDURE IF EXISTS sp_aumento_preco_categoria;
 CREATE PROCEDURE sp_aumento_preco_categoria(IN categoria_nome VARCHAR(100), IN percentual DECIMAL(5,2))
 BEGIN
     UPDATE produto 
@@ -510,6 +439,7 @@ DELIMITER ;
 DELIMITER //
 
 -- Function para calcular idade do cliente
+DROP FUNCTION IF EXISTS fn_calcular_idade;
 CREATE FUNCTION fn_calcular_idade(data_nascimento DATE)
 RETURNS INT
 READS SQL DATA
@@ -519,6 +449,7 @@ BEGIN
 END//
 
 -- Function para verificar estoque suficiente
+DROP FUNCTION IF EXISTS fn_verificar_estoque;
 CREATE FUNCTION fn_verificar_estoque(id_prod INT, qtd INT)
 RETURNS BOOLEAN
 READS SQL DATA
@@ -536,39 +467,8 @@ DELIMITER ;
 -- ============================================
 
 -- Índices para melhor performance
-CREATE INDEX idx_produto_preco ON produto(preco);
-CREATE INDEX idx_produto_estoque ON produto(estoque);
-CREATE INDEX idx_pedidos_data_status ON pedidos(data_pedido, status);
-CREATE INDEX idx_clientes_data_cadastro ON clientes(data_cadastro);
-CREATE INDEX idx_itens_pedido_preco ON itens_pedido(preco_unitario);
-
--- ============================================
--- MENSAGEM DE SUCESSO
--- ============================================
-
-SELECT '=========================================' as separador;
-SELECT '✅ BANCO DE DADOS CRIADO COM SUCESSO!' as mensagem;
-SELECT '=========================================' as separador;
-SELECT '📊 TABELAS CRIADAS (16 tabelas):' as tabelas_title;
-SELECT '  • produto, clientes, enderecos, pedidos' as tabelas1;
-SELECT '  • itens_pedido, preferencias, avaliacoes' as tabelas2;
-SELECT '  • historico_senhas, carrinho_abandonado, cupons' as tabelas3;
-SELECT '  • funcionarios, diagnosticos, logs_sistema' as tabelas4;
-SELECT '🔧 RECURSOS ADICIONADOS:' as recursos_title;
-SELECT '  • 5 Triggers, 7 Views, 2 Procedures, 2 Functions' as recursos;
-SELECT '  • Índices otimizados, Dados de exemplo' as recursos2;
-SELECT '📝 DADOS DE EXEMPLO INSERIDOS:' as dados_title;
-SELECT '  • 10 produtos, 3 clientes, 3 pedidos' as dados1;
-SELECT '  • 3 funcionários, 3 diagnósticos, 3 cupons' as dados2;
-SELECT '👑 CREDENCIAIS PAINEL ADMIN:' as admin_title;
-SELECT '  📧 admin@ghcp.com | 🔑 admin123 (Administrador)' as admin1;
-SELECT '  📧 gerente@ghcp.com | 🔑 admin123 (Gerente)' as admin2;
-SELECT '  📧 suporte@ghcp.com | 🔑 admin123 (Suporte)' as admin3;
-SELECT '👤 CREDENCIAIS CLIENTES:' as client_title;
-SELECT '  📧 joao.silva@email.com | 🔑 123456' as client1;
-SELECT '  📧 maria.santos@email.com | 🔑 123456' as client2;
-SELECT '  📧 pedro.oliveira@email.com | 🔑 123456' as client3;
-SELECT '🚀 SISTEMA PRONTO PARA USO!' as acesso_title;
-SELECT '  🌐 Site: http://localhost:5000' as site;
-SELECT '  👑 Admin: http://localhost:5000/admin/login' as admin_site;
-SELECT '=========================================' as separador;
+CREATE INDEX IF NOT EXISTS idx_produto_preco ON produto(preco);
+CREATE INDEX IF NOT EXISTS idx_produto_estoque ON produto(estoque);
+CREATE INDEX IF NOT EXISTS idx_pedidos_data_status ON pedidos(data_pedido, status);
+CREATE INDEX IF NOT EXISTS idx_clientes_data_cadastro ON clientes(data_cadastro);
+CREATE INDEX IF NOT EXISTS idx_itens_pedido_preco ON itens_pedido(preco_unitario)

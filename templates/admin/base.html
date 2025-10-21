@@ -3,37 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Painel Administrativo GHCP - Gerenciamento completo da loja">
     <title>Admin GHCP - {% block title %}Dashboard{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
         :root {
             --primary: #0066ff;
             --primary-dark: #0052cc;
-            --secondary: #f8f9fa;
-            --dark: #1a1d29;
-            --light: #f8f9fa;
+            --primary-light: #3385ff;
+            --secondary: #f5f7fa;
+            --accent: #ff6b35;
             --success: #00d084;
-            --danger: #ff3366;
             --warning: #ffb800;
+            --danger: #ff3366;
             --info: #00b8d4;
+            --dark: #1a1d29;
+            --text: #2d3748;
+            --text-light: #718096;
             --border: #e2e8f0;
-            --shadow: 0 2px 8px rgba(0, 102, 255, 0.08);
-            --shadow-lg: 0 8px 30px rgba(0, 102, 255, 0.12);
+            --glass: rgba(255, 255, 255, 0.9);
+            --shadow-sm: 0 2px 8px rgba(0, 102, 255, 0.08);
+            --shadow: 0 8px 30px rgba(0, 102, 255, 0.12);
+            --shadow-lg: 0 20px 60px rgba(0, 102, 255, 0.2);
+            --radius: 16px;
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        .dark-theme {
+            --primary: #3385ff;
+            --primary-dark: #0066ff;
+            --primary-light: #5c9fff;
+            --secondary: #0f111a;
+            --accent: #ff7849;
+            --dark: #1a1d29;
+            --text: #e2e8f0;
+            --text-light: #a0aec0;
+            --border: #2d3748;
+            --glass: rgba(26, 29, 41, 0.9);
+            --shadow-sm: 0 2px 8px rgba(51, 133, 255, 0.15);
+            --shadow: 0 8px 30px rgba(51, 133, 255, 0.25);
+            --shadow-lg: 0 20px 60px rgba(51, 133, 255, 0.35);
         }
 
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Inter', sans-serif;
             background: var(--secondary);
-            color: var(--dark);
+            color: var(--text);
+            transition: background 0.3s ease;
             line-height: 1.6;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(0,102,255,0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255,107,53,0.05) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(0,208,132,0.03) 0%, transparent 50%);
+            z-index: -1;
+            pointer-events: none;
+        }
+        .dark-theme body::before {
+            background:
+                radial-gradient(circle at 20% 50%, rgba(51,133,255,0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255,120,73,0.08) 0%, transparent 50%);
         }
 
+        /* Layout Admin */
         .admin-container {
             display: flex;
             min-height: 100vh;
@@ -42,88 +83,135 @@
         /* Sidebar */
         .admin-sidebar {
             width: 280px;
-            background: var(--dark);
-            color: white;
+            background: var(--glass);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--shadow);
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+            transition: var(--transition);
         }
 
         .sidebar-header {
-            padding: 2rem 1.5rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            background: rgba(0,0,0,0.2);
+            padding: 24px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0,0,0,0.02);
         }
 
         .sidebar-header h2 {
-            margin-bottom: 0.5rem;
-            font-size: 1.5rem;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--info) 100%);
+            margin-bottom: 8px;
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
         .sidebar-header p {
-            opacity: 0.7;
-            font-size: 0.9rem;
+            color: var(--text-light);
+            font-size: 14px;
+            font-weight: 500;
         }
 
         .sidebar-menu {
             list-style: none;
             flex: 1;
-            padding: 1rem 0;
+            padding: 20px 0;
         }
 
         .sidebar-menu li a {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 1rem 1.5rem;
-            color: rgba(255,255,255,0.8);
+            gap: 14px;
+            padding: 16px 24px;
+            color: var(--text);
             text-decoration: none;
-            transition: all 0.3s ease;
-            border-left: 3px solid transparent;
-            font-weight: 500;
+            transition: var(--transition);
+            border-left: 4px solid transparent;
+            font-weight: 600;
+            font-size: 15px;
+            position: relative;
+            overflow: hidden;
         }
+
+        .sidebar-menu li a::before {
+            content: '';
+            position: absolute;
+            top:0; left:0;
+            width:100%; height:100%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            opacity:0;
+            transition: var(--transition);
+            z-index:-1;
+        }
+
+        .sidebar-menu li a:hover::before,
+        .sidebar-menu li a.active::before { opacity:1; }
 
         .sidebar-menu li a:hover,
         .sidebar-menu li a.active {
-            background: rgba(255,255,255,0.1);
-            color: white;
+            color:white;
             border-left-color: var(--primary);
+            transform: translateX(5px);
         }
 
         .sidebar-menu li a i {
-            font-size: 1.2rem;
-            width: 20px;
+            font-size: 18px;
+            width: 24px;
             text-align: center;
         }
 
         .sidebar-footer {
-            padding: 1.5rem;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            font-size: 0.9rem;
-            background: rgba(0,0,0,0.2);
+            padding: 20px;
+            border-top: 1px solid var(--border);
+            font-size: 14px;
+            background: rgba(0,0,0,0.02);
+        }
+
+        .user-info {
+            margin-bottom: 16px;
+        }
+
+        .user-info p {
+            margin-bottom: 4px;
+            color: var(--text);
+        }
+
+        .user-info .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: var(--primary);
+            color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .logout-btn {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            margin-top: 0.5rem;
-            padding: 0.6rem 1.2rem;
+            padding: 12px 20px;
             background: var(--danger);
             color: white;
             text-decoration: none;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: var(--transition);
+            width: 100%;
+            justify-content: center;
         }
 
         .logout-btn:hover {
             background: #e62958;
             transform: translateY(-2px);
+            box-shadow: var(--shadow);
         }
 
         /* Main Content */
@@ -131,54 +219,85 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            background: var(--secondary);
+            margin-left: 280px;
+            transition: var(--transition);
         }
 
         .admin-header {
-            background: white;
-            padding: 1.5rem 2rem;
+            background: var(--glass);
+            backdrop-filter: blur(20px) saturate(180%);
+            padding: 20px 40px;
             border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: var(--shadow);
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 99;
         }
 
         .admin-header h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--dark);
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--text);
         }
 
         .header-actions {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            color: var(--dark);
-            font-weight: 500;
+            gap: 16px;
+        }
+
+        .theme-toggle {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(180deg) scale(1.1);
+            box-shadow: var(--shadow-lg);
         }
 
         .admin-content {
             flex: 1;
-            padding: 2rem;
+            padding: 40px;
             overflow-y: auto;
+            animation: fadeIn 0.6s ease;
+        }
+
+        @keyframes fadeIn {
+            from{opacity:0; transform:translateY(30px);}
+            to{opacity:1; transform:translateY(0);}
         }
 
         /* Cards */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            gap: 24px;
+            margin-bottom: 40px;
         }
 
         .stat-card {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
+            background: var(--glass);
+            backdrop-filter: blur(20px) saturate(180%);
+            padding: 30px;
+            border-radius: var(--radius);
             box-shadow: var(--shadow);
             border-left: 4px solid var(--primary);
-            transition: all 0.3s ease;
+            transition: var(--transition);
+            border: 1px solid var(--border);
         }
 
         .stat-card:hover {
@@ -187,27 +306,28 @@
         }
 
         .stat-card h3 {
-            font-size: 0.9rem;
-            color: var(--dark);
-            opacity: 0.7;
-            margin-bottom: 0.5rem;
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 12px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            font-weight: 600;
         }
 
         .stat-card .value {
-            font-size: 2.5rem;
+            font-size: 36px;
             font-weight: 800;
             color: var(--primary);
             line-height: 1;
+            margin-bottom: 8px;
         }
 
         .stat-card .trend {
-            margin-top: 0.5rem;
-            font-size: 0.9rem;
+            font-size: 14px;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
+            font-weight: 600;
         }
 
         .trend.up { color: var(--success); }
@@ -215,15 +335,17 @@
 
         /* Tables */
         .data-table {
-            background: white;
-            border-radius: 12px;
+            background: var(--glass);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-radius: var(--radius);
             overflow: hidden;
             box-shadow: var(--shadow);
-            margin-bottom: 2rem;
+            margin-bottom: 40px;
+            border: 1px solid var(--border);
         }
 
         .table-header {
-            padding: 1.5rem 2rem;
+            padding: 24px 30px;
             border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
@@ -233,27 +355,28 @@
 
         .table-header h3 {
             margin: 0;
-            font-size: 1.3rem;
+            font-size: 20px;
             font-weight: 700;
+            color: var(--text);
         }
 
         .table-actions {
             display: flex;
-            gap: 1rem;
+            gap: 12px;
         }
 
         .btn {
-            padding: 0.7rem 1.5rem;
+            padding: 12px 20px;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 8px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 14px;
             font-weight: 600;
-            transition: all 0.3s ease;
+            transition: var(--transition);
         }
 
         .btn:hover {
@@ -291,8 +414,8 @@
         }
 
         .btn-sm {
-            padding: 0.4rem 0.8rem;
-            font-size: 0.8rem;
+            padding: 8px 14px;
+            font-size: 13px;
         }
 
         table {
@@ -301,7 +424,7 @@
         }
 
         th, td {
-            padding: 1.2rem 1.5rem;
+            padding: 18px 24px;
             text-align: left;
             border-bottom: 1px solid var(--border);
         }
@@ -309,8 +432,8 @@
         th {
             background: rgba(0,102,255,0.05);
             font-weight: 600;
-            color: var(--dark);
-            font-size: 0.9rem;
+            color: var(--text);
+            font-size: 14px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -320,9 +443,9 @@
         }
 
         .badge {
-            padding: 0.3rem 0.8rem;
+            padding: 6px 12px;
             border-radius: 20px;
-            font-size: 0.8rem;
+            font-size: 12px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -336,22 +459,24 @@
 
         /* Forms */
         .form-container {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
+            background: var(--glass);
+            backdrop-filter: blur(20px) saturate(180%);
+            padding: 40px;
+            border-radius: var(--radius);
             box-shadow: var(--shadow);
             max-width: 800px;
             margin: 0 auto;
+            border: 1px solid var(--border);
         }
 
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
+            gap: 24px;
         }
 
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 24px;
         }
 
         .form-group.full-width {
@@ -360,18 +485,20 @@
 
         .form-group label {
             display: block;
-            margin-bottom: 0.5rem;
+            margin-bottom: 8px;
             font-weight: 600;
-            color: var(--dark);
+            color: var(--text);
         }
 
         .form-control {
             width: 100%;
-            padding: 0.9rem 1rem;
+            padding: 14px 16px;
             border: 2px solid var(--border);
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: var(--transition);
+            background: var(--secondary);
+            color: var(--text);
         }
 
         .form-control:focus {
@@ -388,94 +515,64 @@
         .form-actions {
             grid-column: 1 / -1;
             display: flex;
-            gap: 1rem;
+            gap: 16px;
             justify-content: flex-end;
-            margin-top: 2rem;
-            padding-top: 1.5rem;
+            margin-top: 32px;
+            padding-top: 24px;
             border-top: 1px solid var(--border);
         }
 
         /* Flash messages */
         .flash-messages {
-            margin-bottom: 2rem;
+            margin-bottom: 32px;
         }
 
         .flash {
-            padding: 1.2rem 1.5rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
+            padding: 18px 24px;
+            border-radius: 12px;
+            margin-bottom: 16px;
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 14px;
             font-weight: 600;
             border-left: 4px solid;
+            box-shadow: var(--shadow-sm);
+            animation: slideIn 0.4s ease;
+        }
+
+        @keyframes slideIn {
+            from{opacity:0; transform:translateX(-30px);}
+            to{opacity:1; transform:translateX(0);}
         }
 
         .flash-success {
-            background: rgba(0,208,132,0.1);
-            color: #00a56e;
-            border-color: var(--success);
+            background: linear-gradient(135deg,var(--success) 0%,#00b36e 100%);
+            color: white; border-color:#00995c;
         }
 
         .flash-error {
-            background: rgba(255,51,102,0.1);
-            color: #e62958;
-            border-color: var(--danger);
+            background: linear-gradient(135deg,var(--danger) 0%,#e62958 100%);
+            color: white; border-color:#cc0033;
         }
 
         .flash-warning {
-            background: rgba(255,184,0,0.1);
-            color: #e6a700;
-            border-color: var(--warning);
+            background: linear-gradient(135deg,var(--warning) 0%,#e6a700 100%);
+            color: white; border-color:#cc9900;
         }
 
         .flash-info {
-            background: rgba(0,184,212,0.1);
-            color: #009fb7;
-            border-color: var(--info);
-        }
-
-        /* Login page */
-        .login-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--info) 100%);
-            padding: 2rem;
-        }
-
-        .login-box {
-            background: white;
-            padding: 3rem;
-            border-radius: 16px;
-            box-shadow: var(--shadow-lg);
-            width: 100%;
-            max-width: 420px;
-        }
-
-        .login-box h1 {
-            text-align: center;
-            margin-bottom: 0.5rem;
-            color: var(--dark);
-            font-size: 2rem;
-            font-weight: 800;
-        }
-
-        .login-subtitle {
-            text-align: center;
-            color: var(--dark);
-            opacity: 0.7;
-            margin-bottom: 2rem;
+            background: linear-gradient(135deg,var(--info) 0%,#009fb7 100%);
+            color: white; border-color:#0086a0;
         }
 
         /* Image upload */
         .image-upload {
             border: 2px dashed var(--border);
-            border-radius: 8px;
-            padding: 2rem;
+            border-radius: 10px;
+            padding: 32px;
             text-align: center;
-            transition: all 0.3s ease;
+            transition: var(--transition);
+            background: var(--secondary);
         }
 
         .image-upload:hover {
@@ -485,14 +582,15 @@
         .image-preview {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
+            gap: 16px;
+            margin-top: 16px;
         }
 
         .preview-item {
             position: relative;
-            border-radius: 8px;
+            border-radius: 10px;
             overflow: hidden;
+            box-shadow: var(--shadow-sm);
         }
 
         .preview-item img {
@@ -503,67 +601,92 @@
 
         .preview-remove {
             position: absolute;
-            top: 5px;
-            right: 5px;
+            top: 8px;
+            right: 8px;
             background: var(--danger);
             color: white;
             border: none;
             border-radius: 50%;
-            width: 24px;
-            height: 24px;
+            width: 28px;
+            height: 28px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: var(--transition);
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .admin-container {
-                flex-direction: column;
-            }
+        .preview-remove:hover {
+            transform: scale(1.1);
+        }
 
+        /* Mobile */
+        .menu-toggle {
+            display: none;
+            background: var(--primary);
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 968px) {
             .admin-sidebar {
-                width: 100%;
-                position: fixed;
-                height: 100vh;
-                z-index: 1000;
                 transform: translateX(-100%);
-                transition: transform 0.3s ease;
             }
-
+            
             .admin-sidebar.active {
                 transform: translateX(0);
             }
-
+            
             .admin-main {
                 margin-left: 0;
             }
-
+            
+            .menu-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
             .form-grid {
                 grid-template-columns: 1fr;
             }
-
+            
             .stats-grid {
                 grid-template-columns: 1fr;
             }
-
+            
             .table-header {
                 flex-direction: column;
-                gap: 1rem;
+                gap: 16px;
                 align-items: flex-start;
             }
-
+            
             .table-actions {
                 width: 100%;
                 justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+            
+            .admin-content {
+                padding: 24px;
+            }
+            
+            .admin-header {
+                padding: 16px 24px;
             }
         }
     </style>
 </head>
 <body>
     <div class="admin-container">
-        <nav class="admin-sidebar">
+        <nav class="admin-sidebar" id="adminSidebar">
             <div class="sidebar-header">
                 <h2>🏠 GHCP Admin</h2>
                 <p>Painel Administrativo</p>
@@ -591,8 +714,10 @@
                 {% endif %}
             </ul>
             <div class="sidebar-footer">
-                <p>Logado como: <strong>{{ session.get('admin_nome') }}</strong></p>
-                <p>Cargo: <strong>{{ session.get('admin_cargo')|title }}</strong></p>
+                <div class="user-info">
+                    <p><strong>{{ session.get('admin_nome') }}</strong></p>
+                    <p><span class="badge">{{ session.get('admin_cargo')|title }}</span></p>
+                </div>
                 <a href="{{ url_for('admin_logout') }}" class="logout-btn">
                     🚪 Sair
                 </a>
@@ -601,10 +726,10 @@
 
         <main class="admin-main">
             <header class="admin-header">
+                <button class="menu-toggle" id="menuToggle">☰</button>
                 <h1>{% block page_title %}Dashboard{% endblock %}</h1>
                 <div class="header-actions">
-                    <span>{{ session.get('admin_nome') }}</span>
-                    <span class="badge badge-primary">{{ session.get('admin_cargo')|title }}</span>
+                    <button class="theme-toggle" id="themeToggle" aria-label="Alternar tema">🌙</button>
                 </div>
             </header>
 
@@ -632,13 +757,40 @@
     </div>
 
     <script>
-        // Auto-remove flash messages after 5 seconds
-        setTimeout(() => {
-            document.querySelectorAll('.flash').forEach(flash => {
-                flash.style.opacity = '0';
-                flash.style.transition = 'opacity 0.5s ease';
-                setTimeout(() => flash.remove(), 500);
-            });
+        // Tema
+        const themeToggle = document.getElementById('themeToggle');
+        const menuToggle = document.getElementById('menuToggle');
+        const adminSidebar = document.getElementById('adminSidebar');
+
+        const currentTheme = sessionStorage.getItem('theme') || 'light';
+        if(currentTheme === 'dark'){ 
+            document.documentElement.classList.add('dark-theme'); 
+            themeToggle.textContent='☀️'; 
+        }
+
+        themeToggle.addEventListener('click', ()=>{
+            document.documentElement.classList.toggle('dark-theme');
+            if(document.documentElement.classList.contains('dark-theme')) {
+                themeToggle.textContent='☀️';
+                sessionStorage.setItem('theme','dark');
+            } else {
+                themeToggle.textContent='🌙';
+                sessionStorage.setItem('theme','light');
+            }
+        });
+
+        // Menu mobile
+        menuToggle.addEventListener('click', ()=>{
+            adminSidebar.classList.toggle('active');
+        });
+
+        // Auto remover flash
+        setTimeout(()=>{ 
+            document.querySelectorAll('.flash').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transition = 'opacity 0.5s ease';
+                setTimeout(() => el.remove(), 500);
+            }); 
         }, 5000);
     </script>
 </body>

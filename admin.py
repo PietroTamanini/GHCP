@@ -464,7 +464,7 @@ def admin_detalhes_cliente(id_cliente):
         """, (id_cliente,))
         enderecos = cursor.fetchall()
         
-        return render_template('admin/cliente_detalhes.html', 
+        return render_template('admin/clientes_detalhes.html', 
                              cliente=cliente, 
                              pedidos=pedidos, 
                              enderecos=enderecos)
