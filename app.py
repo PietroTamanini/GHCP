@@ -17,7 +17,7 @@ app.secret_key = 'GHCP-2o25'
 
 DB_CONFIG = {
     'host': 'localhost',
-    'port': '3307',
+    'port': '3306',
     'user': 'root',
     'password': '',  # ⚠️ Coloque sua senha do MySQL aqui
     'database': 'loja_informatica'
