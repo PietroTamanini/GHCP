@@ -1,0 +1,192 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}📊 Dashboard Administrativo{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <h3>Total de Clientes</h3>
+        <div class="value">{{ total_clientes }}</div>
+        <div class="trend up">📈 +12% este mês</div>
+    </div>
+
+    <div class="stat-card">
+        <h3>Total de Produtos</h3>
+        <div class="value">{{ total_produtos }}</div>
+        <div class="trend up">📈 +5% este mês</div>
+    </div>
+
+    <div class="stat-card">
+        <h3>Pedidos Hoje</h3>
+        <div class="value">{{ pedidos_hoje }}</div>
+        <div class="trend up">📈 Ativos</div>
+    </div>
+
+    <div class="stat-card">
+        <h3>Receita Hoje</h3>
+        <div class="value">R$ {{ "%.2f"|format(receita_hoje) }}</div>
+        <div class="trend up">📈 +8% vs ontem</div>
+    </div>
+
+    <div class="stat-card">
+        <h3>Diagnósticos Pendentes</h3>
+        <div class="value">{{ diagnosticos_pendentes }}</div>
+        <div class="trend down">📉 Necessita atenção</div>
+    </div>
+
+    <div class="stat-card">
+        <h3>Taxa de Conversão</h3>
+        <div class="value">4.2%</div>
+        <div class="trend up">📈 Acima da média</div>
+    </div>
+</div>
+
+<div class="data-table">
+    <div class="table-header">
+        <h3>⚠️ Produtos com Estoque Baixo</h3>
+        <div class="table-actions">
+            <a href="{{ url_for('admin_produtos') }}" class="btn btn-primary">Ver Todos os Produtos</a>
+        </div>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Produto</th>
+                <th>Marca</th>
+                <th>Categoria</th>
+                <th>Estoque</th>
+                <th>Preço</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for produto in estoque_baixo %}
+            <tr>
+                <td><strong>{{ produto.nome }}</strong></td>
+                <td>{{ produto.marca }}</td>
+                <td>{{ produto.categoria }}</td>
+                <td>
+                    <span class="badge {% if produto.estoque <= 2 %}badge-danger{% else %}badge-warning{% endif %}">
+                        {{ produto.estoque }} unidades
+                    </span>
+                </td>
+                <td>R$ {{ "%.2f"|format(produto.preco) }}</td>
+                <td>
+                    <a href="{{ url_for('admin_editar_produto', id_produto=produto.id_produto) }}" class="btn btn-sm btn-primary">Editar</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 2rem;">
+                    🎉 Todos os produtos com estoque adequado!
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+    <!-- Pedidos Recentes -->
+    <div class="data-table">
+        <div class="table-header">
+            <h3>📦 Pedidos Recentes</h3>
+            <div class="table-actions">
+                <a href="{{ url_for('admin_relatorios') }}" class="btn btn-sm btn-info">Ver Relatórios</a>
+            </div>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Pedido</th>
+                    <th>Cliente</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pedido in pedidos_recentes %}
+                <tr>
+                    <td><strong>#{{ pedido.id_pedido }}</strong></td>
+                    <td>{{ pedido.cliente_nome }}</td>
+                    <td>R$ {{ "%.2f"|format(pedido.total) }}</td>
+                    <td>
+                        <span class="badge 
+                            {% if pedido.status == 'entregue' %}badge-success
+                            {% elif pedido.status == 'pendente' %}badge-warning
+                            {% elif pedido.status == 'cancelado' %}badge-danger
+                            {% else %}badge-info{% endif %}">
+                            {{ pedido.status|title }}
+                        </span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 1rem;">
+                        Nenhum pedido recente
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Diagnósticos Recentes -->
+    <div class="data-table">
+        <div class="table-header">
+            <h3>🔧 Diagnósticos Recentes</h3>
+            <div class="table-actions">
+                <a href="{{ url_for('admin_diagnosticos') }}" class="btn btn-sm btn-info">Ver Todos</a>
+            </div>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Equipamento</th>
+                    <th>Cliente</th>
+                    <th>Data</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for diagnostico in diagnosticos_recentes %}
+                <tr>
+                    <td><strong>{{ diagnostico.tipo_equipamento }}</strong></td>
+                    <td>{{ diagnostico.nome_cliente }}</td>
+                    <td>{{ diagnostico.data_entrada.strftime('%d/%m/%Y') }}</td>
+                    <td>
+                        <span class="badge 
+                            {% if diagnostico.status == 'concluido' %}badge-success
+                            {% elif diagnostico.status == 'recebido' %}badge-warning
+                            {% elif diagnostico.status == 'em_analise' %}badge-info
+                            {% else %}badge-primary{% endif %}">
+                            {{ diagnostico.status|replace('_', ' ')|title }}
+                        </span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 1rem;">
+                        Nenhum diagnóstico recente
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .stats-grid {
+        margin-bottom: 3rem;
+    }
+    
+    .data-table {
+        margin-bottom: 0;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,192 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Cliente {{ cliente.nome }}{% endblock %}
+{% block page_title %}👤 Detalhes do Cliente: {{ cliente.nome }}{% endblock %}
+
+{% block content %}
+<div style="display: grid; gap: 2rem;">
+    <!-- Informações Pessoais -->
+    <div class="form-container">
+        <h3 style="margin-bottom: 1.5rem; color: var(--primary);">📋 Informações Pessoais</h3>
+        
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Nome Completo</label>
+                <div class="form-control" style="background: var(--secondary);">{{ cliente.nome }}</div>
+            </div>
+
+            <div class="form-group">
+                <label>E-mail</label>
+                <div class="form-control" style="background: var(--secondary);">{{ cliente.email }}</div>
+            </div>
+
+            <div class="form-group">
+                <label>CPF</label>
+                <div class="form-control" style="background: var(--secondary);">{{ cliente.cpf }}</div>
+            </div>
+
+            <div class="form-group">
+                <label>Telefone</label>
+                <div class="form-control" style="background: var(--secondary);">
+                    {{ cliente.telefone or 'Não informado' }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Data de Nascimento</label>
+                <div class="form-control" style="background: var(--secondary);">
+                    {{ cliente.data_nascimento.strftime('%d/%m/%Y') if cliente.data_nascimento else 'Não informada' }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Gênero</label>
+                <div class="form-control" style="background: var(--secondary);">
+                    {% if cliente.genero == 'M' %}Masculino
+                    {% elif cliente.genero == 'F' %}Feminino
+                    {% elif cliente.genero == 'O' %}Outro
+                    {% else %}Não informado
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Data de Cadastro</label>
+                <div class="form-control" style="background: var(--secondary);">
+                    {{ cliente.data_cadastro.strftime('%d/%m/%Y às %H:%M') }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Status</label>
+                <div>
+                    <span class="badge {% if cliente.ativo %}badge-success{% else %}badge-danger{% endif %}">
+                        {{ 'Ativo' if cliente.ativo else 'Inativo' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estatísticas -->
+        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+            <h4 style="margin-bottom: 1rem; color: var(--primary);">📊 Estatísticas</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div style="text-align: center; padding: 1rem; background: rgba(0,102,255,0.05); border-radius: 8px;">
+                    <div style="font-size: 2rem; font-weight: 800; color: var(--primary);">
+                        {{ cliente.total_pedidos or 0 }}
+                    </div>
+                    <div style="font-size: 0.9rem; opacity: 0.7;">Total de Pedidos</div>
+                </div>
+                <div style="text-align: center; padding: 1rem; background: rgba(0,208,132,0.05); border-radius: 8px;">
+                    <div style="font-size: 2rem; font-weight: 800; color: var(--success);">
+                        R$ {{ "%.2f"|format(cliente.total_gasto or 0) }}
+                    </div>
+                    <div style="font-size: 0.9rem; opacity: 0.7;">Total Gasto</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Endereços -->
+    <div class="form-container">
+        <h3 style="margin-bottom: 1.5rem; color: var(--primary);">📍 Endereços Cadastrados</h3>
+        
+        {% if enderecos %}
+        <div style="display: grid; gap: 1rem;">
+            {% for endereco in enderecos %}
+            <div style="padding: 1.5rem; border: 1px solid var(--border); border-radius: 8px; background: var(--secondary);">
+                <div style="display: flex; justify-content: between; align-items: start; margin-bottom: 1rem;">
+                    <div>
+                        <strong>{{ endereco.tipo }}</strong>
+                        {% if endereco.principal %}
+                        <span class="badge badge-primary" style="margin-left: 0.5rem;">Principal</span>
+                        {% endif %}
+                    </div>
+                    <div style="opacity: 0.7; font-size: 0.9rem;">
+                        {{ endereco.data_criacao.strftime('%d/%m/%Y') }}
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <strong>Destinatário:</strong> {{ endereco.destinatario }}
+                    </div>
+                    <div>
+                        <strong>CEP:</strong> {{ endereco.cep }}
+                    </div>
+                    <div>
+                        <strong>Endereço:</strong> {{ endereco.rua }}, {{ endereco.numero }}
+                    </div>
+                    <div>
+                        <strong>Bairro:</strong> {{ endereco.bairro }}
+                    </div>
+                    <div>
+                        <strong>Cidade:</strong> {{ endereco.cidade }}/{{ endereco.estado }}
+                    </div>
+                    {% if endereco.complemento %}
+                    <div>
+                        <strong>Complemento:</strong> {{ endereco.complemento }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 2rem; opacity: 0.7;">
+            📭 Nenhum endereço cadastrado
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Histórico de Pedidos -->
+    <div class="form-container">
+        <h3 style="margin-bottom: 1.5rem; color: var(--primary);">📦 Histórico de Pedidos</h3>
+        
+        {% if pedidos %}
+        <div class="data-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Pedido</th>
+                        <th>Data</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Pagamento</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pedido in pedidos %}
+                    <tr>
+                        <td><strong>#{{ pedido.id_pedido }}</strong></td>
+                        <td>{{ pedido.data_pedido.strftime('%d/%m/%Y') }}</td>
+                        <td><strong>R$ {{ "%.2f"|format(pedido.total) }}</strong></td>
+                        <td>
+                            <span class="badge 
+                                {% if pedido.status == 'entregue' %}badge-success
+                                {% elif pedido.status == 'pendente' %}badge-warning
+                                {% elif pedido.status == 'cancelado' %}badge-danger
+                                {% else %}badge-info{% endif %}">
+                                {{ pedido.status|title }}
+                            </span>
+                        </td>
+                        <td>{{ pedido.forma_pagamento or 'Não informado' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 2rem; opacity: 0.7;">
+            📦 Nenhum pedido realizado
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div style="margin-top: 2rem; text-align: center;">
+    <a href="{{ url_for('admin_clientes') }}" class="btn btn-primary">
+        ↩️ Voltar para Lista de Clientes
+    </a>
+</div>
+{% endblock %}

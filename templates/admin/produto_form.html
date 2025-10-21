@@ -1,0 +1,207 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ 'Editar' if produto else 'Novo' }} Produto{% endblock %}
+{% block page_title %}{{ '✏️ Editar' if produto else '➕ Novo' }} Produto{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <form method="POST" enctype="multipart/form-data">
+        <div class="form-grid">
+            <!-- Informações Básicas -->
+            <div class="form-group full-width">
+                <h3 style="margin-bottom: 1rem; color: var(--primary);">📝 Informações Básicas</h3>
+            </div>
+
+            <div class="form-group">
+                <label for="nome">📛 Nome do Produto *</label>
+                <input type="text" id="nome" name="nome" class="form-control" 
+                       value="{{ produto.nome if produto }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="marca">🏷️ Marca *</label>
+                <input type="text" id="marca" name="marca" class="form-control" 
+                       value="{{ produto.marca if produto }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="categoria">📂 Categoria *</label>
+                <input type="text" id="categoria" name="categoria" class="form-control" 
+                       value="{{ produto.categoria if produto }}" 
+                       placeholder="Ex: Notebooks, Periféricos, Hardware..." required>
+            </div>
+
+            <div class="form-group">
+                <label for="preco">💰 Preço *</label>
+                <input type="number" id="preco" name="preco" class="form-control" step="0.01" min="0"
+                       value="{{ "%.2f"|format(produto.preco) if produto }}" required>
+            </div>
+
+            <!-- Estoque e Status -->
+            <div class="form-group">
+                <label for="estoque">📦 Estoque *</label>
+                <input type="number" id="estoque" name="estoque" class="form-control" min="0"
+                       value="{{ produto.estoque if produto }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="peso">⚖️ Peso (kg)</label>
+                <input type="number" id="peso" name="peso" class="form-control" step="0.01" min="0"
+                       value="{{ produto.peso if produto }}">
+            </div>
+
+            <div class="form-group">
+                <label for="dimensoes">📏 Dimensões (LxAxP)</label>
+                <input type="text" id="dimensoes" name="dimensoes" class="form-control" 
+                       value="{{ produto.dimensoes if produto }}" 
+                       placeholder="Ex: 30x20x10 cm">
+            </div>
+
+            <!-- Configurações -->
+            <div class="form-group full-width">
+                <h3 style="margin-bottom: 1rem; color: var(--primary);">⚙️ Configurações</h3>
+            </div>
+
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" name="destaque" {{ 'checked' if produto and produto.destaque }}>
+                    ⭐ Produto em Destaque
+                </label>
+            </div>
+
+            {% if produto %}
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" name="ativo" {{ 'checked' if produto.ativo }}>
+                    ✅ Produto Ativo
+                </label>
+            </div>
+            {% endif %}
+
+            <!-- Descrição -->
+            <div class="form-group full-width">
+                <label for="descricao">📄 Descrição do Produto</label>
+                <textarea id="descricao" name="descricao" class="form-control" 
+                          placeholder="Descreva as características, especificações e benefícios do produto...">{{ produto.descricao if produto }}</textarea>
+            </div>
+
+            <!-- Upload de Imagens -->
+            <div class="form-group full-width">
+                <h3 style="margin-bottom: 1rem; color: var(--primary);">🖼️ Imagens do Produto</h3>
+                
+                <div class="image-upload">
+                    <input type="file" id="imagens" name="imagens" multiple 
+                           accept="image/*" class="form-control">
+                    <p style="margin-top: 0.5rem; opacity: 0.7; font-size: 0.9rem;">
+                        📎 Selecione múltiplas imagens (PNG, JPG, JPEG, GIF, WEBP)
+                    </p>
+                </div>
+
+                <!-- Preview de Imagens Existentes -->
+                {% if produto and produto.imagens %}
+                <div class="image-preview">
+                    {% for imagem in produto.imagens %}
+                    <div class="preview-item">
+                        <img src="{{ url_for('static', filename='uploads/produtos/' + imagem) }}" 
+                             alt="Imagem do produto">
+                        <button type="button" class="preview-remove" 
+                                onclick="removerImagem('{{ imagem }}')">×</button>
+                        <input type="hidden" name="imagens_manter" value="{{ imagem }}">
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{{ url_for('admin_produtos') }}" class="btn btn-warning">
+                ↩️ Cancelar
+            </a>
+            <button type="submit" class="btn btn-primary">
+                💾 {{ 'Atualizar' if produto else 'Cadastrar' }} Produto
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+function removerImagem(imagem) {
+    const previewItem = event.target.closest('.preview-item');
+    previewItem.remove();
+    
+    // Adicionar input hidden para marcar imagem para remoção
+    const form = document.querySelector('form');
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'imagens_remover';
+    input.value = imagem;
+    form.appendChild(input);
+}
+
+// Preview de novas imagens
+document.getElementById('imagens').addEventListener('change', function(e) {
+    const preview = document.querySelector('.image-preview') || createPreviewContainer();
+    
+    Array.from(e.target.files).forEach(file => {
+        if (!file.type.startsWith('image/')) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const previewItem = document.createElement('div');
+            previewItem.className = 'preview-item';
+            previewItem.innerHTML = `
+                <img src="${e.target.result}" alt="Preview">
+                <button type="button" class="preview-remove" onclick="this.parentElement.remove()">×</button>
+            `;
+            preview.appendChild(previewItem);
+        };
+        reader.readAsDataURL(file);
+    });
+});
+
+function createPreviewContainer() {
+    const container = document.createElement('div');
+    container.className = 'image-preview';
+    document.querySelector('.image-upload').after(container);
+    return container;
+}
+</script>
+
+<style>
+.image-preview {
+    margin-top: 1.5rem;
+}
+
+.preview-item {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.preview-item img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+}
+
+.preview-remove {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: var(--danger);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+}
+</style>
+{% endblock %}

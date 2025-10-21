@@ -1,0 +1,208 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Relatórios{% endblock %}
+{% block page_title %}📈 Relatórios e Estatísticas{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <h3>Receita Mensal</h3>
+        <div class="value">R$ {{ "%.2f"|format(relatorios_mensais[0].receita_total if relatorios_mensais else 0) }}</div>
+        <div class="trend up">📈 Mês atual</div>
+    </div>
+
+    <div class="stat-card">
+        <h3>Pedidos Mensais</h3>
+        <div class="value">{{ relatorios_mensais[0].total_pedidos if relatorios_mensais else 0 }}</div>
+        <div class="trend up">📈 Mês atual</div>
+    </div>
+
+    <div class="stat-card">
+        <h3>Ticket Médio</h3>
+        <div class="value">R$ {{ "%.2f"|format(relatorios_mensais[0].ticket_medio if relatorios_mensais else 0) }}</div>
+        <div class="trend up">📈 Mês atual</div>
+    </div>
+
+    <div class="stat-card">
+        <h3>Clientes Únicos</h3>
+        <div class="value">{{ relatorios_mensais[0].clientes_unicos if relatorios_mensais else 0 }}</div>
+        <div class="trend up">📈 Mês atual</div>
+    </div>
+</div>
+
+<!-- Relatórios Mensais -->
+<div class="data-table">
+    <div class="table-header">
+        <h3>📅 Relatório Mensal (Últimos 12 meses)</h3>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Mês/Ano</th>
+                <th>Pedidos</th>
+                <th>Receita Total</th>
+                <th>Ticket Médio</th>
+                <th>Clientes Únicos</th>
+                <th>Cancelamentos</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for relatorio in relatorios_mensais %}
+            <tr>
+                <td><strong>{{ "%02d"|format(relatorio.mes) }}/{{ relatorio.ano }}</strong></td>
+                <td>{{ relatorio.total_pedidos }}</td>
+                <td><strong>R$ {{ "%.2f"|format(relatorio.receita_total) }}</strong></td>
+                <td>R$ {{ "%.2f"|format(relatorio.ticket_medio) }}</td>
+                <td>{{ relatorio.clientes_unicos }}</td>
+                <td>
+                    <span class="badge {% if relatorio.pedidos_cancelados > 5 %}badge-danger{% else %}badge-warning{% endif %}">
+                        {{ relatorio.pedidos_cancelados }}
+                    </span>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 3rem;">
+                    <div style="font-size: 1.2rem; margin-bottom: 1rem;">📊</div>
+                    <h3>Nenhum dado disponível</h3>
+                    <p style="opacity: 0.7;">Os relatórios serão gerados automaticamente</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem;">
+    <!-- Produtos Mais Vendidos -->
+    <div class="data-table">
+        <div class="table-header">
+            <h3>🏆 Produtos Mais Vendidos</h3>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Produto</th>
+                    <th>Marca</th>
+                    <th>Vendas</th>
+                    <th>Receita</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for produto in produtos_mais_vendidos %}
+                <tr>
+                    <td><strong>{{ produto.nome }}</strong></td>
+                    <td>{{ produto.marca }}</td>
+                    <td>
+                        <span class="badge badge-primary">{{ produto.total_vendido }} un</span>
+                    </td>
+                    <td><strong>R$ {{ "%.2f"|format(produto.receita_total) }}</strong></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 2rem; opacity: 0.7;">
+                        Nenhum dado de vendas
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Clientes Mais Ativos -->
+    <div class="data-table">
+        <div class="table-header">
+            <h3>⭐ Clientes Mais Ativos</h3>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th>Pedidos</th>
+                    <th>Total Gasto</th>
+                    <th>Última Compra</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cliente in clientes_ativos %}
+                <tr>
+                    <td><strong>{{ cliente.nome }}</strong></td>
+                    <td>{{ cliente.total_pedidos }}</td>
+                    <td><strong>R$ {{ "%.2f"|format(cliente.total_gasto) }}</strong></td>
+                    <td>
+                        {% if cliente.ultima_compra %}
+                        {{ cliente.ultima_compra.strftime('%d/%m/%Y') }}
+                        {% else %}
+                        <span style="opacity: 0.5;">Nunca comprou</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 2rem; opacity: 0.7;">
+                        Nenhum cliente ativo
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Estoque Crítico -->
+<div class="data-table" style="margin-top: 2rem;">
+    <div class="table-header">
+        <h3>⚠️ Estoque Crítico (≤ 10 unidades)</h3>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Produto</th>
+                <th>Marca</th>
+                <th>Categoria</th>
+                <th>Estoque</th>
+                <th>Vendas (30 dias)</th>
+                <th>Preço</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for produto in estoque_critico %}
+            <tr>
+                <td><strong>{{ produto.nome }}</strong></td>
+                <td>{{ produto.marca }}</td>
+                <td>{{ produto.categoria }}</td>
+                <td>
+                    <span class="badge {% if produto.estoque <= 2 %}badge-danger{% else %}badge-warning{% endif %}">
+                        {{ produto.estoque }} un
+                    </span>
+                </td>
+                <td>{{ produto.vendas_mes or 0 }} un</td>
+                <td><strong>R$ {{ "%.2f"|format(produto.preco) }}</strong></td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 2rem;">
+                    <div style="font-size: 1.2rem; margin-bottom: 1rem;">🎉</div>
+                    <h3>Estoque em dia!</h3>
+                    <p style="opacity: 0.7;">Nenhum produto com estoque crítico</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+.stats-grid {
+    margin-bottom: 3rem;
+}
+
+.data-table {
+    margin-bottom: 0;
+}
+</style>
+{% endblock %}

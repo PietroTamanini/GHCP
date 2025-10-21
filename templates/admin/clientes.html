@@ -1,0 +1,86 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Clientes{% endblock %}
+{% block page_title %}👥 Gerenciar Clientes{% endblock %}
+
+{% block content %}
+<div class="data-table">
+    <div class="table-header">
+        <h3>Lista de Clientes</h3>
+        <div class="table-actions">
+            <form method="GET" style="display: flex; gap: 1rem;">
+                <input type="text" name="busca" value="{{ request.args.get('busca', '') }}" 
+                       class="form-control" placeholder="Buscar cliente..." style="width: 300px;">
+                <button type="submit" class="btn btn-primary">🔍 Buscar</button>
+                {% if request.args.get('busca') %}
+                <a href="{{ url_for('admin_clientes') }}" class="btn btn-warning">🔄 Limpar</a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Contato</th>
+                <th>CPF</th>
+                <th>Data Cadastro</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cliente in clientes %}
+            <tr>
+                <td><strong>#{{ cliente.id_cliente }}</strong></td>
+                <td>
+                    <div>
+                        <strong>{{ cliente.nome }}</strong>
+                        {% if cliente.genero %}
+                        <span style="opacity: 0.7; font-size: 0.9rem;">
+                            ({{ 'Masculino' if cliente.genero == 'M' else 'Feminino' if cliente.genero == 'F' else 'Outro' }})
+                        </span>
+                        {% endif %}
+                    </div>
+                </td>
+                <td>
+                    <div>{{ cliente.email }}</div>
+                    {% if cliente.telefone %}
+                    <div style="font-size: 0.9rem; opacity: 0.7;">{{ cliente.telefone }}</div>
+                    {% endif %}
+                </td>
+                <td>{{ cliente.cpf }}</td>
+                <td>{{ cliente.data_cadastro.strftime('%d/%m/%Y') }}</td>
+                <td>
+                    <span class="badge {% if cliente.ativo %}badge-success{% else %}badge-danger{% endif %}">
+                        {{ 'Ativo' if cliente.ativo else 'Inativo' }}
+                    </span>
+                </td>
+                <td>
+                    <a href="{{ url_for('admin_detalhes_cliente', id_cliente=cliente.id_cliente) }}" 
+                       class="btn btn-sm btn-primary">
+                        👁️ Detalhes
+                    </a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 3rem;">
+                    <div style="font-size: 1.2rem; margin-bottom: 1rem;">👥</div>
+                    <h3>Nenhum cliente encontrado</h3>
+                    <p style="opacity: 0.7;">{{ 'Tente ajustar os termos da busca' if request.args.get('busca') else 'Ainda não há clientes cadastrados' }}</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if clientes %}
+<div style="margin-top: 1.5rem; text-align: center; color: var(--dark); opacity: 0.7;">
+    Mostrando <strong>{{ clientes|length }}</strong> cliente(s)
+</div>
+{% endif %}
+{% endblock %}

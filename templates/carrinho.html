@@ -1,164 +1,180 @@
-{%- extends 'base.html' -%}
-{%- set titulo = titulo -%}
-{%- block conteudo -%}
+{% extends 'base.html' %}
+{% set titulo = "Carrinho de Compras" %}
+{% block conteudo %}
 
 <style>
-.cart-header {
-    background-color: var(--primary-light);
-    color: var(--primary-dark);
-    padding: 20px;
-    border-radius: var(--radius);
-    margin-bottom: 30px;
-    text-align: center;
-    box-shadow: var(--shadow-sm);
-}
-.cart-header h1 {
-    font-size: 2.5rem;
-    margin: 0;
-}
-.cart-item {
-    background: var(--glass);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    box-shadow: var(--shadow-sm);
-}
-.item-details {
-    flex-grow: 1;
-    padding-right: 20px;
-}
-.item-details h4 {
-    margin-top: 0;
-    font-size: 1.2rem;
-    color: var(--primary-dark);
-}
-.item-details p {
-    margin: 0;
-    font-size: 0.9rem;
-    color: var(--text-light);
-}
-.item-price, .item-subtotal {
-    font-weight: bold;
-    width: 120px;
-    text-align: right;
-}
-.item-quantity {
-    width: 150px;
-    text-align: center;
-}
-.item-quantity input {
-    width: 70px;
-    text-align: center;
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 5px;
-}
-.cart-summary {
-    background-color: var(--secondary);
-    border-radius: var(--radius);
-    padding: 25px;
-    box-shadow: var(--shadow-lg);
-}
-.cart-summary h3 {
-    color: var(--primary-dark);
-    border-bottom: 2px solid var(--primary);
-    padding-bottom: 10px;
-    margin-top: 0;
-}
-.summary-line {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    font-size: 1.1rem;
-}
-.total-line {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: var(--danger);
-    border-top: 1px solid var(--border);
-    padding-top: 15px;
-    margin-top: 10px;
-}
-.empty-cart {
-    background: var(--secondary);
-    border-radius: var(--radius);
-    padding: 50px;
-    text-align: center;
-    color: var(--text);
-}
+    .cart-container {
+        max-width: 900px;
+        margin: 50px auto;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+    }
+
+    .cart-title {
+        text-align: center;
+        color: var(--primary-dark);
+        margin-bottom: 30px;
+    }
+
+    .cart-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #eee;
+        padding: 15px 0;
+    }
+
+    .cart-item:last-child {
+        border-bottom: none;
+    }
+
+    .cart-item-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .cart-item-name {
+        font-weight: bold;
+        color: var(--primary-dark);
+        margin-bottom: 5px;
+    }
+
+    .cart-item-price {
+        color: #555;
+        font-size: 0.9em;
+    }
+
+    .cart-controls {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .cart-item-quantity input {
+        width: 50px;
+        padding: 5px;
+        text-align: center;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    .cart-summary {
+        text-align: right;
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 2px solid var(--primary-light);
+    }
+
+    .btn-success {
+        background-color: var(--primary-light);
+        color: var(--primary-dark);
+        padding: 10px 18px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: 0.2s;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-success:hover {
+        background-color: var(--primary-dark);
+        color: #fff;
+    }
+
+    .btn-action {
+        padding: 8px 12px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333;
+    }
+
+    .cart-actions-footer {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+    }
 </style>
 
-<div class="cart-header">
-    <h1>🛒 Seu Carrinho de Compras</h1>
+<div class="cart-container">
+    <h2 class="cart-title">🛒 Carrinho de Compras</h2>
+
+    {% if produtos_carrinho %}
+        <form method="POST" action="{{ url_for('atualizar_carrinho') }}">
+            
+            {% for item in produtos_carrinho %}
+                <div class="cart-item">
+                    <div class="cart-item-info">
+                        <span class="cart-item-name">{{ item['nome'] }}</span>
+                        <span class="cart-item-price">
+                            R$ {{ "%.2f"|format(item['preco']) }} x {{ item['quantidade'] }} = 
+                            R$ {{ "%.2f"|format(item['preco'] * item['quantidade']) }}
+                        </span>
+                    </div>
+
+                    <div class="cart-controls">
+                        <div class="cart-item-quantity">
+                            <input type="number" 
+                                   name="quantidade_{{ item['id_produto'] }}" 
+                                   value="{{ item['quantidade'] }}" 
+                                   min="1" 
+                                   title="Quantidade"
+                                   required>
+                        </div>
+                        
+                        <form method="POST" action="{{ url_for('remover_carrinho', id_produto=item['id_produto']) }}" style="display:inline;">
+                            <button type="submit" class="btn-action btn-danger" title="Remover Item">🗑️</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+
+            <div class="cart-actions-footer">
+                <a href="{{ url_for('listar_produtos') }}" class="btn-action btn-primary">◀️ Continuar Comprando</a>
+                <button type="submit" class="btn-action btn-primary">🔄 Atualizar Quantidades</button>
+            </div>
+
+        </form>
+        
+
+        <div class="cart-summary">
+            <p>Total de Itens Diferentes: <strong>{{ produtos_carrinho|length }}</strong></p>
+            <p>Total de Produtos (soma das quantidades): <strong>{{ total_itens }}</strong></p>
+            <p style="font-size: 1.5em; font-weight: bold; color: var(--primary-dark);">
+                Total Geral: R$ {{ "%.2f"|format(total_geral) }}
+            </p>
+            
+            <a href="{{ url_for('carrinho') }}" class="btn-success" style="margin-top: 15px;">Finalizar Compra</a>
+            
+            <form method="POST" action="{{ url_for('limpar_carrinho') }}" style="display:inline; margin-left: 15px;">
+                <button type="submit" class="btn-action btn-danger">Limpar Carrinho Totalmente</button>
+            </form>
+        </div>
+    {% else %}
+        <p style="text-align:center; color:#777; font-size: 1.2em;">Seu carrinho está vazio.</p>
+        <p style="text-align:center; margin-top: 20px;"><a href="{{ url_for('listar_produtos') }}" class="btn-success">Voltar às Compras</a></p>
+    {% endif %}
 </div>
 
-{%- if produtos_carrinho -%}
-<form action="{{ url_for('atualizar_carrinho') }}" method="POST">
-    <div class="row">
-        <div class="col-md-8">
-            <h2 class="card-header">Itens Selecionados</h2>
-            {%- for item in produtos_carrinho -%}
-            <div class="cart-item">
-                <div class="item-details">
-                    <h4>{{- item.nome -}}</h4>
-                    <p>Marca: {{ item.marca }}</p>
-                </div>
-                <div class="item-price">
-                    R$ {{ "{:,.2f}".format(item.preco).replace(",", "X").replace(".", ",").replace("X", ".") }}
-                </div>
-                <div class="item-quantity">
-                    <input type="number" name="quantidade_{{ item.id_produto }}" value="{{ item.quantidade }}" min="1" class="form-control-sm">
-                </div>
-                <div class="item-subtotal">
-                    R$ {{ "{:,.2f}".format(item.subtotal).replace(",", "X").replace(".", ",").replace("X", ".") }}
-                </div>
-                <div class="item-remove">
-                    <form action="{{ url_for('remover_carrinho', id_produto=item.id_produto) }}" method="POST" style="margin: 0;">
-                        <button type="submit" class="btn btn-danger btn-sm" title="Remover Item">&times;</button>
-                    </form>
-                </div>
-            </div>
-            {%- endfor -%}
-            <button type="submit" class="btn btn-primary" style="margin-top: 20px;">
-                Atualizar Carrinho
-            </button>
-        </div>
-        <div class="col-md-4">
-            <div class="cart-summary">
-                <h3>Resumo do Pedido</h3>
-                <div class="summary-line">
-                    <span>Subtotal ({{ produtos_carrinho|length }} itens)</span>
-                    <span>R$ {{ "{:,.2f}".format(total_geral).replace(",", "X").replace(".", ",").replace("X", ".") }}</span>
-                </div>
-                <div class="summary-line">
-                    <span>Frete</span>
-                    <span style="color: var(--success); font-weight: bold;">Grátis</span>
-                </div>
-                <div class="total-line">
-                    <span>Total a Pagar</span>
-                    <span>R$ {{ "{:,.2f}".format(total_geral).replace(",", "X").replace(".", ",").replace("X", ".") }}</span>
-                </div>
-                <a href="{{ url_for('comprar') }}" class="btn btn-success" style="width: 100%; margin-top: 20px;">
-                    Finalizar Compra
-                </a>
-                <a href="{{ url_for('listar_produtos') }}" class="btn btn-outline" style="width: 100%; margin-top: 10px;">
-                    Continuar Comprando
-                </a>
-            </div>
-        </div>
-    </div>
-</form>
-{%- else -%}
-<div class="empty-cart">
-    <h2>Seu carrinho está vazio! 😔</h2>
-    <p>Adicione produtos incríveis da GHCP Tech Store e venha para o checkout.</p>
-    <a href="{{ url_for('listar_produtos') }}" class="btn btn-primary" style="margin-top: 20px;">
-        Ver Produtos
-    </a>
-</div>
-{%- endif -%}
-
-{%- endblock -%}
+{% endblock %}

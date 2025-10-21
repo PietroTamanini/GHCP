@@ -1,6 +1,6 @@
 {% extends 'base.html' %} 
 
-{% set titulo = titulo %}
+{% set titulo = titulo if titulo else "Catálogo de Produtos" %}
 
 {% block conteudo %}
 
@@ -82,20 +82,41 @@
     <div class="col-lg-3">
         <div class="filter-sidebar">
             <h4 class="text-primary mb-3">Filtrar Produtos</h4>
-            <div class="mb-3">
-                <label for="search" class="form-label">Buscar por Nome</label>
-                <input type="text" id="search" class="form-control" placeholder="Ex: Monitor, Mouse">
-            </div>
-            <div class="mb-3">
-                <label for="marca" class="form-label">Marca</label>
-                <select id="marca" class="form-select">
-                    <option value="">Todas as Marcas</option>
-                    <option value="MarcaX">Marca X</option>
-                    <option value="MarcaY">Marca Y</option>
-                    <!-- Adicionar marcas dinamicamente no futuro -->
-                </select>
-            </div>
-            <button class="btn btn-secondary w-100">Aplicar Filtros</button>
+            
+            <form method="GET" action="{{ url_for('listar_produtos') }}">
+            
+                <div class="mb-3">
+                    <label for="search" class="form-label">Buscar por Nome</label>
+                    <input type="text" id="search" name="busca" class="form-control" 
+                           placeholder="Ex: Monitor, Mouse" value="{{ busca_atual or '' }}">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="categoria" class="form-label">Categoria</label>
+                    <select id="categoria" name="categoria" class="form-select">
+                        <option value="">Todas as Categorias</option>
+                        {% for cat in categorias %}
+                            <option value="{{ cat }}" {% if categoria_atual == cat %}selected{% endif %}>{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="marca" class="form-label">Marca</label>
+                    <select id="marca" name="marca" class="form-select">
+                        <option value="">Todas as Marcas</option>
+                        {% for m in marcas %}
+                            <option value="{{ m }}" {% if marca_atual == m %}selected{% endif %}>{{ m }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100">Aplicar Filtros</button>
+                
+                {% if marca_atual or categoria_atual or busca_atual %}
+                    <a href="{{ url_for('listar_produtos') }}" class="btn btn-outline-secondary w-100 mt-2">Limpar Filtros</a>
+                {% endif %}
+            </form>
         </div>
     </div>
     
@@ -139,6 +160,7 @@
                 
                 <div class="product-card-footer">
                     <form action="{{ url_for('adicionar_carrinho', id_produto=produto.id_produto) }}" method="POST">
+                         <input type="hidden" name="quantidade" value="1">
                         <button type="submit" class="btn btn-primary w-100">
                             Adicionar ao Carrinho
                         </button>
@@ -151,7 +173,7 @@
         
         {% else %}
         <div class="alert alert-warning text-center" role="alert">
-            Nenhum produto encontrado no catálogo.
+            Nenhum produto encontrado com os filtros aplicados.
         </div>
         {% endif %}
         

@@ -1,0 +1,137 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Produtos{% endblock %}
+{% block page_title %}🛍️ Gerenciar Produtos{% endblock %}
+
+{% block content %}
+<div class="data-table">
+    <div class="table-header">
+        <h3>Lista de Produtos</h3>
+        <div class="table-actions">
+            <a href="{{ url_for('admin_novo_produto') }}" class="btn btn-primary">
+                ➕ Novo Produto
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div style="padding: 1.5rem 2rem; border-bottom: 1px solid var(--border); background: rgba(0,102,255,0.02);">
+        <form method="GET" style="display: flex; gap: 1rem; align-items: end;">
+            <div style="flex: 1;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem;">Buscar</label>
+                <input type="text" name="busca" value="{{ request.args.get('busca', '') }}" 
+                       class="form-control" placeholder="Nome ou marca do produto...">
+            </div>
+            <div style="width: 200px;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem;">Categoria</label>
+                <select name="categoria" class="form-control">
+                    <option value="">Todas</option>
+                    {% for categoria in categorias %}
+                    <option value="{{ categoria }}" {% if request.args.get('categoria') == categoria %}selected{% endif %}>
+                        {{ categoria }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary">🔍 Filtrar</button>
+                <a href="{{ url_for('admin_produtos') }}" class="btn btn-warning">🔄 Limpar</a>
+            </div>
+        </form>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Produto</th>
+                <th>Marca</th>
+                <th>Categoria</th>
+                <th>Preço</th>
+                <th>Estoque</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for produto in produtos %}
+            <tr>
+                <td><strong>#{{ produto.id_produto }}</strong></td>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        {% if produto.imagem %}
+                        <img src="{{ url_for('static', filename='uploads/produtos/' + produto.imagem) }}" 
+                             style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" 
+                             onerror="this.style.display='none'">
+                        {% endif %}
+                        <div>
+                            <strong>{{ produto.nome }}</strong>
+                            {% if produto.destaque %}
+                            <span class="badge badge-warning" style="margin-left: 0.5rem;">Destaque</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </td>
+                <td>{{ produto.marca }}</td>
+                <td>{{ produto.categoria }}</td>
+                <td><strong>R$ {{ "%.2f"|format(produto.preco) }}</strong></td>
+                <td>
+                    <span class="badge {% if produto.estoque <= 5 %}badge-danger{% elif produto.estoque <= 15 %}badge-warning{% else %}badge-success{% endif %}">
+                        {{ produto.estoque }} un
+                    </span>
+                </td>
+                <td>
+                    <span class="badge {% if produto.ativo %}badge-success{% else %}badge-danger{% endif %}">
+                        {{ 'Ativo' if produto.ativo else 'Inativo' }}
+                    </span>
+                </td>
+                <td>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <a href="{{ url_for('admin_editar_produto', id_produto=produto.id_produto) }}" 
+                           class="btn btn-sm btn-primary" title="Editar">
+                            ✏️
+                        </a>
+                        {% if produto.ativo %}
+                        <form method="POST" action="{{ url_for('admin_editar_produto', id_produto=produto.id_produto) }}" 
+                              style="display: inline;">
+                            <input type="hidden" name="ativo" value="off">
+                            <button type="submit" class="btn btn-sm btn-warning" title="Desativar"
+                                    onclick="return confirm('Desativar este produto?')">
+                                🚫
+                            </button>
+                        </form>
+                        {% else %}
+                        <form method="POST" action="{{ url_for('admin_editar_produto', id_produto=produto.id_produto) }}" 
+                              style="display: inline;">
+                            <input type="hidden" name="ativo" value="on">
+                            <button type="submit" class="btn btn-sm btn-success" title="Ativar"
+                                    onclick="return confirm('Ativar este produto?')">
+                                ✅
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" style="text-align: center; padding: 3rem;">
+                    <div style="font-size: 1.2rem; margin-bottom: 1rem;">📦</div>
+                    <h3>Nenhum produto encontrado</h3>
+                    <p style="opacity: 0.7; margin-bottom: 1.5rem;">Comece adicionando seu primeiro produto</p>
+                    <a href="{{ url_for('admin_novo_produto') }}" class="btn btn-primary">
+                        ➕ Adicionar Primeiro Produto
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if produtos %}
+<div style="margin-top: 1.5rem; text-align: center; color: var(--dark); opacity: 0.7;">
+    Mostrando <strong>{{ produtos|length }}</strong> produto(s)
+</div>
+{% endif %}
+{% endblock %}

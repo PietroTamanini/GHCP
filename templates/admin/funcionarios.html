@@ -1,0 +1,125 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Funcionários{% endblock %}
+{% block page_title %}👨‍💼 Gerenciar Funcionários{% endblock %}
+
+{% block content %}
+<div class="data-table">
+    <div class="table-header">
+        <h3>Equipe de Funcionários</h3>
+        <div class="table-actions">
+            <a href="{{ url_for('admin_novo_funcionario') }}" class="btn btn-primary">
+                ➕ Novo Funcionário
+            </a>
+        </div>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Funcionário</th>
+                <th>E-mail</th>
+                <th>Cargo</th>
+                <th>Data Cadastro</th>
+                <th>Último Login</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for funcionario in funcionarios %}
+            <tr>
+                <td><strong>#{{ funcionario.id_funcionario }}</strong></td>
+                <td>
+                    <strong>{{ funcionario.nome }}</strong>
+                </td>
+                <td>{{ funcionario.email }}</td>
+                <td>
+                    <span class="badge 
+                        {% if funcionario.cargo == 'admin' %}badge-danger
+                        {% elif funcionario.cargo == 'gerente' %}badge-warning
+                        {% else %}badge-info{% endif %}">
+                        {{ funcionario.cargo|title }}
+                    </span>
+                </td>
+                <td>{{ funcionario.data_cadastro.strftime('%d/%m/%Y') }}</td>
+                <td>
+                    {% if funcionario.ultimo_login %}
+                    {{ funcionario.ultimo_login.strftime('%d/%m/%Y %H:%M') }}
+                    {% else %}
+                    <span style="opacity: 0.5;">Nunca logou</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="badge {% if funcionario.ativo %}badge-success{% else %}badge-danger{% endif %}">
+                        {{ 'Ativo' if funcionario.ativo else 'Inativo' }}
+                    </span>
+                </td>
+                <td>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <a href="#" class="btn btn-sm btn-primary" title="Editar">
+                            ✏️
+                        </a>
+                        {% if funcionario.id_funcionario != session.get('admin_id') %}
+                        {% if funcionario.ativo %}
+                        <form method="POST" action="#" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-warning" title="Desativar"
+                                    onclick="return confirm('Desativar este funcionário?')">
+                                🚫
+                            </button>
+                        </form>
+                        {% else %}
+                        <form method="POST" action="#" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-success" title="Ativar"
+                                    onclick="return confirm('Ativar este funcionário?')">
+                                ✅
+                            </button>
+                        </form>
+                        {% endif %}
+                        {% else %}
+                        <span style="opacity: 0.5; font-size: 0.8rem;">Você</span>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" style="text-align: center; padding: 3rem;">
+                    <div style="font-size: 1.2rem; margin-bottom: 1rem;">👨‍💼</div>
+                    <h3>Nenhum funcionário cadastrado</h3>
+                    <p style="opacity: 0.7; margin-bottom: 1.5rem;">Adicione o primeiro membro da equipe</p>
+                    <a href="{{ url_for('admin_novo_funcionario') }}" class="btn btn-primary">
+                        ➕ Adicionar Primeiro Funcionário
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if funcionarios %}
+<div style="margin-top: 1.5rem; text-align: center; color: var(--dark); opacity: 0.7;">
+    Mostrando <strong>{{ funcionarios|length }}</strong> funcionário(s)
+</div>
+{% endif %}
+
+<div style="margin-top: 2rem; padding: 1.5rem; background: rgba(255,184,0,0.1); border-radius: 8px; border-left: 4px solid var(--warning);">
+    <h4 style="margin-bottom: 0.5rem; color: var(--warning);">⚠️ Permissões dos Cargos</h4>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; font-size: 0.9rem;">
+        <div>
+            <strong>👑 Admin:</strong> Acesso total ao sistema
+        </div>
+        <div>
+            <strong>👔 Gerente:</strong> Gestão de produtos, clientes e diagnósticos
+        </div>
+        <div>
+            <strong>🛍️ Vendedor:</strong> Apenas visualização de relatórios
+        </div>
+        <div>
+            <strong>🔧 Suporte:</strong> Apenas módulo de diagnósticos
+        </div>
+    </div>
+</div>
+{% endblock %}
