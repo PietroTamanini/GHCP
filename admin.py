@@ -7,9 +7,6 @@ from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
 import json
 
-
-
-# Configurações de upload
 UPLOAD_FOLDER = 'static/uploads/produtos'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
@@ -18,7 +15,6 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Decorator para verificar se é admin
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -28,7 +24,6 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# Rotas do Admin
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
     """Login do administrador"""
@@ -56,12 +51,10 @@ def admin_login():
             admin = cursor.fetchone()
             
             if admin and check_password_hash(admin['senha'], senha):
-                # Login bem-sucedido
                 session['admin_id'] = admin['id_funcionario']
                 session['admin_nome'] = admin['nome']
                 session['admin_cargo'] = admin['cargo']
                 
-                # Atualizar último login
                 cursor.execute("""
                     UPDATE funcionarios 
                     SET ultimo_login = NOW() 
@@ -105,7 +98,6 @@ def admin_dashboard():
         
         cursor = conn.cursor(dictionary=True)
         
-        # Estatísticas gerais
         cursor.execute("SELECT COUNT(*) as total FROM clientes WHERE ativo = TRUE")
         total_clientes = cursor.fetchone()['total']
         
@@ -133,7 +125,6 @@ def admin_dashboard():
         """)
         diagnosticos_pendentes = cursor.fetchone()['total']
         
-        # Produtos com estoque baixo
         cursor.execute("""
             SELECT * FROM produto 
             WHERE estoque <= 5 AND ativo = TRUE 
@@ -142,7 +133,6 @@ def admin_dashboard():
         """)
         estoque_baixo = cursor.fetchall()
         
-        # Pedidos recentes
         cursor.execute("""
             SELECT p.*, c.nome as cliente_nome 
             FROM pedidos p
@@ -152,7 +142,6 @@ def admin_dashboard():
         """)
         pedidos_recentes = cursor.fetchall()
         
-        # Diagnosticos recentes
         cursor.execute("""
             SELECT * FROM diagnosticos 
             ORDER BY data_entrada DESC 
@@ -191,7 +180,6 @@ def admin_produtos():
         
         cursor = conn.cursor(dictionary=True)
         
-        # Filtros
         categoria = request.args.get('categoria')
         busca = request.args.get('busca')
         
@@ -211,7 +199,6 @@ def admin_produtos():
         cursor.execute(query, params)
         produtos = cursor.fetchall()
         
-        # Buscar categorias para filtro
         cursor.execute("SELECT DISTINCT categoria FROM produto ORDER BY categoria")
         categorias = [row['categoria'] for row in cursor.fetchall()]
         
@@ -253,25 +240,21 @@ def admin_novo_produto():
             
             cursor = conn.cursor()
             
-            # Processar upload de imagens
             imagens = []
             if 'imagens' in request.files:
                 files = request.files.getlist('imagens')
                 for file in files:
                     if file and allowed_file(file.filename):
                         filename = secure_filename(file.filename)
-                        # Criar nome único
                         from uuid import uuid4
                         unique_filename = f"{uuid4().hex}_{filename}"
                         filepath = os.path.join(UPLOAD_FOLDER, unique_filename)
                         
-                        # Criar diretório se não existir
                         os.makedirs(os.path.dirname(filepath), exist_ok=True)
                         file.save(filepath)
                         
                         imagens.append(unique_filename)
             
-            # Inserir produto
             cursor.execute("""
                 INSERT INTO produto 
                 (nome, marca, preco, descricao, estoque, categoria, imagens, peso, dimensoes, destaque)
@@ -283,7 +266,6 @@ def admin_novo_produto():
             
             conn.commit()
             
-            # Registrar log
             cursor.execute("""
                 INSERT INTO logs_sistema (id_funcionario, acao, modulo, descricao)
                 VALUES (%s, 'CADASTRO', 'PRODUTOS', %s)
@@ -327,12 +309,10 @@ def admin_editar_produto(id_produto):
             destaque = request.form.get('destaque') == 'on'
             ativo = request.form.get('ativo') == 'on'
             
-            # Buscar imagens atuais
             cursor.execute("SELECT imagens FROM produto WHERE id_produto = %s", (id_produto,))
             produto_atual = cursor.fetchone()
             imagens = json.loads(produto_atual['imagens']) if produto_atual['imagens'] else []
             
-            # Processar novas imagens
             if 'imagens' in request.files:
                 files = request.files.getlist('imagens')
                 for file in files:
@@ -347,11 +327,9 @@ def admin_editar_produto(id_produto):
                         
                         imagens.append(unique_filename)
             
-            # Remover imagens selecionadas
             imagens_remover = request.form.getlist('imagens_remover')
             imagens = [img for img in imagens if img not in imagens_remover]
             
-            # Atualizar produto
             cursor.execute("""
                 UPDATE produto 
                 SET nome = %s, marca = %s, preco = %s, descricao = %s, 
@@ -364,7 +342,6 @@ def admin_editar_produto(id_produto):
             
             conn.commit()
             
-            # Registrar log
             cursor.execute("""
                 INSERT INTO logs_sistema (id_funcionario, acao, modulo, descricao)
                 VALUES (%s, 'EDICAO', 'PRODUTOS', %s)
@@ -383,8 +360,18 @@ def admin_editar_produto(id_produto):
                 flash('❌ Produto não encontrado.', 'error')
                 return redirect(url_for('admin_produtos'))
             
+            # 💡 CORREÇÃO CRÍTICA AQUI: Desserializar a string JSON para uma lista Python
+            if produto and produto.get('imagens'):
+                try:
+                    # 'produto.imagens' era uma string JSON. Agora será uma lista.
+                    produto['imagens'] = json.loads(produto['imagens'])
+                except json.JSONDecodeError:
+                    # Em caso de erro na string salva, inicializa com lista vazia
+                    produto['imagens'] = []
+            else:
+                produto['imagens'] = [] # Garante que a chave 'imagens' existe como lista vazia
+            
             return render_template('admin/produto_form.html', produto=produto)
-    
     except mysql.connector.Error as err:
         flash(f'Erro ao carregar produto: {err}', 'error')
         return redirect(url_for('admin_produtos'))
@@ -406,7 +393,6 @@ def admin_clientes():
         
         cursor = conn.cursor(dictionary=True)
         
-        # Filtros
         busca = request.args.get('busca')
         
         query = "SELECT * FROM clientes WHERE 1=1"
@@ -444,7 +430,6 @@ def admin_detalhes_cliente(id_cliente):
         
         cursor = conn.cursor(dictionary=True)
         
-        # Dados do cliente
         cursor.execute("SELECT * FROM clientes WHERE id_cliente = %s", (id_cliente,))
         cliente = cursor.fetchone()
         
@@ -452,7 +437,6 @@ def admin_detalhes_cliente(id_cliente):
             flash('❌ Cliente não encontrado.', 'error')
             return redirect(url_for('admin_clientes'))
         
-        # Pedidos do cliente
         cursor.execute("""
             SELECT * FROM pedidos 
             WHERE id_cliente = %s 
@@ -460,7 +444,6 @@ def admin_detalhes_cliente(id_cliente):
         """, (id_cliente,))
         pedidos = cursor.fetchall()
         
-        # Endereços
         cursor.execute("""
             SELECT * FROM enderecos 
             WHERE id_cliente = %s 
@@ -542,13 +525,11 @@ def admin_novo_funcionario():
             
             cursor = conn.cursor()
             
-            # Verificar se email já existe
             cursor.execute("SELECT id_funcionario FROM funcionarios WHERE email = %s", (email,))
             if cursor.fetchone():
                 flash('❌ Este e-mail já está cadastrado.', 'error')
                 return render_template('admin/funcionario_form.html')
             
-            # Hash da senha
             senha_hash = generate_password_hash(senha)
             
             cursor.execute("""
@@ -558,7 +539,6 @@ def admin_novo_funcionario():
             
             conn.commit()
             
-            # Registrar log
             cursor.execute("""
                 INSERT INTO logs_sistema (id_funcionario, acao, modulo, descricao)
                 VALUES (%s, 'CADASTRO', 'FUNCIONARIOS', %s)
@@ -590,19 +570,15 @@ def admin_relatorios():
         
         cursor = conn.cursor(dictionary=True)
         
-        # Relatório mensal
         cursor.execute("SELECT * FROM view_relatorios_mensais LIMIT 12")
         relatorios_mensais = cursor.fetchall()
         
-        # Produtos mais vendidos
         cursor.execute("SELECT * FROM view_produtos_mais_vendidos LIMIT 10")
         produtos_mais_vendidos = cursor.fetchall()
         
-        # Clientes mais ativos
         cursor.execute("SELECT * FROM view_clientes_ativos LIMIT 10")
         clientes_ativos = cursor.fetchall()
         
-        # Estoque crítico
         cursor.execute("SELECT * FROM view_estoque_critico")
         estoque_critico = cursor.fetchall()
         
@@ -633,7 +609,6 @@ def admin_diagnosticos():
         
         cursor = conn.cursor(dictionary=True)
         
-        # Filtros
         status = request.args.get('status')
         
         query = "SELECT d.*, f.nome as tecnico_nome FROM diagnosticos d LEFT JOIN funcionarios f ON d.tecnico_responsavel = f.id_funcionario WHERE 1=1"
@@ -687,7 +662,6 @@ def admin_detalhes_diagnostico(id_diagnostico):
                   float(orcamento) if orcamento else 0, 
                   observacoes, session['admin_id'], id_diagnostico))
             
-            # Se status for concluído, registrar data
             if status == 'concluido':
                 cursor.execute("""
                     UPDATE diagnosticos 
@@ -701,7 +675,6 @@ def admin_detalhes_diagnostico(id_diagnostico):
             return redirect(url_for('admin_diagnosticos'))
         
         else:
-            # Carregar dados do diagnóstico
             cursor.execute("""
                 SELECT d.*, f.nome as tecnico_nome 
                 FROM diagnosticos d 
@@ -725,10 +698,6 @@ def admin_detalhes_diagnostico(id_diagnostico):
         if conn and conn.is_connected():
             cursor.close()
             conn.close()
-
-# ============================================
-# ROTAS PÚBLICAS PARA DIAGNÓSTICO
-# ============================================
 
 @app.route('/diagnostico', methods=['GET', 'POST'])
 def diagnostico():
@@ -755,7 +724,6 @@ def diagnostico():
             
             cursor = conn.cursor()
             
-            # Verificar se é cliente
             id_cliente = None
             if session.get('usuario_id'):
                 cursor.execute("SELECT id_cliente FROM clientes WHERE id_cliente = %s", (session['usuario_id'],))
@@ -806,7 +774,6 @@ def api_relatorio_diagnostico(id_diagnostico):
         if not diagnostico:
             return jsonify({'error': 'Diagnóstico não encontrado'}), 404
         
-        # Formatar relatório
         relatorio = {
             'id_diagnostico': diagnostico['id_diagnostico'],
             'cliente': diagnostico['nome_cliente'],

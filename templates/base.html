@@ -75,8 +75,6 @@
             radial-gradient(circle at 20% 50%, rgba(51,133,255,0.08) 0%, transparent 50%),
             radial-gradient(circle at 80% 80%, rgba(255,120,73,0.08) 0%, transparent 50%);
     }
-
-    /* Navbar */
     .navbar {
         position: fixed;
         top: 0; left: 0;
@@ -95,8 +93,6 @@
         align-items: center;
         gap: 40px;
     }
-
-    /* LOGO */
     .logo { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
 
     .logo-icon {
@@ -147,8 +143,6 @@
         text-transform: uppercase;
         letter-spacing: 1px;
     }
-
-    /* Links */
     .nav-links {
         list-style: none;
         display: flex;
@@ -192,8 +186,6 @@
         color:white;
         transform: translateY(-2px);
     }
-
-    /* Ícones */
     .icons {
         display:flex;
         align-items:center;
@@ -382,7 +374,6 @@
         margin-bottom:8px;
     }
 
-    /* Flash messages */
     .flashes { list-style:none; padding:0; margin-bottom:24px; }
     .flashes li {
         padding:18px 24px;
@@ -521,7 +512,6 @@
     </footer>
 
     <script>
-        // Tema
         const themeToggle = document.getElementById('themeToggle');
         const menuToggle = document.getElementById('menuToggle');
         const navLinks = document.getElementById('navLinks');
@@ -540,12 +530,10 @@
             }
         });
 
-        // Menu mobile
         menuToggle.addEventListener('click', ()=>{
             navLinks.classList.toggle('active');
         });
 
-        // Nav ativo
         const currentPath = window.location.pathname;
         document.querySelectorAll('.nav-link').forEach(link=>{
             if(currentPath.startsWith(link.getAttribute('href'))){
@@ -553,7 +541,6 @@
             }
         });
 
-        // Auto remover flash
         setTimeout(()=>{ document.querySelectorAll('.flashes li').forEach(el=>el.remove()); }, 5000);
     </script>
 </body>

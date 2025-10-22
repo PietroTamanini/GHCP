@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% set titulo = "Finalizar Compra" %}
+{% block conteudo %}
+
+<style>
+.checkout-container {
+    max-width: 700px;
+    margin: 50px auto;
+    background: var(--glass);
+    padding: 40px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+}
+.checkout-container h2 {
+    text-align: center;
+    font-size: 2.5em;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 30px;
+}
+.checkout-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+.checkout-container label {
+    font-weight: 600;
+    color: var(--text);
+}
+.checkout-container input, 
+.checkout-container select {
+    padding: 10px;
+    border-radius: 8px;
+    border: 2px solid var(--border);
+    background-color: var(--secondary);
+    color: var(--text);
+    font-weight: 600;
+}
+.checkout-container input:focus, 
+.checkout-container select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(0, 102, 255, 0.2);
+}
+.btn-finalizar {
+    background: linear-gradient(135deg, var(--success) 0%, #00b36e 100%);
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1.2em;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.btn-finalizar:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+}
+</style>
+
+<div class="checkout-container">
+    <h2>💳 Finalizar Compra</h2>
+    <form method="POST" action="{{ url_for('finalizar_carrinho') }}">
+        <label>Nome Completo</label>
+        <input type="text" name="nome" required>
+
+        <label>Email</label>
+        <input type="email" name="email" required>
+
+        <label>Endereço</label>
+        <input type="text" name="endereco" required>
+
+        <label>Forma de Pagamento</label>
+        <select name="pagamento" required>
+            <option value="">Selecione</option>
+            <option value="pix">PIX</option>
+            <option value="cartao">Cartão</option>
+        </select>
+
+        <p>Total a Pagar: <strong>R$ {{ "%.2f"|format(total_geral) }}</strong></p>
+        <button type="submit" class="btn-finalizar">💰 Confirmar Compra</button>
+    </form>
+</div>
+
+{% endblock %}

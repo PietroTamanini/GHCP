@@ -5,7 +5,6 @@
 
 {% block content %}
 <div style="display: grid; gap: 2rem;">
-    <!-- Formulário de Atualização -->
     <div class="form-container">
         <form method="POST">
             <div class="form-grid">
@@ -140,7 +139,6 @@
         </form>
     </div>
 
-    <!-- Informações do Técnico -->
     {% if diagnostico.tecnico_nome %}
     <div class="form-container">
         <h3 style="margin-bottom: 1rem; color: var(--primary);">👨‍💼 Responsável pelo Diagnóstico</h3>
@@ -164,7 +162,6 @@ document.getElementById('status').addEventListener('change', function() {
     const pecasField = document.getElementById('pecas_defeito');
     const relatorioField = document.getElementById('relatorio_final');
     
-    // Mostrar campos relevantes baseado no status
     if (status === 'diagnosticado' || status === 'orcamento') {
         pecasField.placeholder = 'Liste as peças que apresentaram defeito... (Obrigatório)';
         relatorioField.placeholder = 'Descreva o diagnóstico completo... (Obrigatório)';

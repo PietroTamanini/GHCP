@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 
-{# Adiciona o link "Garantia" no menu e marca como ativo #}
 {% block menu %}
     <li><a href="{{ url_for('inicio') }}" class="nav-link">Início</a></li>
     <li><a href="{{ url_for('listar_produtos') }}" class="nav-link">Produtos</a></li>
@@ -8,11 +7,8 @@
 
 {% endblock %}
 
-
-{# Conteúdo principal da página de garantia #}
 {% block conteudo %}
 <style>
-    /* Estilos simples para a página de garantia */
     .garantia-container {
         max-width: 900px;
         margin: 0 auto;

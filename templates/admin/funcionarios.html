@@ -58,25 +58,35 @@
                 </td>
                 <td>
                     <div style="display: flex; gap: 0.5rem;">
-                        <a href="#" class="btn btn-sm btn-primary" title="Editar">
+                        <a href="{{ url_for('admin_editar_funcionario', id_funcionario=funcionario.id_funcionario) }}" 
+                           class="btn btn-sm btn-primary" title="Editar">
                             ✏️
                         </a>
                         {% if funcionario.id_funcionario != session.get('admin_id') %}
                         {% if funcionario.ativo %}
-                        <form method="POST" action="#" style="display: inline;">
+                        <form method="POST" action="{{ url_for('admin_alternar_status_funcionario', id_funcionario=funcionario.id_funcionario) }}" 
+                              style="display: inline;">
                             <button type="submit" class="btn btn-sm btn-warning" title="Desativar"
-                                    onclick="return confirm('Desativar este funcionário?')">
+                                    onclick="return confirm('Desativar o funcionário {{ funcionario.nome }}?')">
                                 🚫
                             </button>
                         </form>
                         {% else %}
-                        <form method="POST" action="#" style="display: inline;">
+                        <form method="POST" action="{{ url_for('admin_alternar_status_funcionario', id_funcionario=funcionario.id_funcionario) }}" 
+                              style="display: inline;">
                             <button type="submit" class="btn btn-sm btn-success" title="Ativar"
-                                    onclick="return confirm('Ativar este funcionário?')">
+                                    onclick="return confirm('Ativar o funcionário {{ funcionario.nome }}?')">
                                 ✅
                             </button>
                         </form>
                         {% endif %}
+                        <form method="POST" action="{{ url_for('admin_excluir_funcionario', id_funcionario=funcionario.id_funcionario) }}" 
+                              style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-danger" title="Excluir"
+                                    onclick="return confirm('⚠️ ATENÇÃO: Tem certeza que deseja EXCLUIR permanentemente o funcionário {{ funcionario.nome }}?\n\nEsta ação NÃO pode ser desfeita!')">
+                                🗑️
+                            </button>
+                        </form>
                         {% else %}
                         <span style="opacity: 0.5; font-size: 0.8rem;">Você</span>
                         {% endif %}

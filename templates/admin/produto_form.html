@@ -7,7 +7,6 @@
 <div class="form-container">
     <form method="POST" enctype="multipart/form-data">
         <div class="form-grid">
-            <!-- Informações Básicas -->
             <div class="form-group full-width">
                 <h3 style="margin-bottom: 1rem; color: var(--primary);">📝 Informações Básicas</h3>
             </div>
@@ -36,8 +35,6 @@
                 <input type="number" id="preco" name="preco" class="form-control" step="0.01" min="0"
                        value="{{ "%.2f"|format(produto.preco) if produto }}" required>
             </div>
-
-            <!-- Estoque e Status -->
             <div class="form-group">
                 <label for="estoque">📦 Estoque *</label>
                 <input type="number" id="estoque" name="estoque" class="form-control" min="0"
@@ -56,8 +53,6 @@
                        value="{{ produto.dimensoes if produto }}" 
                        placeholder="Ex: 30x20x10 cm">
             </div>
-
-            <!-- Configurações -->
             <div class="form-group full-width">
                 <h3 style="margin-bottom: 1rem; color: var(--primary);">⚙️ Configurações</h3>
             </div>
@@ -78,14 +73,11 @@
             </div>
             {% endif %}
 
-            <!-- Descrição -->
             <div class="form-group full-width">
                 <label for="descricao">📄 Descrição do Produto</label>
                 <textarea id="descricao" name="descricao" class="form-control" 
                           placeholder="Descreva as características, especificações e benefícios do produto...">{{ produto.descricao if produto }}</textarea>
             </div>
-
-            <!-- Upload de Imagens -->
             <div class="form-group full-width">
                 <h3 style="margin-bottom: 1rem; color: var(--primary);">🖼️ Imagens do Produto</h3>
                 
@@ -96,8 +88,6 @@
                         📎 Selecione múltiplas imagens (PNG, JPG, JPEG, GIF, WEBP)
                     </p>
                 </div>
-
-                <!-- Preview de Imagens Existentes -->
                 {% if produto and produto.imagens %}
                 <div class="image-preview">
                     {% for imagem in produto.imagens %}
@@ -130,7 +120,6 @@
         const previewItem = event.target.closest('.preview-item');
         previewItem.remove();
     
-        // marca imagem para remoção
         const form = document.querySelector('form');
         const input = document.createElement('input');
         input.type = 'hidden';
@@ -140,13 +129,11 @@
     }
     
     document.getElementById('imagens').addEventListener('change', function(e) {
-        // usa o preview existente, sem duplicar
         let preview = document.querySelector('.image-preview');
         if (!preview) {
             preview = createPreviewContainer();
         }
     
-        // limpa previews de arquivos novos (sem apagar as imagens existentes)
         preview.querySelectorAll('.preview-item[data-novo="true"]').forEach(item => item.remove());
     
         Array.from(e.target.files).forEach(file => {
@@ -156,7 +143,7 @@
             reader.onload = function(ev) {
                 const previewItem = document.createElement('div');
                 previewItem.className = 'preview-item';
-                previewItem.dataset.novo = "true"; // marca como nova imagem
+                previewItem.dataset.novo = "true";
                 previewItem.innerHTML = `
                     <img src="${ev.target.result}" alt="Preview">
                     <button type="button" class="preview-remove" onclick="this.parentElement.remove()">×</button>

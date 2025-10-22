@@ -1,81 +1,260 @@
 {% extends "admin/base.html" %}
 
-{% block title %}Novo Funcionário{% endblock %}
-{% block page_title %}➕ Novo Funcionário{% endblock %}
+{% block title %}{% if funcionario %}Editar Funcionário{% else %}Novo Funcionário{% endif %}{% endblock %}
+{% block page_title %}{% if funcionario %}✏️ Editar Funcionário{% else %}➕ Novo Funcionário{% endif %}{% endblock %}
 
 {% block content %}
 <div class="form-container">
-    <form method="POST">
-        <div class="form-grid">
-            <div class="form-group full-width">
-                <h3 style="margin-bottom: 1rem; color: var(--primary);">👤 Dados Pessoais</h3>
-            </div>
-
-            <div class="form-group">
-                <label for="nome">📛 Nome Completo *</label>
-                <input type="text" id="nome" name="nome" class="form-control" 
-                       placeholder="Nome do funcionário" required>
-            </div>
-
-            <div class="form-group">
-                <label for="email">📧 E-mail *</label>
-                <input type="email" id="email" name="email" class="form-control" 
-                       placeholder="funcionario@ghcp.com" required>
-            </div>
-
-            <div class="form-group">
-                <label for="cargo">💼 Cargo *</label>
-                <select id="cargo" name="cargo" class="form-control" required>
-                    <option value="">Selecione um cargo</option>
-                    <option value="admin">👑 Administrador</option>
-                    <option value="gerente">👔 Gerente</option>
-                    <option value="vendedor" selected>🛍️ Vendedor</option>
-                    <option value="suporte">🔧 Suporte Técnico</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="senha">🔒 Senha *</label>
-                <input type="password" id="senha" name="senha" class="form-control" 
-                       placeholder="Mínimo 6 caracteres" required minlength="6">
-            </div>
-
-            <div class="form-group full-width">
-                <div style="background: rgba(0,102,255,0.05); padding: 1.5rem; border-radius: 8px;">
-                    <h4 style="margin-bottom: 1rem; color: var(--primary);">ℹ️ Informações Importantes</h4>
-                    <ul style="opacity: 0.8; line-height: 1.6;">
-                        <li>A senha deve ter no mínimo <strong>6 caracteres</strong></li>
-                        <li>O e-mail será usado para login no sistema</li>
-                        <li>Administradores têm acesso total ao sistema</li>
-                        <li>Gerentes podem gerenciar produtos, clientes e diagnósticos</li>
-                        <li>Vendedores têm acesso apenas a relatórios básicos</li>
-                        <li>Suporte técnico acessa apenas o módulo de diagnósticos</li>
-                    </ul>
+    <form method="POST" class="form-card">
+        <div class="form-section">
+            <h3>{% if funcionario %}Editar Dados do Funcionário{% else %}Cadastrar Novo Funcionário{% endif %}</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="nome">Nome Completo *</label>
+                    <input type="text" id="nome" name="nome" 
+                           value="{{ funcionario.nome if funcionario else '' }}" 
+                           required maxlength="100" placeholder="Digite o nome completo">
                 </div>
             </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="email">E-mail *</label>
+                    <input type="email" id="email" name="email" 
+                           value="{{ funcionario.email if funcionario else '' }}" 
+                           required maxlength="100" placeholder="email@exemplo.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="cargo">Cargo *</label>
+                    <select id="cargo" name="cargo" required>
+                        <option value="vendedor" {% if funcionario and funcionario.cargo == 'vendedor' %}selected{% endif %}>
+                            🛍️ Vendedor
+                        </option>
+                        <option value="suporte" {% if funcionario and funcionario.cargo == 'suporte' %}selected{% endif %}>
+                            🔧 Suporte
+                        </option>
+                        <option value="gerente" {% if funcionario and funcionario.cargo == 'gerente' %}selected{% endif %}>
+                            👔 Gerente
+                        </option>
+                        <option value="admin" {% if funcionario and funcionario.cargo == 'admin' %}selected{% endif %}>
+                            👑 Administrador
+                        </option>
+                    </select>
+                </div>
+            </div>
+            
+            {% if funcionario %}
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="nova_senha">Nova Senha (opcional)</label>
+                    <input type="password" id="nova_senha" name="nova_senha" 
+                           minlength="6" placeholder="Deixe em branco para manter a senha atual">
+                    <small style="opacity: 0.7;">Mínimo 6 caracteres. Deixe em branco se não quiser alterar.</small>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="ativo" id="ativo" 
+                               {% if funcionario.ativo %}checked{% endif %}
+                               style="width: auto; margin: 0;">
+                        <span>Conta Ativa</span>
+                    </label>
+                    <small style="opacity: 0.7;">Desmarque para desativar o acesso deste funcionário</small>
+                </div>
+            </div>
+            
+            {% else %}
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="senha">Senha *</label>
+                    <input type="password" id="senha" name="senha" 
+                           required minlength="6" placeholder="Mínimo 6 caracteres">
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirmar_senha">Confirmar Senha *</label>
+                    <input type="password" id="confirmar_senha" name="confirmar_senha" 
+                           required minlength="6" placeholder="Digite a senha novamente">
+                </div>
+            </div>
+            {% endif %}
         </div>
-
+        
+        <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(0,123,255,0.1); border-radius: 8px; border-left: 4px solid var(--primary);">
+            <h4 style="margin-bottom: 0.5rem; color: var(--primary);">ℹ️ Permissões por Cargo</h4>
+            <div style="display: grid; gap: 0.5rem; font-size: 0.9rem;">
+                <div><strong>👑 Admin:</strong> Acesso total, incluindo gerenciar funcionários</div>
+                <div><strong>👔 Gerente:</strong> Gestão de produtos, clientes, pedidos e diagnósticos</div>
+                <div><strong>🛍️ Vendedor:</strong> Visualização de relatórios e estatísticas</div>
+                <div><strong>🔧 Suporte:</strong> Apenas módulo de diagnósticos técnicos</div>
+            </div>
+        </div>
+        
         <div class="form-actions">
-            <a href="{{ url_for('admin_funcionarios') }}" class="btn btn-warning">
-                ↩️ Cancelar
+            <a href="{{ url_for('admin_funcionarios') }}" class="btn btn-secondary">
+                ❌ Cancelar
             </a>
             <button type="submit" class="btn btn-primary">
-                💾 Cadastrar Funcionário
+                {% if funcionario %}💾 Salvar Alterações{% else %}➕ Cadastrar Funcionário{% endif %}
             </button>
         </div>
     </form>
 </div>
 
-<script>
-document.getElementById('cargo').addEventListener('change', function() {
-    const cargo = this.value;
-    const senhaField = document.getElementById('senha');
+<style>
+.form-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.form-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-section {
+    margin-bottom: 2rem;
+}
+
+.form-section h3 {
+    margin-bottom: 1.5rem;
+    color: var(--primary);
+    font-size: 1.5rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--dark);
+    font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 0.75rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+    font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.form-group input::placeholder {
+    color: #999;
+}
+
+.form-group small {
+    margin-top: 0.25rem;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid #f0f0f0;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,123,255,0.3);
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(108,117,125,0.3);
+}
+
+@media (max-width: 768px) {
+    .form-card {
+        padding: 1.5rem;
+    }
     
-    if (cargo === 'admin') {
-        senhaField.placeholder = 'Use uma senha forte para administrador';
-    } else {
-        senhaField.placeholder = 'Mínimo 6 caracteres';
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .form-actions .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+</style>
+
+{% if not funcionario %}
+<script>
+document.querySelector('form').addEventListener('submit', function(e) {
+    const senha = document.getElementById('senha').value;
+    const confirmar = document.getElementById('confirmar_senha').value;
+    
+    if (senha !== confirmar) {
+        e.preventDefault();
+        alert('❌ As senhas não coincidem!');
+        document.getElementById('confirmar_senha').focus();
+        document.getElementById('confirmar_senha').style.borderColor = 'red';
     }
 });
+
+document.getElementById('confirmar_senha').addEventListener('input', function() {
+    this.style.borderColor = '#e0e0e0';
+});
 </script>
+{% endif %}
 {% endblock %}

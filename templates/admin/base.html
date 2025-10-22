@@ -75,13 +75,11 @@
                 radial-gradient(circle at 80% 80%, rgba(255,120,73,0.08) 0%, transparent 50%);
         }
 
-        /* Layout Admin */
         .admin-container {
             display: flex;
             min-height: 100vh;
         }
 
-        /* Sidebar */
         .admin-sidebar {
             width: 280px;
             background: var(--glass);
@@ -215,7 +213,6 @@
             box-shadow: var(--shadow);
         }
 
-        /* Main Content */
         .admin-main {
             flex: 1;
             display: flex;
@@ -282,7 +279,6 @@
             to{opacity:1; transform:translateY(0);}
         }
 
-        /* Cards */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -334,7 +330,6 @@
         .trend.up { color: var(--success); }
         .trend.down { color: var(--danger); }
 
-        /* Tables */
         .data-table {
             background: var(--glass);
             backdrop-filter: blur(20px) saturate(180%);
@@ -458,7 +453,6 @@
         .badge-info { background: var(--info); color: white; }
         .badge-primary { background: var(--primary); color: white; }
 
-        /* Forms */
         .form-container {
             background: var(--glass);
             backdrop-filter: blur(20px) saturate(180%);
@@ -523,7 +517,6 @@
             border-top: 1px solid var(--border);
         }
 
-        /* Flash messages */
         .flash-messages {
             margin-bottom: 32px;
         }
@@ -566,7 +559,6 @@
             color: white; border-color:#0086a0;
         }
 
-        /* Image upload */
         .image-upload {
             border: 2px dashed var(--border);
             border-radius: 10px;
@@ -621,7 +613,6 @@
             transform: scale(1.1);
         }
 
-        /* Mobile */
         .menu-toggle {
             display: none;
             background: var(--primary);
@@ -758,7 +749,6 @@
     </div>
 
     <script>
-        // Tema
         const themeToggle = document.getElementById('themeToggle');
         const menuToggle = document.getElementById('menuToggle');
         const adminSidebar = document.getElementById('adminSidebar');
@@ -780,12 +770,10 @@
             }
         });
 
-        // Menu mobile
         menuToggle.addEventListener('click', ()=>{
             adminSidebar.classList.toggle('active');
         });
 
-        // Auto remover flash
         setTimeout(()=>{ 
             document.querySelectorAll('.flash').forEach(el => {
                 el.style.opacity = '0';

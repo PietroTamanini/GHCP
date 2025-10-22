@@ -6,32 +6,20 @@ import re
 import os
 import json
 
-
-
-
 from datetime import datetime
 from werkzeug.utils import secure_filename
-
 
 app = Flask(__name__)
 app.secret_key = 'GHCP-2o25'
 
-# ============================================
-# CONFIGURAÇÃO DO BANCO DE DADOS
-# ============================================
-
-
-
-
 DB_CONFIG = {
     'host': 'localhost',
-    'port': '3306',
+    'port': '3307',
     'user': 'root',
     'password': '',
     'database': 'loja_informatica'
 }
 
-# Configurações de upload
 UPLOAD_FOLDER = 'static/uploads/produtos'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
@@ -45,10 +33,6 @@ def get_db_connection():
     except mysql.connector.Error as err:
         print(f"Erro ao conectar ao banco de dados: {err}")
         return None
-
-# ============================================
-# DECORATORS E FUNÇÕES AUXILIARES
-# ============================================
 
 def login_required(f):
     """Decorator para proteger rotas que precisam de autenticação"""
@@ -108,10 +92,6 @@ def formatar_telefone(telefone):
     elif len(telefone) == 10:
         return f"({telefone[:2]}) {telefone[2:6]}-{telefone[6:]}"
     return telefone
-
-# ============================================
-# ROTAS DE AUTENTICAÇÃO
-# ============================================
 
 @app.route('/')
 def inicio():
@@ -604,10 +584,6 @@ def excluir_endereco(id_endereco):
     
     return redirect(url_for('minha_conta'))
 
-# ============================================
-# ROTAS DE PRODUTOS E CARRINHO
-# ============================================
-
 @app.route('/produtos')
 def listar_produtos():
     """Listar produtos"""
@@ -810,6 +786,30 @@ def limpar_carrinho():
     flash('🗑️ Carrinho limpo!', 'success')
     return redirect(url_for('carrinho'))
 
+
+@app.route('/finalizar-carrinho', methods=['GET', 'POST'])
+def finalizar_carrinho():
+    produtos_carrinho = session.get('carrinho', [])
+    total_geral = sum(item['preco'] * item['quantidade'] for item in produtos_carrinho)
+
+    if request.method == 'POST':
+        nome = request.form.get('nome')
+        email = request.form.get('email')
+        endereco = request.form.get('endereco')
+        pagamento = request.form.get('pagamento')
+        session['carrinho'] = []
+        return redirect(url_for('compra_sucedida'))
+
+    return render_template('finalizar-carrinho.html', 
+                           produtos_carrinho=produtos_carrinho, 
+                           total_geral=total_geral)
+
+
+
+@app.route('/compra-sucedida')
+def compra_sucedida():
+    return render_template('compra-sucedida.html')
+
 @app.route('/pix')
 def pix():
     return render_template('pix.html')
@@ -821,10 +821,6 @@ def boleto():
 @app.route('/cartoes-credito')
 def cartoes():
     return render_template('cartoes-credito.html')
-
-# ============================================
-# ROTAS DO PAINEL ADMINISTRATIVO (CORRIGIDO)
-# ============================================
 
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
@@ -1497,11 +1493,6 @@ def suporte():
 def mensagem_suporte():
     return render_template('msg-suporte.html')
         
-
-# ============================================
-# ROTAS PÚBLICAS PARA DIAGNÓSTICO
-# ============================================
-
 @app.route('/diagnostico', methods=['GET', 'POST'])
 def diagnostico():
     """Página pública para solicitar diagnóstico"""
@@ -1603,8 +1594,6 @@ def api_relatorio_diagnostico(id_diagnostico):
             cursor.close()
             conn.close()
 
-# area do suporte
-
 @app.route("/suporte", methods=["GET", "POST"])
 def suporte():
     if request.method == "POST":
@@ -1633,21 +1622,18 @@ def suporte():
             return redirect(url_for("suporte_sucesso"))
 
         except mysql.connector.Error as err:
-            # A linha mais importante para debugar! Verifique seu console.
             print(f"[ERRO MySQL] Falha ao inserir dados de suporte: {err}")
             if conn:
-                conn.rollback() # Desfaz a tentativa de inserção
+                conn.rollback()
             flash("Ocorreu um erro ao enviar sua mensagem. Tente novamente.", "danger")
             return render_template("suporte.html", titulo="Suporte")
 
         finally:
-            # Garante que cursor e conexão sejam fechados
             if cursor:
                 cursor.close()
             if conn and conn.is_connected():
                 conn.close()
 
-    # Método GET
     return render_template("suporte.html", titulo="Suporte")
 
 @app.route("/msg-suporte")
@@ -1657,11 +1643,6 @@ def suporte_sucesso():
 @app.route('/central-garantia')
 def garantia():
     return render_template('central-garantia.html', titulo="Central de Garantia")
-
-
-# ============================================
-# ROTAS INSTITUCIONAIS E INFORMATIVAS
-# ============================================
 
 @app.route('/sobre')
 def sobre():
@@ -1883,10 +1864,213 @@ def criar_admin_padrao():
         
     except mysql.connector.Error as err:
         print(f"❌ Erro ao criar admin padrão: {err}")
+        
+@app.route('/admin/funcionario/editar/<int:id_funcionario>', methods=['GET', 'POST'])
+@admin_required
+def admin_editar_funcionario(id_funcionario):
+    """Editar funcionário existente"""
+    if session['admin_cargo'] != 'admin':
+        flash('❌ Acesso restrito para administradores.', 'error')
+        return redirect(url_for('admin_dashboard'))
+    
+    try:
+        conn = get_db_connection()
+        if not conn:
+            flash('Erro ao conectar ao banco de dados.', 'error')
+            return redirect(url_for('admin_funcionarios'))
+        
+        cursor = conn.cursor(dictionary=True)
+        
+        if request.method == 'POST':
+            nome = request.form.get('nome', '').strip()
+            email = request.form.get('email', '').strip().lower()
+            cargo = request.form.get('cargo', 'vendedor')
+            ativo = request.form.get('ativo') == 'on'
+            nova_senha = request.form.get('nova_senha', '').strip()
+            
+            if not all([nome, email]):
+                flash('❌ Preencha todos os campos obrigatórios.', 'error')
+                return redirect(url_for('admin_editar_funcionario', id_funcionario=id_funcionario))
+            
+            cursor.execute("""
+                SELECT id_funcionario FROM funcionarios 
+                WHERE email = %s AND id_funcionario != %s
+            """, (email, id_funcionario))
+            
+            if cursor.fetchone():
+                flash('❌ Este e-mail já está cadastrado em outro funcionário.', 'error')
+                return redirect(url_for('admin_editar_funcionario', id_funcionario=id_funcionario))
+            
+            if nova_senha:
+                if len(nova_senha) < 6:
+                    flash('❌ A senha deve ter no mínimo 6 caracteres.', 'error')
+                    return redirect(url_for('admin_editar_funcionario', id_funcionario=id_funcionario))
+                
+                senha_hash = generate_password_hash(nova_senha)
+                cursor.execute("""
+                    UPDATE funcionarios 
+                    SET nome = %s, email = %s, cargo = %s, ativo = %s, senha = %s
+                    WHERE id_funcionario = %s
+                """, (nome, email, cargo, ativo, senha_hash, id_funcionario))
+            else:
+                cursor.execute("""
+                    UPDATE funcionarios 
+                    SET nome = %s, email = %s, cargo = %s, ativo = %s
+                    WHERE id_funcionario = %s
+                """, (nome, email, cargo, ativo, id_funcionario))
+            
+            conn.commit()
+            
+            cursor.execute("""
+                INSERT INTO logs_sistema (id_funcionario, acao, modulo, descricao)
+                VALUES (%s, 'EDICAO', 'FUNCIONARIOS', %s)
+            """, (session['admin_id'], f'Funcionário editado: {nome} (ID: {id_funcionario})'))
+            conn.commit()
+            
+            flash('✅ Funcionário atualizado com sucesso!', 'success')
+            return redirect(url_for('admin_funcionarios'))
+        
+        else:
+            cursor.execute("""
+                SELECT * FROM funcionarios 
+                WHERE id_funcionario = %s
+            """, (id_funcionario,))
+            
+            funcionario = cursor.fetchone()
+            
+            if not funcionario:
+                flash('❌ Funcionário não encontrado.', 'error')
+                return redirect(url_for('admin_funcionarios'))
+            
+            return render_template('admin/funcionario_form.html', funcionario=funcionario, editando=True)
+    
+    except mysql.connector.Error as err:
+        flash(f'Erro ao editar funcionário: {err}', 'error')
+        return redirect(url_for('admin_funcionarios'))
+    
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
 
-# ============================================
-# TRATAMENTO DE ERROS
-# ============================================
+@app.route('/admin/funcionario/excluir/<int:id_funcionario>', methods=['POST'])
+@admin_required
+def admin_excluir_funcionario(id_funcionario):
+    """Excluir funcionário"""
+    if session['admin_cargo'] != 'admin':
+        flash('❌ Acesso restrito para administradores.', 'error')
+        return redirect(url_for('admin_dashboard'))
+    
+    if id_funcionario == session['admin_id']:
+        flash('❌ Você não pode excluir sua própria conta.', 'error')
+        return redirect(url_for('admin_funcionarios'))
+    
+    try:
+        conn = get_db_connection()
+        if not conn:
+            flash('Erro ao conectar ao banco de dados.', 'error')
+            return redirect(url_for('admin_funcionarios'))
+        
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute("""
+            SELECT nome FROM funcionarios 
+            WHERE id_funcionario = %s
+        """, (id_funcionario,))
+        
+        funcionario = cursor.fetchone()
+        
+        if not funcionario:
+            flash('❌ Funcionário não encontrado.', 'error')
+            return redirect(url_for('admin_funcionarios'))
+        
+        nome_funcionario = funcionario['nome']
+        
+        cursor.execute("""
+            DELETE FROM funcionarios 
+            WHERE id_funcionario = %s
+        """, (id_funcionario,))
+        
+        conn.commit()
+        
+        cursor.execute("""
+            INSERT INTO logs_sistema (id_funcionario, acao, modulo, descricao)
+            VALUES (%s, 'EXCLUSAO', 'FUNCIONARIOS', %s)
+        """, (session['admin_id'], f'Funcionário excluído: {nome_funcionario} (ID: {id_funcionario})'))
+        conn.commit()
+        
+        flash(f'🗑️ Funcionário {nome_funcionario} excluído com sucesso!', 'success')
+    
+    except mysql.connector.Error as err:
+        flash(f'Erro ao excluir funcionário: {err}', 'error')
+    
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+    
+    return redirect(url_for('admin_funcionarios'))
+
+@app.route('/admin/funcionario/alternar-status/<int:id_funcionario>', methods=['POST'])
+@admin_required
+def admin_alternar_status_funcionario(id_funcionario):
+    """Ativar/Desativar funcionário"""
+    if session['admin_cargo'] != 'admin':
+        flash('❌ Acesso restrito para administradores.', 'error')
+        return redirect(url_for('admin_dashboard'))
+    
+    if id_funcionario == session['admin_id']:
+        flash('❌ Você não pode desativar sua própria conta.', 'error')
+        return redirect(url_for('admin_funcionarios'))
+    
+    try:
+        conn = get_db_connection()
+        if not conn:
+            flash('Erro ao conectar ao banco de dados.', 'error')
+            return redirect(url_for('admin_funcionarios'))
+        
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute("""
+            SELECT nome, ativo FROM funcionarios 
+            WHERE id_funcionario = %s
+        """, (id_funcionario,))
+        
+        funcionario = cursor.fetchone()
+        
+        if not funcionario:
+            flash('❌ Funcionário não encontrado.', 'error')
+            return redirect(url_for('admin_funcionarios'))
+        
+        novo_status = not funcionario['ativo']
+        
+        cursor.execute("""
+            UPDATE funcionarios 
+            SET ativo = %s 
+            WHERE id_funcionario = %s
+        """, (novo_status, id_funcionario))
+        
+        conn.commit()
+        
+        acao = 'ativado' if novo_status else 'desativado'
+        cursor.execute("""
+            INSERT INTO logs_sistema (id_funcionario, acao, modulo, descricao)
+            VALUES (%s, 'ALTERACAO', 'FUNCIONARIOS', %s)
+        """, (session['admin_id'], f'Funcionário {acao}: {funcionario["nome"]} (ID: {id_funcionario})'))
+        conn.commit()
+        
+        status_msg = '✅ ativado' if novo_status else '🚫 desativado'
+        flash(f'Funcionário {funcionario["nome"]} foi {status_msg} com sucesso!', 'success')
+    
+    except mysql.connector.Error as err:
+        flash(f'Erro ao alterar status: {err}', 'error')
+    
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+    
+    return redirect(url_for('admin_funcionarios'))
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -1895,10 +2079,6 @@ def page_not_found(e):
 @app.errorhandler(500)
 def internal_server_error(e):
     return render_template('500.html'), 500
-
-# ============================================
-# EXECUTAR APLICAÇÃO
-# ============================================
 
 if __name__ == '__main__':
     print("=" * 60)

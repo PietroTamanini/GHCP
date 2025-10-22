@@ -1,17 +1,6 @@
--- ============================================
--- BANCO DE DADOS COMPLETO - LOJA GHCP
--- Sistema de E-commerce com Painel Administrativo
--- ============================================
-
--- Criar o banco de dados (se não existir)
 CREATE DATABASE IF NOT EXISTS loja_informatica;
 USE loja_informatica;
 
--- ============================================
--- TABELAS PRINCIPAIS DO E-COMMERCE
--- ============================================
-
--- Tabela de produtos
 DROP TABLE IF EXISTS produto;
 CREATE TABLE produto (
     id_produto INT PRIMARY KEY AUTO_INCREMENT,
@@ -24,7 +13,7 @@ CREATE TABLE produto (
     categoria VARCHAR(100),
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
     data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    -- Campos para o painel admin
+
     imagens JSON,
     destaque BOOLEAN DEFAULT FALSE,
     peso DECIMAL(8,2) DEFAULT 0,
@@ -37,7 +26,6 @@ CREATE TABLE produto (
     INDEX idx_estoque (estoque)
 );
 
--- Tabela de clientes
 DROP TABLE IF EXISTS clientes;
 CREATE TABLE clientes (
     id_cliente INT PRIMARY KEY AUTO_INCREMENT,
@@ -58,7 +46,6 @@ CREATE TABLE clientes (
     INDEX idx_data_cadastro (data_cadastro)
 );
 
--- Tabela de endereços
 DROP TABLE IF EXISTS enderecos;
 CREATE TABLE enderecos (
     id_endereco INT PRIMARY KEY AUTO_INCREMENT,
@@ -79,7 +66,6 @@ CREATE TABLE enderecos (
     INDEX idx_principal (id_cliente, principal)
 );
 
--- Tabela de pedidos
 DROP TABLE IF EXISTS pedidos;
 CREATE TABLE pedidos (
     id_pedido INT PRIMARY KEY AUTO_INCREMENT,
@@ -98,7 +84,6 @@ CREATE TABLE pedidos (
     INDEX idx_data (data_pedido)
 );
 
--- Itens do pedido
 DROP TABLE IF EXISTS itens_pedido;
 CREATE TABLE itens_pedido (
     id_item INT PRIMARY KEY AUTO_INCREMENT,
@@ -113,7 +98,6 @@ CREATE TABLE itens_pedido (
     INDEX idx_produto (id_produto)
 );
 
--- Tabela de preferências
 DROP TABLE IF EXISTS preferencias;
 CREATE TABLE preferencias (
     id_preferencia INT PRIMARY KEY AUTO_INCREMENT,
@@ -127,7 +111,6 @@ CREATE TABLE preferencias (
     FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente) ON DELETE CASCADE
 );
 
--- Avaliações
 DROP TABLE IF EXISTS avaliacoes;
 CREATE TABLE avaliacoes (
     id_avaliacao INT PRIMARY KEY AUTO_INCREMENT,
@@ -145,7 +128,6 @@ CREATE TABLE avaliacoes (
     INDEX idx_nota (nota)
 );
 
--- Histórico de senhas
 DROP TABLE IF EXISTS historico_senhas;
 CREATE TABLE historico_senhas (
     id_historico INT PRIMARY KEY AUTO_INCREMENT,
@@ -157,7 +139,6 @@ CREATE TABLE historico_senhas (
     INDEX idx_cliente (id_cliente)
 );
 
--- Carrinho abandonado
 DROP TABLE IF EXISTS carrinho_abandonado;
 CREATE TABLE carrinho_abandonado (
     id_carrinho INT PRIMARY KEY AUTO_INCREMENT,
@@ -169,7 +150,6 @@ CREATE TABLE carrinho_abandonado (
     FOREIGN KEY (id_produto) REFERENCES produto(id_produto) ON DELETE CASCADE
 );
 
--- Cupons
 DROP TABLE IF EXISTS cupons;
 CREATE TABLE cupons (
     id_cupom INT PRIMARY KEY AUTO_INCREMENT,
@@ -185,11 +165,6 @@ CREATE TABLE cupons (
     INDEX idx_codigo (codigo)
 );
 
--- ============================================
--- TABELAS DO PAINEL ADMINISTRATIVO
--- ============================================
-
--- Tabela de funcionários/admin
 DROP TABLE IF EXISTS funcionarios;
 CREATE TABLE funcionarios (
     id_funcionario INT PRIMARY KEY AUTO_INCREMENT,
@@ -204,7 +179,6 @@ CREATE TABLE funcionarios (
     INDEX idx_cargo (cargo)
 );
 
--- Tabela de diagnósticos
 DROP TABLE IF EXISTS diagnosticos;
 CREATE TABLE diagnosticos (
     id_diagnostico INT PRIMARY KEY AUTO_INCREMENT,
@@ -230,7 +204,6 @@ CREATE TABLE diagnosticos (
     INDEX idx_data (data_entrada)
 );
 
--- Tabela de logs do sistema
 DROP TABLE IF EXISTS logs_sistema;
 CREATE TABLE logs_sistema (
     id_log INT PRIMARY KEY AUTO_INCREMENT,
@@ -245,11 +218,6 @@ CREATE TABLE logs_sistema (
     INDEX idx_data (data_log)
 );
 
--- ============================================
--- VIEWS
--- ============================================
-
--- View para relatório de vendas
 DROP VIEW IF EXISTS view_vendas;
 CREATE VIEW view_vendas AS
 SELECT 
@@ -264,7 +232,6 @@ JOIN clientes c ON p.id_cliente = c.id_cliente
 JOIN itens_pedido ip ON p.id_pedido = ip.id_pedido
 GROUP BY p.id_pedido;
 
--- View para produtos mais vendidos
 DROP VIEW IF EXISTS view_produtos_mais_vendidos;
 CREATE VIEW view_produtos_mais_vendidos AS
 SELECT 
@@ -280,7 +247,6 @@ LEFT JOIN pedidos ped ON ip.id_pedido = ped.id_pedido AND ped.status != 'cancela
 GROUP BY p.id_produto
 ORDER BY total_vendido DESC;
 
--- View para clientes mais ativos
 DROP VIEW IF EXISTS view_clientes_ativos;
 CREATE VIEW view_clientes_ativos AS
 SELECT 
@@ -295,7 +261,6 @@ LEFT JOIN pedidos p ON c.id_cliente = p.id_cliente AND p.status != 'cancelado'
 GROUP BY c.id_cliente
 ORDER BY total_gasto DESC;
 
--- View para estoque baixo
 DROP VIEW IF EXISTS view_estoque_baixo;
 CREATE VIEW view_estoque_baixo AS
 SELECT 
@@ -308,7 +273,6 @@ FROM produto
 WHERE estoque <= 5 AND ativo = TRUE
 ORDER BY estoque ASC;
 
--- View para relatórios mensais (CORRIGIDA)
 DROP VIEW IF EXISTS view_relatorios_mensais;
 CREATE VIEW view_relatorios_mensais AS
 SELECT 
@@ -324,7 +288,6 @@ WHERE data_pedido IS NOT NULL
 GROUP BY YEAR(data_pedido), MONTH(data_pedido)
 ORDER BY ano DESC, mes DESC;
 
--- View para estoque crítico
 DROP VIEW IF EXISTS view_estoque_critico;
 CREATE VIEW view_estoque_critico AS
 SELECT 
@@ -344,13 +307,8 @@ WHERE p.estoque <= 10 AND p.ativo = TRUE
 GROUP BY p.id_produto
 ORDER BY p.estoque ASC;
 
--- ============================================
--- TRIGGERS
--- ============================================
-
 DELIMITER //
 
--- Trigger para registrar histórico de senhas
 DROP TRIGGER IF EXISTS after_cliente_senha_update;
 CREATE TRIGGER after_cliente_senha_update
 AFTER UPDATE ON clientes
@@ -362,7 +320,6 @@ BEGIN
     END IF;
 END//
 
--- Trigger para atualizar estoque quando um pedido é feito
 DROP TRIGGER IF EXISTS after_pedido_insert;
 CREATE TRIGGER after_pedido_insert
 AFTER INSERT ON itens_pedido
@@ -373,7 +330,6 @@ BEGIN
     WHERE id_produto = NEW.id_produto;
 END//
 
--- Trigger para restaurar estoque quando um pedido é cancelado
 DROP TRIGGER IF EXISTS after_pedido_cancel;
 CREATE TRIGGER after_pedido_cancel
 AFTER UPDATE ON pedidos
@@ -387,7 +343,6 @@ BEGIN
     END IF;
 END//
 
--- Trigger para logs automáticos de login
 DROP TRIGGER IF EXISTS after_funcionario_login;
 CREATE TRIGGER after_funcionario_login
 AFTER UPDATE ON funcionarios
@@ -401,13 +356,8 @@ END//
 
 DELIMITER ;
 
--- ============================================
--- PROCEDURES
--- ============================================
-
 DELIMITER //
 
--- Procedure para calcular estatísticas de vendas
 DROP PROCEDURE IF EXISTS sp_estatisticas_vendas;
 CREATE PROCEDURE sp_estatisticas_vendas(IN data_inicio DATE, IN data_fim DATE)
 BEGIN
@@ -421,7 +371,6 @@ BEGIN
     AND status != 'cancelado';
 END//
 
--- Procedure para atualizar preços por categoria
 DROP PROCEDURE IF EXISTS sp_aumento_preco_categoria;
 CREATE PROCEDURE sp_aumento_preco_categoria(IN categoria_nome VARCHAR(100), IN percentual DECIMAL(5,2))
 BEGIN
@@ -432,13 +381,8 @@ END//
 
 DELIMITER ;
 
--- ============================================
--- FUNCTIONS
--- ============================================
-
 DELIMITER //
 
--- Function para calcular idade do cliente
 DROP FUNCTION IF EXISTS fn_calcular_idade;
 CREATE FUNCTION fn_calcular_idade(data_nascimento DATE)
 RETURNS INT
@@ -448,7 +392,6 @@ BEGIN
     RETURN TIMESTAMPDIFF(YEAR, data_nascimento, CURDATE());
 END//
 
--- Function para verificar estoque suficiente
 DROP FUNCTION IF EXISTS fn_verificar_estoque;
 CREATE FUNCTION fn_verificar_estoque(id_prod INT, qtd INT)
 RETURNS BOOLEAN
@@ -462,20 +405,11 @@ END//
 
 DELIMITER ;
 
--- ============================================
--- ÍNDICES ADICIONAIS
--- ============================================
-
--- Índices para melhor performance
 CREATE INDEX IF NOT EXISTS idx_produto_preco ON produto(preco);
 CREATE INDEX IF NOT EXISTS idx_produto_estoque ON produto(estoque);
 CREATE INDEX IF NOT EXISTS idx_pedidos_data_status ON pedidos(data_pedido, status);
 CREATE INDEX IF NOT EXISTS idx_clientes_data_cadastro ON clientes(data_cadastro);
 CREATE INDEX IF NOT EXISTS idx_itens_pedido_preco ON itens_pedido(preco_unitario)
-
--- ============================================
--- TABELA DE SUPORTE AO CLIENTE
--- ============================================
 
 DROP TABLE IF EXISTS suporte;
 CREATE TABLE suporte (

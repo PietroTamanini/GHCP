@@ -13,8 +13,6 @@
                 <span class="tab-text">Criar Conta</span>
             </button>
         </div>
-
-        <!-- FORMULÁRIO DE LOGIN -->
         <form method="POST" action="{{ url_for('login') }}" class="auth-form active" id="login-form">
             <div class="auth-header">
                 <h1>🎯 Bem-vindo de volta!</h1>
@@ -86,8 +84,6 @@
                 </button>
             </div>
         </form>
-
-        <!-- FORMULÁRIO DE CADASTRO -->
         <form method="POST" action="{{ url_for('cadastro') }}" class="auth-form" id="cadastro-form">
             <div class="auth-header">
                 <h1>🚀 Crie sua conta</h1>
@@ -625,7 +621,6 @@
 </style>
 
 <script>
-    // Alternar entre tabs
     const tabs = document.querySelectorAll('.auth-tab');
     const forms = document.querySelectorAll('.auth-form');
 
@@ -640,8 +635,6 @@
             document.getElementById(`${targetTab}-form`).classList.add('active');
         });
     });
-
-    // Toggle mostrar/ocultar senha
     document.querySelectorAll('.toggle-password').forEach(button => {
         button.addEventListener('click', () => {
             const targetId = button.dataset.target;
@@ -656,8 +649,6 @@
             }
         });
     });
-
-    // Máscara de CPF
     const cpfInput = document.getElementById('cadastro-cpf');
     if (cpfInput) {
         cpfInput.addEventListener('input', (e) => {
@@ -668,8 +659,6 @@
             e.target.value = value;
         });
     }
-
-    // Máscara de Telefone
     const phoneInput = document.getElementById('cadastro-telefone');
     if (phoneInput) {
         phoneInput.addEventListener('input', (e) => {
@@ -684,8 +673,6 @@
             e.target.value = value;
         });
     }
-
-    // Força da senha
     const senhaInput = document.getElementById('cadastro-senha');
     const strengthBar = document.getElementById('password-strength');
 
@@ -710,8 +697,6 @@
             }
         });
     }
-
-    // Validar confirmação de senha
     const cadastroForm = document.getElementById('cadastro-form');
     if (cadastroForm) {
         cadastroForm.addEventListener('submit', (e) => {

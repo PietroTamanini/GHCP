@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% set titulo = "Compra Concluída" %}
+{% block conteudo %}
+
+<style>
+  .success-container {
+      max-width: 600px;
+      margin: 80px auto;
+      background: var(--glass);
+      padding: 40px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      text-align: center;
+  }
+
+  .success-title {
+      font-size: 2.5em;
+      font-weight: 800;
+      color: var(--success);
+      margin-bottom: 20px;
+  }
+
+  .success-message {
+      font-size: 1.2em;
+      color: var(--text);
+      margin-bottom: 30px;
+  }
+
+  .btn-home {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: 15px 30px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 1.1em;
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+      text-decoration: none;
+      display: inline-block;
+  }
+
+  .btn-home:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow);
+  }
+
+  @media (max-width: 600px) {
+      .success-container {
+          padding: 25px;
+      }
+      .success-title {
+          font-size: 2em;
+      }
+  }
+</style>
+
+<div class="success-container">
+    <div class="success-title">🎉 Compra Concluída!</div>
+    <div class="success-message">
+        Obrigado por comprar conosco.<br>
+        Seu pedido foi processado com sucesso.
+    </div>
+    <a href="{{ url_for('listar_produtos') }}" class="btn-home">🏠 Voltar ao Início</a>
+</div>
+
+{% endblock %}

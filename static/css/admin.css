@@ -117,8 +117,6 @@ body {
     padding: 2rem;
     overflow-y: auto;
 }
-
-/* Cards */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -146,8 +144,6 @@ body {
     font-weight: 700;
     color: var(--primary);
 }
-
-/* Tables */
 .data-table {
     background: white;
     border-radius: 8px;
@@ -224,8 +220,6 @@ th {
 tr:hover {
     background: var(--secondary);
 }
-
-/* Forms */
 .form-group {
     margin-bottom: 1.5rem;
 }
@@ -249,8 +243,6 @@ tr:hover {
     border-color: var(--primary);
     box-shadow: 0 0 0 2px rgba(0,102,255,0.2);
 }
-
-/* Flash messages */
 .flash-messages {
     margin-bottom: 2rem;
 }
@@ -278,8 +270,6 @@ tr:hover {
     color: #856404;
     border: 1px solid #ffeaa7;
 }
-
-/* Login page */
 .login-container {
     min-height: 100vh;
     display: flex;
@@ -302,8 +292,6 @@ tr:hover {
     margin-bottom: 2rem;
     color: var(--dark);
 }
-
-/* Responsive */
 @media (max-width: 768px) {
     .admin-sidebar {
         width: 100%;
@@ -336,9 +324,6 @@ tr:hover {
         cursor: pointer;
     }
 }
-/* Admin CSS - Já está incluído no base.html, este arquivo é para customizações adicionais */
-
-/* Estilos adicionais podem ser adicionados aqui */
 .admin-loading {
     display: flex;
     justify-content: center;
@@ -359,8 +344,6 @@ tr:hover {
     margin-bottom: 1rem;
     opacity: 0.5;
 }
-
-/* Animações */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
@@ -369,8 +352,6 @@ tr:hover {
 .admin-content > * {
     animation: fadeIn 0.5s ease;
 }
-
-/* Scroll personalizado */
 .admin-content::-webkit-scrollbar {
     width: 8px;
 }
