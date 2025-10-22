@@ -1,396 +1,493 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diagnóstico de Computadores - Loja GHCP</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+{% extends "base.html" %}
 
-        :root {
-            --primary: #0066ff;
-            --primary-dark: #0052cc;
-            --primary-light: #3385ff;
-            --secondary: #f5f7fa;
-            --accent: #ff6b35;
-            --success: #00d084;
-            --warning: #ffb800;
-            --danger: #ff3366;
-            --info: #00b8d4;
-            --dark: #1a1d29;
-            --text: #2d3748;
-            --text-light: #718096;
-            --border: #e2e8f0;
-            --glass: rgba(255, 255, 255, 0.9);
-            --shadow-sm: 0 2px 8px rgba(0, 102, 255, 0.08);
-            --shadow: 0 8px 30px rgba(0, 102, 255, 0.12);
-            --shadow-lg: 0 20px 60px rgba(0, 102, 255, 0.2);
-            --radius: 16px;
-            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+{% block title %}Diagnóstico Técnico - Loja GHCP{% endblock %}
+
+{% block conteudo %}
+<style>
+    .diagnostico-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        animation: fadeIn 0.8s ease;
+    }
+
+    .diagnostico-header h1 {
+        font-size: 3rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1rem;
+    }
+
+    .diagnostico-header p {
+        font-size: 1.2rem;
+        color: var(--text-light);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .form-container {
+        background: white;
+        padding: 3rem;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        margin-bottom: 2rem;
+        animation: slideUp 0.6s ease;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
         }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--secondary);
-            color: var(--text);
-            line-height: 1.6;
-            padding-top: 80px;
+        to {
+            opacity: 1;
+            transform: translateY(0);
         }
+    }
 
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
+    .form-section-title {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--border);
+        color: var(--primary);
+        font-size: 1.3rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
 
-        .header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
 
-        .header h1 {
-            font-size: 3rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 1rem;
-        }
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
 
-        .header p {
-            font-size: 1.2rem;
-            color: var(--text-light);
-            max-width: 600px;
-            margin: 0 auto;
-        }
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
 
-        .form-container {
-            background: white;
-            padding: 3rem;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 2rem;
-        }
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--dark);
+        font-size: 0.95rem;
+    }
 
+    .form-control {
+        width: 100%;
+        padding: 1rem;
+        border: 2px solid var(--border);
+        border-radius: 10px;
+        font-size: 1rem;
+        font-family: inherit;
+        transition: var(--transition);
+        background: var(--secondary);
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(0,102,255,0.1);
+        background: white;
+    }
+
+    textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    select.form-control {
+        cursor: pointer;
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 1.2rem 2rem;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        box-shadow: var(--shadow);
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .submit-info {
+        text-align: center;
+        margin-top: 1rem;
+        opacity: 0.7;
+        font-size: 0.9rem;
+        color: var(--text-light);
+    }
+
+    .benefits-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-top: 3rem;
+    }
+
+    .benefit-card {
+        background: white;
+        padding: 2rem;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-sm);
+        text-align: center;
+        transition: var(--transition);
+        border: 2px solid var(--border);
+    }
+
+    .benefit-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow);
+        border-color: var(--primary);
+    }
+
+    .benefit-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        filter: drop-shadow(0 4px 10px rgba(0,102,255,0.2));
+    }
+
+    .benefit-card h3 {
+        margin-bottom: 0.8rem;
+        color: var(--dark);
+        font-size: 1.1rem;
+    }
+
+    .benefit-card p {
+        color: var(--text-light);
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+
+    .contact-cta {
+        text-align: center;
+        margin-top: 3rem;
+        padding: 2.5rem;
+        background: white;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        border: 2px solid var(--border);
+    }
+
+    .contact-cta h3 {
+        margin-bottom: 1rem;
+        color: var(--primary);
+        font-size: 1.5rem;
+    }
+
+    .contact-cta p {
+        margin-bottom: 1.5rem;
+        color: var(--text-light);
+    }
+
+    .contact-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-contact {
+        padding: 1rem 2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .btn-call {
+        background: linear-gradient(135deg, var(--success) 0%, #00b36e 100%);
+        color: white;
+    }
+
+    .btn-whatsapp {
+        background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+        color: white;
+    }
+
+    .btn-contact:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow);
+    }
+
+    .required-note {
+        font-size: 0.85rem;
+        color: var(--text-light);
+        margin-top: 1rem;
+        text-align: center;
+    }
+
+    @media (max-width: 768px) {
         .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
+            grid-template-columns: 1fr;
+        }
+        
+        .form-container {
+            padding: 2rem 1.5rem;
+        }
+        
+        .diagnostico-header h1 {
+            font-size: 2.5rem;
         }
 
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: var(--dark);
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 1rem;
-            border: 2px solid var(--border);
-            border-radius: 10px;
+        .diagnostico-header p {
             font-size: 1rem;
-            transition: var(--transition);
         }
 
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(0,102,255,0.1);
+        .benefits-grid {
+            grid-template-columns: 1fr;
         }
 
-        textarea.form-control {
-            min-height: 120px;
-            resize: vertical;
+        .contact-buttons {
+            flex-direction: column;
         }
 
-        .btn {
-            padding: 1rem 2rem;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
-        }
-
-        .btn-full {
+        .btn-contact {
             width: 100%;
             justify-content: center;
         }
+    }
 
-        .benefits {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-top: 3rem;
-        }
+    .dark-theme .form-container,
+    .dark-theme .benefit-card,
+    .dark-theme .contact-cta {
+        background: var(--dark);
+        border-color: var(--border);
+    }
 
-        .benefit-card {
-            background: white;
-            padding: 2rem;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-sm);
-            text-align: center;
-            transition: var(--transition);
-        }
+    .dark-theme .form-control {
+        background: var(--secondary);
+        color: var(--text);
+        border-color: var(--border);
+    }
 
-        .benefit-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow);
-        }
+    .dark-theme .form-section-title {
+        color: var(--primary-light);
+    }
 
-        .benefit-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
+    .dark-theme .form-group label {
+        color: var(--text);
+    }
 
-        .benefit-card h3 {
-            margin-bottom: 1rem;
-            color: var(--dark);
-        }
+    .dark-theme .benefit-card h3,
+    .dark-theme .contact-cta h3 {
+        color: var(--primary-light);
+    }
 
-        .benefit-card p {
-            color: var(--text-light);
-            font-size: 0.9rem;
-        }
+    .dark-theme .benefit-card p,
+    .dark-theme .contact-cta p {
+        color: var(--text-light);
+    }
 
-        .flash-messages {
-            margin-bottom: 2rem;
-        }
+    .dark-theme .diagnostico-header h1 {
+        background: linear-gradient(135deg, var(--primary-light) 0%, var(--accent) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+</style>
 
-        .flash {
-            padding: 1.2rem 1.5rem;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            font-weight: 600;
-        }
+<div class="diagnostico-header">
+    <h1>🔧 Diagnóstico Técnico</h1>
+    <p>Seu computador está com problemas? Nossa equipe especializada vai identificar e solucionar!</p>
+</div>
 
-        .flash-success {
-            background: rgba(0,208,132,0.1);
-            color: #00a56e;
-            border: 1px solid rgba(0,208,132,0.2);
-        }
-
-        .flash-error {
-            background: rgba(255,51,102,0.1);
-            color: #e62958;
-            border: 1px solid rgba(255,51,102,0.2);
-        }
-
-        @media (max-width: 768px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .container {
-                padding: 1rem;
-            }
-            
-            .form-container {
-                padding: 2rem 1.5rem;
-            }
-            
-            .header h1 {
-                font-size: 2.5rem;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🔧 Diagnóstico Técnico</h1>
-            <p>Seu computador está com problemas? Nossa equipe especializada vai identificar e solucionar!</p>
-        </div>
-
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="flash-messages">
-                    {% for category, message in messages %}
-                        <div class="flash flash-{{ category }}">
-                            {% if category == 'success' %} ✅
-                            {% elif category == 'error' %} ❌
-                            {% else %} ⚠️
-                            {% endif %}
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
-
-        <div class="form-container">
-            <form method="POST">
-                <div class="form-grid">
-                    <div class="form-group full-width">
-                        <h3 style="margin-bottom: 1rem; color: var(--primary);">👤 Seus Dados</h3>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="nome">📛 Nome Completo *</label>
-                        <input type="text" id="nome" name="nome" class="form-control" 
-                               value="{{ session.get('usuario_nome', '') }}" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="email">📧 E-mail *</label>
-                        <input type="email" id="email" name="email" class="form-control" 
-                               value="{{ session.get('usuario_email', '') }}" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="telefone">📞 Telefone</label>
-                        <input type="tel" id="telefone" name="telefone" class="form-control" 
-                               placeholder="(11) 99999-9999">
-                    </div>
-
-                    <div class="form-group full-width">
-                        <h3 style="margin-bottom: 1rem; color: var(--primary);">💻 Informações do Equipamento</h3>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="tipo_equipamento">🖥️ Tipo de Equipamento *</label>
-                        <select id="tipo_equipamento" name="tipo_equipamento" class="form-control" required>
-                            <option value="">Selecione o tipo...</option>
-                            <option value="Notebook">Notebook</option>
-                            <option value="Desktop">Computador Desktop</option>
-                            <option value="All-in-One">All-in-One</option>
-                            <option value="Servidor">Servidor</option>
-                            <option value="Workstation">Workstation</option>
-                            <option value="Outro">Outro</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="marca">🏷️ Marca</label>
-                        <input type="text" id="marca" name="marca" class="form-control" 
-                               placeholder="Ex: Dell, HP, Lenovo...">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="modelo">📋 Modelo</label>
-                        <input type="text" id="modelo" name="modelo" class="form-control" 
-                               placeholder="Ex: Inspiron 15, ThinkPad...">
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label for="problema">🔧 Problema Relatado *</label>
-                        <textarea id="problema" name="problema" class="form-control" 
-                                  placeholder="Descreva detalhadamente o problema que está ocorrendo..." required></textarea>
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label for="sintomas">📝 Sintomas Observados</label>
-                        <textarea id="sintomas" name="sintomas" class="form-control" 
-                                  placeholder="Quais sintomas você observa? (travamentos, lentidão, barulhos, etc)"></textarea>
-                    </div>
-                </div>
-
-                <div style="margin-top: 2rem; text-align: center;">
-                    <button type="submit" class="btn btn-full">
-                        🚀 Solicitar Diagnóstico Gratuito
-                    </button>
-                    <p style="margin-top: 1rem; opacity: 0.7; font-size: 0.9rem;">
-                        ✅ Entraremos em contato em até 24 horas
-                    </p>
-                </div>
-            </form>
-        </div>
-
-        <div class="benefits">
-            <div class="benefit-card">
-                <div class="benefit-icon">🔍</div>
-                <h3>Diagnóstico Preciso</h3>
-                <p>Identificamos exatamente o problema com equipamentos de última geração</p>
+<div class="form-container">
+    <form method="POST">
+        <h3 class="form-section-title">👤 Seus Dados</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="nome">📛 Nome Completo *</label>
+                <input type="text" id="nome" name="nome" class="form-control" 
+                       value="{{ session.get('usuario_nome', '') }}" 
+                       placeholder="Digite seu nome completo"
+                       required>
             </div>
 
-            <div class="benefit-card">
-                <div class="benefit-icon">💲</div>
-                <h3>Orçamento Grátis</h3>
-                <p>Diagnóstico gratuito e orçamento sem compromisso</p>
+            <div class="form-group">
+                <label for="email">📧 E-mail *</label>
+                <input type="email" id="email" name="email" class="form-control" 
+                       value="{{ session.get('usuario_email', '') }}" 
+                       placeholder="seu@email.com"
+                       required>
             </div>
 
-            <div class="benefit-card">
-                <div class="benefit-icon">⚡</div>
-                <h3>Rápido e Eficiente</h3>
-                <p>Serviço ágil com técnicos especializados</p>
-            </div>
-
-            <div class="benefit-card">
-                <div class="benefit-icon">🛡️</div>
-                <h3>Garantia</h3>
-                <p>90 dias de garantia em todos os serviços realizados</p>
+            <div class="form-group full-width">
+                <label for="telefone">📞 Telefone</label>
+                <input type="tel" id="telefone" name="telefone" class="form-control" 
+                       placeholder="(11) 99999-9999">
             </div>
         </div>
 
-        <div style="text-align: center; margin-top: 3rem; padding: 2rem; background: white; border-radius: var(--radius);">
-            <h3 style="margin-bottom: 1rem; color: var(--primary);">📞 Precisa de Ajuda Imediata?</h3>
-            <p style="margin-bottom: 1rem; color: var(--text-light);">
-                Entre em contato diretamente com nossa equipe técnica
+        <h3 class="form-section-title">💻 Informações do Equipamento</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="tipo_equipamento">🖥️ Tipo de Equipamento *</label>
+                <select id="tipo_equipamento" name="tipo_equipamento" class="form-control" required>
+                    <option value="">Selecione o tipo...</option>
+                    <option value="Notebook">💻 Notebook</option>
+                    <option value="Desktop">🖥️ Computador Desktop</option>
+                    <option value="All-in-One">🖳 All-in-One</option>
+                    <option value="Servidor">🗄️ Servidor</option>
+                    <option value="Workstation">⚙️ Workstation</option>
+                    <option value="Outro">📦 Outro</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="marca">🏷️ Marca</label>
+                <input type="text" id="marca" name="marca" class="form-control" 
+                       placeholder="Ex: Dell, HP, Lenovo...">
+            </div>
+
+            <div class="form-group full-width">
+                <label for="modelo">📋 Modelo</label>
+                <input type="text" id="modelo" name="modelo" class="form-control" 
+                       placeholder="Ex: Inspiron 15, ThinkPad X1...">
+            </div>
+        </div>
+
+        <h3 class="form-section-title">🔍 Descrição do Problema</h3>
+        <div class="form-grid">
+            <div class="form-group full-width">
+                <label for="problema">🔧 Problema Relatado *</label>
+                <textarea id="problema" name="problema" class="form-control" 
+                          placeholder="Descreva detalhadamente o problema que está ocorrendo..." 
+                          required></textarea>
+            </div>
+
+            <div class="form-group full-width">
+                <label for="sintomas">📝 Sintomas Observados</label>
+                <textarea id="sintomas" name="sintomas" class="form-control" 
+                          placeholder="Quais sintomas você observa? (travamentos, lentidão, barulhos, tela azul, etc)"></textarea>
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem;">
+            <button type="submit" class="btn-submit">
+                🚀 Solicitar Diagnóstico Gratuito
+            </button>
+            <p class="submit-info">
+                ✅ Entraremos em contato em até 24 horas
             </p>
-            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                <a href="tel:+5511999999999" class="btn" style="background: var(--success);">
-                    📞 Ligar Agora
-                </a>
-                <a href="https://wa.me/5511999999999" class="btn" style="background: #25D366;">
-                    💬 WhatsApp
-                </a>
-            </div>
+            <p class="required-note">
+                * Campos obrigatórios
+            </p>
         </div>
+    </form>
+</div>
+
+<div class="benefits-grid">
+    <div class="benefit-card">
+        <div class="benefit-icon">🔍</div>
+        <h3>Diagnóstico Preciso</h3>
+        <p>Identificamos exatamente o problema com equipamentos de última geração</p>
     </div>
 
-    <script>
-        setTimeout(() => {
-            document.querySelectorAll('.flash').forEach(flash => {
-                flash.style.opacity = '0';
-                flash.style.transition = 'opacity 0.5s ease';
-                setTimeout(() => flash.remove(), 500);
-            });
-        }, 5000);
+    <div class="benefit-card">
+        <div class="benefit-icon">💲</div>
+        <h3>Orçamento Grátis</h3>
+        <p>Diagnóstico gratuito e orçamento sem compromisso</p>
+    </div>
 
-        document.getElementById('telefone')?.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 11) value = value.substring(0, 11);
-            
-            if (value.length > 10) {
-                value = value.replace(/^(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-            } else if (value.length > 6) {
-                value = value.replace(/^(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
-            } else if (value.length > 2) {
-                value = value.replace(/^(\d{2})(\d{0,5})/, '($1) $2');
-            } else if (value.length > 0) {
-                value = value.replace(/^(\d*)/, '($1');
+    <div class="benefit-card">
+        <div class="benefit-icon">⚡</div>
+        <h3>Rápido e Eficiente</h3>
+        <p>Serviço ágil com técnicos especializados</p>
+    </div>
+
+    <div class="benefit-card">
+        <div class="benefit-icon">🛡️</div>
+        <h3>Garantia</h3>
+        <p>90 dias de garantia em todos os serviços realizados</p>
+    </div>
+</div>
+
+<div class="contact-cta">
+    <h3>📞 Precisa de Ajuda Imediata?</h3>
+    <p>Entre em contato diretamente com nossa equipe técnica</p>
+    <div class="contact-buttons">
+        <a href="tel:+5511999999999" class="btn-contact btn-call">
+            📞 Ligar Agora
+        </a>
+        <a href="https://wa.me/5511999999999" class="btn-contact btn-whatsapp">
+            💬 WhatsApp
+        </a>
+    </div>
+</div>
+
+<script>
+    document.getElementById('telefone')?.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 11) value = value.substring(0, 11);
+        
+        if (value.length > 10) {
+            value = value.replace(/^(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+        } else if (value.length > 6) {
+            value = value.replace(/^(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+        } else if (value.length > 2) {
+            value = value.replace(/^(\d{2})(\d{0,5})/, '($1) $2');
+        } else if (value.length > 0) {
+            value = value.replace(/^(\d*)/, '($1');
+        }
+        
+        e.target.value = value;
+    });
+
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const nome = document.getElementById('nome').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const tipo = document.getElementById('tipo_equipamento').value;
+        const problema = document.getElementById('problema').value.trim();
+
+        if (!nome || !email || !tipo || !problema) {
+            e.preventDefault();
+            alert('❌ Por favor, preencha todos os campos obrigatórios!');
+            return false;
+        }
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
             }
-            
-            e.target.value = value;
         });
-    </script>
-</body>
-</html>
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.benefit-card').forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.transition = `all 0.6s ease ${index * 0.1}s`;
+        observer.observe(card);
+    });
+</script>
+{% endblock %}

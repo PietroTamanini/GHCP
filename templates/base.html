@@ -434,6 +434,7 @@
                 {% block menu %}
                     <li><a href="{{ url_for('inicio') }}" class="nav-link">Início</a></li>
                     <li><a href="{{ url_for('listar_produtos') }}" class="nav-link">Produtos</a></li>
+                    <li><a href="{{ url_for('diagnostico') }}" class="nav-link">Diagnóstico</a></li>
                 {% endblock %}
             </ul>
 
@@ -536,7 +537,9 @@
 
         const currentPath = window.location.pathname;
         document.querySelectorAll('.nav-link').forEach(link=>{
-            if(currentPath.startsWith(link.getAttribute('href'))){
+            const linkHref = link.getAttribute('href');
+            link.classList.remove('active');
+            if(currentPath === linkHref || (currentPath === '/' && linkHref === '{{ url_for("inicio") }}')){
                 link.classList.add('active');
             }
         });
