@@ -13,76 +13,80 @@
     </div>
 
     <div class="account-grid">
-        <div class="profile-card">
-            <div class="profile-header">
-                <div class="avatar">
-                    <span>{{ usuario.nome[0].upper() if usuario.nome else 'U' }}</span>
+        <!-- Coluna da esquerda - Perfil e Menu -->
+        <div class="account-left">
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="avatar">
+                        <span>{{ usuario.nome[0].upper() if usuario.nome else 'U' }}</span>
+                    </div>
+                    <div class="profile-info">
+                        <h2>{{ usuario.nome }}</h2>
+                        <p class="user-email">{{ usuario.email }}</p>
+                        <span class="badge badge-success">Conta Ativa</span>
+                    </div>
                 </div>
-                <div class="profile-info">
-                    <h2>{{ usuario.nome }}</h2>
-                    <p class="user-email">{{ usuario.email }}</p>
-                    <span class="badge badge-success">Conta Ativa</span>
+                
+                <div class="profile-stats">
+                    <div class="stat-item">
+                        <div class="stat-icon">📦</div>
+                        <div class="stat-info">
+                            <span class="stat-number">{{ total_pedidos or 0 }}</span>
+                            <span class="stat-label">Pedidos</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon">⭐</div>
+                        <div class="stat-info">
+                            <span class="stat-number">{{ avaliacoes or 0 }}</span>
+                            <span class="stat-label">Avaliações</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon">💳</div>
+                        <div class="stat-info">
+                            <span class="stat-number">R$ {{ total_gasto|default('0,00') }}</span>
+                            <span class="stat-label">Total Gasto</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-            
-            <div class="profile-stats">
-                <div class="stat-item">
-                    <div class="stat-icon">📦</div>
-                    <div class="stat-info">
-                        <span class="stat-number">{{ total_pedidos or 0 }}</span>
-                        <span class="stat-label">Pedidos</span>
-                    </div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-icon">⭐</div>
-                    <div class="stat-info">
-                        <span class="stat-number">{{ avaliacoes or 0 }}</span>
-                        <span class="stat-label">Avaliações</span>
-                    </div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-icon">💳</div>
-                    <div class="stat-info">
-                        <span class="stat-number">R$ {{ total_gasto|default('0,00') }}</span>
-                        <span class="stat-label">Total Gasto</span>
-                    </div>
+
+            <div class="sidebar-menu">
+                <h3>Navegação</h3>
+                <nav class="account-nav">
+                    <a href="#dados-pessoais" class="nav-item active" data-section="dados-pessoais">
+                        <span class="nav-icon">📋</span>
+                        <span>Dados Pessoais</span>
+                    </a>
+                    <a href="#endereco" class="nav-item" data-section="endereco">
+                        <span class="nav-icon">📍</span>
+                        <span>Endereços</span>
+                    </a>
+                    <a href="#seguranca" class="nav-item" data-section="seguranca">
+                        <span class="nav-icon">🔒</span>
+                        <span>Segurança</span>
+                    </a>
+                    <a href="#pedidos" class="nav-item" data-section="pedidos">
+                        <span class="nav-icon">📦</span>
+                        <span>Meus Pedidos</span>
+                    </a>
+                    <a href="#preferencias" class="nav-item" data-section="preferencias">
+                        <span class="nav-icon">⚙️</span>
+                        <span>Preferências</span>
+                    </a>
+                </nav>
+                
+                <div class="sidebar-footer">
+                    <a href="/logout" class="btn-logout">
+                        <span>🚪</span>
+                        <span>Sair da Conta</span>
+                    </a>
                 </div>
             </div>
         </div>
 
-        <div class="sidebar-menu">
-            <h3>Navegação</h3>
-            <nav class="account-nav">
-                <a href="#dados-pessoais" class="nav-item active" data-section="dados-pessoais">
-                    <span class="nav-icon">📋</span>
-                    <span>Dados Pessoais</span>
-                </a>
-                <a href="#endereco" class="nav-item" data-section="endereco">
-                    <span class="nav-icon">📍</span>
-                    <span>Endereços</span>
-                </a>
-                <a href="#seguranca" class="nav-item" data-section="seguranca">
-                    <span class="nav-icon">🔒</span>
-                    <span>Segurança</span>
-                </a>
-                <a href="#pedidos" class="nav-item" data-section="pedidos">
-                    <span class="nav-icon">📦</span>
-                    <span>Meus Pedidos</span>
-                </a>
-                <a href="#preferencias" class="nav-item" data-section="preferencias">
-                    <span class="nav-icon">⚙️</span>
-                    <span>Preferências</span>
-                </a>
-            </nav>
-            
-            <div class="sidebar-footer">
-                <a href="/logout" class="btn-logout">
-                    <span>🚪</span>
-                    <span>Sair da Conta</span>
-                </a>
-            </div>
-        </div>
-
+        <!-- Coluna da direita - Conteúdo -->
         <div class="account-content">
             
             <div class="content-section active" id="dados-pessoais">
@@ -345,6 +349,7 @@
     </div>
 </div>
 
+<!-- Modais -->
 <div class="modal" id="modalSenha">
     <div class="modal-content">
         <div class="modal-header">
@@ -407,7 +412,6 @@
                         <option value="SC">Santa Catarina</option>
                         <option value="SP">São Paulo</option>
                         <option value="RJ">Rio de Janeiro</option>
-                        <!-- Adicionar outros estados -->
                     </select>
                 </div>
             </div>
@@ -492,20 +496,28 @@
         font-size: 16px;
     }
 
+    /* Estrutura do grid corrigida */
     .account-grid {
         display: grid;
-        grid-template-columns: 280px 1fr;
+        grid-template-columns: 320px 1fr;
         gap: 30px;
         align-items: start;
     }
+
+    .account-left {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        position: sticky;
+        top: 20px;
+    }
+
     .profile-card {
         background: white;
         border: 1px solid var(--border);
         border-radius: var(--radius);
-        padding: 30px;
+        padding: 25px;
         box-shadow: var(--shadow-sm);
-        position: sticky;
-        top: 100px;
     }
 
     .dark-theme .profile-card {
@@ -514,26 +526,26 @@
 
     .profile-header {
         text-align: center;
-        margin-bottom: 30px;
+        margin-bottom: 25px;
     }
 
     .avatar {
-        width: 100px;
-        height: 100px;
+        width: 90px;
+        height: 90px;
         background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 42px;
+        font-size: 36px;
         font-weight: 800;
         color: white;
-        margin: 0 auto 20px;
+        margin: 0 auto 15px;
         box-shadow: var(--shadow);
     }
 
     .profile-info h2 {
-        font-size: 20px;
+        font-size: 18px;
         font-weight: 700;
         margin-bottom: 8px;
         color: var(--text);
@@ -547,7 +559,7 @@
 
     .profile-stats {
         display: grid;
-        gap: 15px;
+        gap: 12px;
         padding-top: 20px;
         border-top: 2px solid var(--border);
     }
@@ -556,13 +568,13 @@
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 12px;
+        padding: 10px;
         background: var(--secondary);
-        border-radius: 10px;
+        border-radius: 8px;
     }
 
     .stat-icon {
-        font-size: 28px;
+        font-size: 24px;
     }
 
     .stat-info {
@@ -571,7 +583,7 @@
     }
 
     .stat-number {
-        font-size: 18px;
+        font-size: 16px;
         font-weight: 700;
         color: var(--primary);
     }
@@ -580,14 +592,13 @@
         font-size: 12px;
         color: var(--text-light);
     }
+
     .sidebar-menu {
         background: white;
         border: 1px solid var(--border);
         border-radius: var(--radius);
         padding: 20px;
         box-shadow: var(--shadow-sm);
-        grid-column: 1;
-        grid-row: 2;
     }
 
     .dark-theme .sidebar-menu {
@@ -663,9 +674,10 @@
         transform: translateY(-2px);
         box-shadow: var(--shadow);
     }
+
+    /* Conteúdo principal */
     .account-content {
-        grid-column: 2;
-        grid-row: 1 / 3;
+        min-height: 600px;
     }
 
     .content-section {
@@ -1048,34 +1060,42 @@
         cursor: pointer;
     }
 
+    /* RESPONSIVIDADE CORRIGIDA */
+    @media (max-width: 1024px) {
+        .account-grid {
+            grid-template-columns: 280px 1fr;
+            gap: 20px;
+        }
+    }
+
     @media (max-width: 968px) {
         .account-grid {
             grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .account-left {
+            position: static;
+            flex-direction: row;
+            gap: 20px;
         }
 
         .profile-card {
-            position: static;
+            flex: 1;
         }
 
         .sidebar-menu {
-            grid-column: 1;
-            grid-row: 2;
-        }
-
-        .account-content {
-            grid-column: 1;
-            grid-row: 3;
+            flex: 1;
         }
 
         .account-nav {
-            flex-direction: row;
-            overflow-x: auto;
-            gap: 10px;
-            padding-bottom: 10px;
+            flex-direction: column;
         }
+    }
 
-        .nav-item {
-            white-space: nowrap;
+    @media (max-width: 768px) {
+        .account-left {
+            flex-direction: column;
         }
 
         .form-row {
@@ -1106,6 +1126,17 @@
             grid-template-columns: 1fr;
         }
 
+        .account-nav {
+            flex-direction: row;
+            overflow-x: auto;
+            gap: 10px;
+            padding-bottom: 10px;
+        }
+
+        .nav-item {
+            white-space: nowrap;
+        }
+
         .modal-content {
             width: 95%;
             padding: 20px;
@@ -1114,6 +1145,7 @@
 </style>
 
 <script>
+    // Navegação entre seções
     document.querySelectorAll('.nav-item').forEach(item => {
         item.addEventListener('click', function(e) {
             e.preventDefault();
@@ -1129,6 +1161,7 @@
         });
     });
 
+    // Edição de formulários
     function toggleEdit(formId) {
         const form = document.getElementById(formId);
         const inputs = form.querySelectorAll('input, select');
@@ -1159,6 +1192,7 @@
         toggleEdit(formId);
     }
 
+    // Modais
     function showModal(modalId) {
         document.getElementById(modalId).classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -1168,6 +1202,7 @@
         document.getElementById(modalId).classList.remove('active');
         document.body.style.overflow = 'auto';
     }
+
     document.querySelectorAll('.modal').forEach(modal => {
         modal.addEventListener('click', function(e) {
             if (e.target === this) {
@@ -1176,6 +1211,7 @@
         });
     });
 
+    // Tema escuro
     const temaPref = document.getElementById('temaPref');
     if (temaPref) {
         temaPref.checked = document.body.classList.contains('dark-theme');
@@ -1186,6 +1222,7 @@
         });
     }
 
+    // Máscaras de entrada
     document.querySelectorAll('input[name="cep"]').forEach(input => {
         input.addEventListener('input', function(e) {
             let value = e.target.value.replace(/\D/g, '');
@@ -1224,22 +1261,18 @@
         });
     });
 
+    // Busca de CEP
     document.querySelectorAll('input[name="cep"]').forEach(input => {
         input.addEventListener('blur', function() {
             const cep = this.value.replace(/\D/g, '');
             if (cep.length === 8) {
-                // Aqui você pode integrar com uma API de CEP como ViaCEP
                 console.log('Buscando CEP:', cep);
-                // Exemplo de preenchimento automático (simulado)
-                // fetch(`https://viacep.com.br/ws/${cep}/json/`)
-                //     .then(response => response.json())
-                //     .then(data => {
-                //         // Preencher campos automaticamente
-                //     });
+                // Integração com API de CEP pode ser adicionada aqui
             }
         });
     });
 
+    // Confirmação de exclusão
     document.querySelectorAll('.address-actions button[title="Excluir"]').forEach(btn => {
         btn.addEventListener('click', function() {
             if (confirm('Tem certeza que deseja excluir este endereço?')) {
@@ -1248,6 +1281,7 @@
         });
     });
 
+    // Validação de senha
     document.querySelector('#modalSenha form')?.addEventListener('submit', function(e) {
         const novaSenha = this.querySelector('input[name="nova_senha"]').value;
         const confirmarSenha = this.querySelector('input[name="confirmar_senha"]').value;
