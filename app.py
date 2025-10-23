@@ -539,7 +539,12 @@ def listar_produtos():
         categorias = [row['categoria'] for row in cursor.fetchall()]
         cursor.execute("SELECT DISTINCT marca FROM produto WHERE ativo = TRUE ORDER BY marca")
         marcas = [row['marca'] for row in cursor.fetchall()]
-        return render_template('produtos.html', produtos=produtos, categorias=categorias, marcas=marcas)
+        updated_produtos = [
+            {**p, 'imagens': json.loads(p['imagens'])[0] if p['imagens'] else None}
+            for p in produtos
+        ]
+        print(updated_produtos)
+        return render_template('produtos.html', produtos=updated_produtos, categorias=categorias, marcas=marcas)
     except mysql.connector.Error as err:
         flash(f'Erro ao carregar produtos: {err}', 'error')
         return render_template('produtos.html', produtos=[], categorias=[], marcas=[])
@@ -904,6 +909,7 @@ def admin_editar_produto(id_produto):
         else:
             cursor.execute("SELECT * FROM produto WHERE id_produto = %s", (id_produto,))
             produto = cursor.fetchone()
+            produto['imagens'] = json.loads(produto['imagens']) if produto['imagens'] else []
             if not produto:
                 flash('❌ Produto não encontrado.', 'error')
                 return redirect(url_for('admin_produtos'))

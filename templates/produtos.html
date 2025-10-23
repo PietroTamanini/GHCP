@@ -138,13 +138,13 @@
             {% for produto in produtos %}
             <div class="product-card">
                 
-                {% if produto.imagem %}
-                    <img src="{{ url_for('static', filename='img/' ~ produto.imagem) }}" 
+                {% if produto.imagens %}
+                    <img src="{{ url_for('static', filename='/uploads/produtos/' ~ produto.imagens) }}" 
                         alt="{{ produto.nome }}" 
                         class="img-fluid" 
                         style="height: 180px; object-fit: cover; border-bottom: 1px solid var(--border);">
                 {% else %}
-                    <img src="{{ url_for('static', filename='img/sem-foto.png') }}" 
+                    <img src="{{ url_for('static', filename='img/produto-sem-imagem.jpg') }}" 
                         alt="Imagem padrão" 
                         class="img-fluid" 
                         style="height: 180px; object-fit: cover; border-bottom: 1px solid var(--border);">

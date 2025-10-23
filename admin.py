@@ -260,8 +260,8 @@ def admin_novo_produto():
                 (nome, marca, preco, descricao, estoque, categoria, imagens, peso, dimensoes, destaque)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (nome, marca, float(preco), descricao, int(estoque), categoria,
-                  json.dumps(imagens) if imagens else None, 
-                  float(peso) if peso else 0, 
+                  imagens,
+                  float(peso) if peso else 0,
                   dimensoes, destaque))
             
             conn.commit()
