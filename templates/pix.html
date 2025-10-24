@@ -1,15 +1,152 @@
-
 {% extends 'base.html' %}
 
 {% set titulo = "Pagamento via PIX" %}
 
 {% block conteudo %}
-<div class="card">
-    <div class="card-header">
-        <h2>⚡ PIX</h2>
+<style>
+  :root {
+    --pix-primary: #0066ff;
+    --pix-bg-light: #ffffff;
+    --pix-bg-dark: rgba(255, 255, 255, 0.05);
+    --pix-text-light: #222;
+    --pix-text-dark: #ddd;
+    --pix-border-light: #e5e5e5;
+    --pix-border-dark: rgba(255, 255, 255, 0.1);
+  }
+
+  body.dark-mode .pix-container {
+    background: var(--pix-bg-dark);
+    color: var(--pix-text-dark);
+    border: 1px solid var(--pix-border-dark);
+  }
+
+  body.light-mode .pix-container {
+    background: var(--pix-bg-light);
+    color: var(--pix-text-light);
+    border: 1px solid var(--pix-border-light);
+  }
+
+  .pix-container {
+    max-width: 900px;
+    margin: 50px auto;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    padding: 40px;
+    transition: background 0.3s ease, color 0.3s ease;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .pix-header {
+    text-align: center;
+    margin-bottom: 35px;
+  }
+
+  .pix-header h2 {
+    font-size: 1.8rem;
+    color: var(--pix-primary);
+    margin-bottom: 10px;
+  }
+
+  .pix-section {
+    border-left: 4px solid var(--pix-primary);
+    border-radius: 10px;
+    padding: 25px;
+    margin-bottom: 25px;
+    background: rgba(255,255,255,0.03);
+  }
+
+  .pix-section h4 {
+    color: var(--pix-primary);
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  .pix-section p {
+    text-align: justify;
+    line-height: 1.6;
+  }
+
+  .pix-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .pix-list li {
+    border: 1px solid var(--pix-border-dark);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin: 6px 0;
+    background: rgba(255,255,255,0.02);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .pix-list li::before {
+    content: "✅";
+  }
+
+  .pix-alert {
+    background: rgba(255, 193, 7, 0.1);
+    border-left: 4px solid #ffc107;
+    padding: 20px;
+    border-radius: 10px;
+    color: #ffc107;
+  }
+
+  .pix-footer {
+    text-align: center;
+    opacity: 0.8;
+    font-size: 0.95rem;
+    margin-top: 30px;
+  }
+</style>
+
+<div class="pix-container">
+  <div class="pix-header">
+    <h2>⚡ Pagamento via PIX</h2>
+    <p>Pague instantaneamente com 10% de desconto e aproveite a agilidade do PIX.</p>
+  </div>
+
+  <div class="pix-section">
+    <h4>💡 O que é o PIX?</h4>
+    <p>
+      O <strong>PIX</strong> é um meio de pagamento instantâneo criado pelo Banco Central do Brasil.
+      Ele permite transferências em segundos, 24h por dia, inclusive feriados — rápido, gratuito e seguro.
+    </p>
+  </div>
+
+  <div class="pix-section">
+    <h4>⚙️ Como funciona na nossa loja</h4>
+    <p>
+      Ao finalizar a compra, escolha a opção <strong>“Pagamento via PIX”</strong>.
+      Um QR Code ou código PIX será gerado — basta escanear com o aplicativo do seu banco
+      e confirmar o pagamento. Assim que aprovado, o pedido é processado automaticamente.
+    </p>
+  </div>
+
+  <div class="pix-section">
+    <h4>🎁 Vantagens de pagar com PIX</h4>
+    <ul class="pix-list">
+      <li>Pagamento instantâneo e sem burocracia</li>
+      <li>Disponível 24h, inclusive fins de semana</li>
+      <li>10% de desconto em todas as compras</li>
+      <li>Segurança garantida pelo Banco Central</li>
+      <li>Sem taxas para o cliente</li>
+    </ul>
+  </div>
+
+  <div class="pix-section">
+    <h4>⚠️ Atenção</h4>
+    <div class="pix-alert">
+      O código PIX gerado é válido por até <strong>30 minutos</strong>. Após esse tempo,
+      será necessário gerar um novo. Assim que o pagamento for confirmado, seu pedido entra
+      no processo de separação e envio automaticamente.
     </div>
-    <div class="card-body">
-        <p>Pague instantaneamente com 10% de desconto.</p>
-    </div>
+  </div>
+
+  <div class="pix-footer">
+    💬 Dúvidas? Nossa equipe está pronta para te ajudar a qualquer momento.
+  </div>
 </div>
 {% endblock %}

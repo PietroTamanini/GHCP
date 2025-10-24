@@ -1,14 +1,180 @@
 {% extends 'base.html' %}
 
-{% set titulo = "Termos de Uso" %}
+{% set titulo = "Termos de Uso e Condições" %}
 
 {% block conteudo %}
-<div class="card">
+<style>
+    /* Estilos baseados no seu modelo anterior, adaptados para o tema "Termos de Uso" */
+    :root {
+      --card-primary: #8e44ad; /* Uma cor mais sóbria (roxo) para documentos legais */
+      --card-bg-light: #ffffff;
+      --card-bg-dark: rgba(255, 255, 255, 0.05);
+      --card-text-light: #222;
+      --card-text-dark: #ddd;
+      --card-border-light: #e5e5e5;
+      --card-border-dark: rgba(255, 255, 255, 0.1);
+    }
+
+    body.dark-mode .card-container {
+      background: var(--card-bg-dark);
+      color: var(--card-text-dark);
+      border: 1px solid var(--card-border-dark);
+    }
+
+    body.light-mode .card-container {
+      background: var(--card-bg-light);
+      color: var(--card-text-light);
+      border: 1px solid var(--card-border-light);
+    }
+
+    .card-container {
+      max-width: 900px;
+      margin: 50px auto;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      padding: 40px;
+      transition: background 0.3s ease, color 0.3s ease;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .card-header {
+      text-align: center;
+      margin-bottom: 35px;
+    }
+
+    .card-header h2 {
+      font-size: 2.0rem;
+      color: var(--card-primary);
+      margin-bottom: 10px;
+    }
+    
+    .card-header p {
+        font-size: 1.1rem;
+        opacity: 0.8;
+    }
+
+    .card-section {
+      /* Estilo da barra lateral para destacar cada tópico */
+      border-left: 4px solid var(--card-primary);
+      border-radius: 10px;
+      padding: 25px;
+      margin-bottom: 30px;
+    }
+    
+    body.dark-mode .card-section {
+        background: rgba(255,255,255,0.03);
+    }
+    body.light-mode .card-section {
+        background: rgba(0,0,0,0.01);
+    }
+
+    .card-section h4 {
+      color: var(--card-primary);
+      font-weight: 700;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.4rem;
+    }
+
+    .card-section p {
+      text-align: justify;
+      line-height: 1.7;
+      margin-bottom: 15px;
+      font-size: 1.0rem;
+    }
+
+    .card-alert {
+      background: rgba(231, 76, 60, 0.1); /* Vermelho suave para alertas legais */
+      border-left: 4px solid #e74c3c;
+      padding: 20px;
+      border-radius: 10px;
+      color: #e74c3c;
+      margin-top: 20px;
+    }
+    
+    .card-footer {
+      text-align: center;
+      opacity: 0.7;
+      font-size: 0.9rem;
+      margin-top: 40px;
+      border-top: 1px dashed var(--card-border-light);
+      padding-top: 20px;
+    }
+    
+    .card-list {
+        list-style-type: none;
+        padding-left: 0;
+    }
+    .card-list li {
+        margin-bottom: 10px;
+        position: relative;
+        padding-left: 20px;
+    }
+    .card-list li::before {
+        content: "•";
+        color: var(--card-primary);
+        font-weight: bold;
+        display: inline-block;
+        width: 1em;
+        margin-left: -1em;
+    }
+</style>
+
+<div class="card-container">
     <div class="card-header">
-        <h2>📜 Termos de Uso</h2>
+        <h2>📜 Termos de Uso e Serviço</h2>
+        <p>A data de vigência destes Termos é 23 de Outubro de 2025.</p>
     </div>
-    <div class="card-body">
-        <p>Ao usar nosso site, você concorda com estes termos...</p>
+
+    <div class="card-section">
+        <h4><i class="fas fa-check-circle"></i> 1. Aceitação</h4>
+        <p>
+            Ao acessar e utilizar nosso website, você reconhece ter lido, entendido e concordado em se vincular a estes Termos de Uso. 
+            Se você não concorda integralmente com estes Termos, você não está autorizado a usar nossos serviços.
+        </p>
+    </div>
+
+    <div class="card-section">
+        <h4><i class="fas fa-bullseye"></i> 2. Objeto</h4>
+        <p>
+            Estes Termos regem o acesso e uso de todos os serviços, conteúdos, funcionalidades e aplicações disponibilizados por [Nome da Empresa/Site].
+            O uso indevido ou o não cumprimento destas regras pode resultar em suspensão ou encerramento da sua conta.
+        </p>
+    </div>
+
+    <div class="card-section">
+        <h4><i class="fas fa-edit"></i> 3. Alterações dos Termos</h4>
+        <p>
+            Reservamo-nos o direito de modificar ou substituir estes Termos a qualquer momento. Se uma revisão for material, faremos o possível para 
+            fornecer um aviso com pelo menos 30 dias de antecedência antes que quaisquer novos termos entrem em vigor.
+        </p>
+    </div>
+    
+    <div class="card-section">
+        <h4><i class="fas fa-copyright"></i> 4. Propriedade Intelectual</h4>
+        <p>
+            Todo o conteúdo presente no site, incluindo, mas não se limitando a, textos, gráficos, logotipos, imagens, e software, 
+            são propriedade de [Nome da Empresa/Site] e estão protegidos pelas leis de propriedade intelectual.
+        </p>
+    </div>
+
+    <div class="card-section">
+        <h4><i class="fas fa-exclamation-triangle"></i> Disposições Finais</h4>
+        <p>Recomendamos a leitura atenta dos seguintes pontos:</p>
+        <ul class="card-list">
+            <li><strong>Lei Aplicável:</strong> Estes Termos serão regidos e interpretados de acordo com as leis do [País/Jurisdição].</li>
+            <li><strong>Isenção de Responsabilidade:</strong> Não garantimos que o serviço será ininterrupto ou livre de erros.</li>
+            <li><strong>Uso:</strong> O uso é restrito a pessoas com capacidade legal para contratar.</li>
+        </ul>
+        <div class="card-alert">
+             O descumprimento de qualquer uma das obrigações aqui dispostas poderá ensejar a imediata suspensão ou bloqueio do acesso ao site, a critério exclusivo da administração.
+        </div>
+    </div>
+
+    <div class="card-footer">
+        Em caso de dúvidas sobre estes Termos de Uso, entre em contato conosco através do canal oficial de suporte.
     </div>
 </div>
 {% endblock %}

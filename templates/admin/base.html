@@ -699,6 +699,15 @@
                 <li><a href="{{ url_for('admin_relatorios') }}" class="{% if request.endpoint == 'admin_relatorios' %}active{% endif %}">
                     📈 Relatórios
                 </a></li>
+                <li><a href="{{ url_for('admin_ofertas') }}" class="{% if request.endpoint == 'admin_ofertas' %}active{% endif %}">
+                    💸 Ofertas do Dia
+                </a></li>
+                <li><a href="{{ url_for('admin_concorrentes') }}" class="{% if request.endpoint == 'admin_concorrentes' %}active{% endif %}">
+                    🤝 Concorrentes
+                </a></li>
+                <li><a href="{{ url_for('admin_contatos') }}" class="{% if request.endpoint == 'admin_contatos' %}active{% endif %}">
+                    📞 Contatos
+                </a></li>
                 {% if session.get('admin_cargo') == 'admin' %}
                 <li><a href="{{ url_for('admin_funcionarios') }}" class="{% if request.endpoint == 'admin_funcionarios' %}active{% endif %}">
                     👨‍💼 Funcionários

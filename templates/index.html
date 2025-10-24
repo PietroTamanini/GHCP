@@ -81,6 +81,7 @@
         transition: var(--transition);
         box-shadow: var(--shadow-sm);
         background: white;
+        position: relative;
     }
     .dark-theme .product-card {
         background: var(--dark);
@@ -91,7 +92,8 @@
     }
     .product-image {
         height: 200px;
-        background-color: var(--secondary);
+        /* Corrigindo a cor de fundo para a imagem de placeholder */
+        background-color: #e0e0e0; 
         display: flex;
         align-items: center;
         justify-content: center;
@@ -101,6 +103,11 @@
         font-weight: bold;
         text-align: center;
         padding: 10px;
+        position: relative;
+    }
+    .product-image img {
+        /* Garante que a imagem de placeholder se ajuste corretamente */
+        object-fit: contain; 
     }
     .product-info {
         padding: 20px;
@@ -122,11 +129,78 @@
         font-size: 1.5rem;
         font-weight: 800;
     }
+    .price-normal {
+        color: var(--primary-dark);
+        font-size: 1.5rem;
+        font-weight: 800;
+    }
     .product-actions {
         margin-top: 15px;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        gap: 10px;
+    }
+    .ofertas-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: linear-gradient(135deg, var(--danger) 0%, #e62958 100%);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        z-index: 2;
+        box-shadow: var(--shadow-sm);
+    }
+    .novo-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        z-index: 2;
+        box-shadow: var(--shadow-sm);
+    }
+    .btn-carrinho {
+        background: linear-gradient(135deg, var(--success) 0%, #00b36e 100%);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: var(--transition);
+        flex: 1;
+    }
+    .btn-carrinho:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+    }
+    .btn-detalhes {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: var(--transition);
+        flex: 1;
+        text-decoration: none;
+        text-align: center;
+        display: inline-block;
+    }
+    .btn-detalhes:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+        color: white;
     }
 </style>
 
@@ -160,52 +234,75 @@
 <h2 class="card-header">
     <span>💰</span>
     Ofertas do Dia
-</h2>
+</h2 >
 
 <div class="product-grid">
-    
     {% for produto in produtos_destaque %}
-    
-    {% set preco_original = produto.preco %}
-    {% set desconto = produto.desconto if produto.desconto is defined else 0 %}
-    {% set preco_com_desconto = preco_original * (1 - desconto / 100) %}
-    
     <div class="product-card">
+        {% if produto.tem_oferta and produto.desconto > 0 %}
+            <div class="ofertas-badge">{{ produto.desconto|round|int }}% OFF</div>
+        {% else %}
+            <div class="novo-badge">NOVO</div>
+        {% endif %}
+        
         <div class="product-image">
-            [Imagem do {{ produto.nome }}]
-        </div>
-        <div class="product-info">
-            {% if desconto > 0 %}
-                <span class="badge badge-danger">{{ desconto }}% OFF</span>
-            {% else %}
-                <span class="badge badge-info">Novo</span>
+            {% set usar_placeholder = true %}
+            {% if produto.imagens %}
+                {% set imagens = produto.imagens|from_json %}
+                {% if imagens and imagens|length > 0 %}
+                    <img src="{{ url_for('static', filename='uploads/produtos/' ~ imagens[0]) }}" 
+                         alt="{{ produto.nome }}" 
+                         style="width: 100%; height: 100%; object-fit: cover;">
+                    {% set usar_placeholder = false %}
+                {% endif %}
             {% endif %}
             
+            {% if usar_placeholder %}
+                <img src="{{ url_for('static', filename='img/produto-sem-imagem.jpg') }}" 
+                     alt="Produto sem imagem" 
+                     style="width: 100%; height: 100%; object-fit: contain;">
+            {% endif %}
+        </div>
+        
+        <div class="product-info">
             <h4>{{ produto.nome }}</h4>
+            <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 10px;">
+                {{ produto.marca }} • {{ produto.categoria }}
+            </p>
+            
             <div class="prices">
-                {% if desconto > 0 %}
-                    <span class="price-old">R$ {{ "%.2f"|format(preco_original) }}</span>
-                    <span class="price-new">R$ {{ "%.2f"|format(preco_com_desconto) }}</span>
+                {% if produto.tem_oferta and produto.desconto > 0 %}
+                    <span class="price-old">R$ {{ "%.2f"|format(produto.preco) }}</span>
+                    <span class="price-new">R$ {{ "%.2f"|format(produto.preco_com_desconto) }}</span>
                 {% else %}
-                    <span class="price-new" style="color: var(--primary-dark);">R$ {{ "%.2f"|format(preco_original) }}</span>
+                    <span class="price-normal">R$ {{ "%.2f"|format(produto.preco) }}</span>
                 {% endif %}
             </div>
+            
             <div class="product-actions">
-                <a href="{{ url_for('comprar', id_produto=produto.id_produto) }}" class="btn btn-sm">
+                <a href="{{ url_for('detalhes_produto', id_produto=produto.id_produto) }}" class="btn-detalhes">
                     Ver Detalhes
                 </a>
                 
-                <form method="POST" action="{{ url_for('adicionar_carrinho', id_produto=produto.id_produto) }}">
-                    <button type="submit" class="btn btn-accent btn-sm">
-                        <span>+</span> Carrinho
+                <form method="POST" action="{{ url_for('adicionar_carrinho', id_produto=produto.id_produto) }}" style="flex: 1;">
+                    <button type="submit" class="btn-carrinho">
+                        + Carrinho
                     </button>
                 </form>
             </div>
         </div>
     </div>
-    
+    {% else %}
+    <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+        <h3 style="color: var(--text-light); margin-bottom: 20px;">📭 Nenhuma oferta disponível no momento</h3>
+        <p style="color: var(--text-light); margin-bottom: 30px;">
+            Confira nosso catálogo completo de produtos!
+        </p>
+        <a href="{{ url_for('listar_produtos') }}" class="btn btn-primary">
+            Ver Todos os Produtos
+        </a>
+    </div>
     {% endfor %}
-    
 </div>
 
 <div style="text-align: center; margin-top: 50px;">
@@ -213,5 +310,86 @@
         Ver Todo o Catálogo
     </a>
 </div>
+
+<style>
+
+#cookie-banner {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0,0,0,0.85);
+        color: white;
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.9rem;
+        z-index: 99999; /* reforçado */
+        backdrop-filter: blur(5px);
+        transition: transform 0.4s ease, opacity 0.4s ease;
+    }
+    #cookie-banner button {
+        border: none;
+        color: white;
+        padding: 8px 18px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background 0.3s, transform 0.3s;
+    }
+    #accept-cookies {
+        background: var(--primary);
+    }
+    #accept-cookies:hover {
+        background: #004aad; /* azul mais escuro no hover */
+        transform: scale(1.05);
+    }
+    #decline-cookies {
+        background: var(--primary);
+    }
+    #decline-cookies:hover {
+        background: #004aad;
+        transform: scale(1.05);
+    }
+</style>
+
+<div id="cookie-banner">
+    <span>🍪 Usamos cookies para melhorar sua experiência. Você pode aceitar ou recusar.</span>
+    <div style="display: flex; gap: 10px;">
+        <button id="accept-cookies">Aceitar</button>
+        <button id="decline-cookies">Recusar</button>
+    </div>
+</div>
+
+<script>
+    const cookieBanner = document.getElementById('cookie-banner');
+    const acceptBtn = document.getElementById('accept-cookies');
+    const declineBtn = document.getElementById('decline-cookies');
+
+    // Se já tomou decisão, não mostra
+    if(localStorage.getItem('cookies_decision')){
+        cookieBanner.style.display = 'none';
+    }
+
+    function fecharBanner(){
+        cookieBanner.style.transform = 'translateY(100%)';
+        cookieBanner.style.opacity = '0';
+        setTimeout(() => cookieBanner.style.display = 'none', 400);
+    }
+
+    acceptBtn.addEventListener('click', () => {
+        localStorage.setItem('cookies_decision', 'aceito');
+        fecharBanner();
+    });
+
+    declineBtn.addEventListener('click', () => {
+        localStorage.setItem('cookies_decision', 'recusado');
+        fecharBanner();
+    });
+</script>
+
+
 
 {% endblock %}

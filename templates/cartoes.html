@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% set titulo = "Pagamento com Cartão" %}
+
+{% block conteudo %}
+<style>
+    /* Usando variáveis globais do base.html: --primary, --secondary, --glass, --text, --border, etc. */
+    
+    /* --- Container Principal --- */
+    .card-container {
+        max-width: 900px;
+        margin: 50px auto;
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: var(--shadow); /* Usando shadow global */
+        font-family: 'Inter', sans-serif;
+        
+        /* Aplicação das variáveis GLOBAIS do base.html */
+        background: var(--glass); /* Fundo do container: se ajusta no dark-theme */
+        color: var(--text); /* Cor do texto: se ajusta no dark-theme */
+        border: 1px solid var(--border); /* Cor da borda: se ajusta no dark-theme */
+        transition: all 0.3s ease;
+    }
+
+    .card-header {
+        text-align: center;
+        margin-bottom: 35px;
+    }
+
+    .card-header h2 {
+        font-size: 2.2rem;
+        color: var(--primary); /* Cor principal global */
+        margin-bottom: 10px;
+        font-weight: 700;
+    }
+
+    /* --- Seções (Tópicos) --- */
+    .card-section {
+        border-left: 5px solid var(--primary); /* Cor principal global */
+        border-radius: 10px;
+        padding: 25px;
+        margin-bottom: 30px;
+        background: var(--secondary); /* Fundo secundário: se ajusta no dark-theme */
+        transition: background-color 0.3s ease;
+    }
+
+    .card-section h4 {
+        color: var(--primary); /* Cor principal global */
+        font-weight: 600;
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .card-section p {
+        text-align: justify;
+        line-height: 1.7;
+    }
+
+    /* --- Lista de Parcelamento --- */
+    .card-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .card-list li {
+        border-radius: 8px;
+        padding: 12px 18px;
+        margin: 8px 0;
+        font-size: 1.0rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--glass); /* Fundo do item da lista: se ajusta no dark-theme */
+        border: 1px solid var(--border);
+    }
+    
+    .card-list li::before {
+        content: "💳";
+        font-size: 1.2rem;
+        color: var(--primary); /* Cor principal global */
+    }
+    /* Ícones personalizados para a lista */
+    .card-list li:nth-child(2)::before { content: "✅"; }
+    .card-list li:nth-child(3)::before { content: "⏱️"; }
+    .card-list li:nth-child(4)::before { content: "🛡️"; }
+
+    /* --- Alerta --- */
+    .card-alert {
+        /* Usando a cor de warning global do base.html (--warning: #ffb800) */
+        background: rgba(255, 184, 0, 0.15); 
+        border-left: 4px solid var(--warning); /* Cor warning global */
+        padding: 20px;
+        border-radius: 10px;
+        color: var(--text); /* Cor do texto global */
+        font-weight: 500;
+    }
+
+    /* --- Bandeiras de Cartão --- */
+    .card-icons {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+        padding: 10px 0;
+    }
+
+    .card-icons img {
+        height: 40px;
+        filter: brightness(1);
+        transition: transform 0.2s, filter 0.3s;
+    }
+    
+    /* Aplica um filtro de ajuste para cartões no modo escuro, usando o seletor .dark-theme de base.html */
+    .dark-theme .card-icons img { 
+        filter: brightness(0.8) contrast(1.1);
+    }
+
+    .card-icons img:hover {
+        transform: scale(1.15);
+    }
+    
+    /* --- Rodapé --- */
+    .card-footer {
+        text-align: center;
+        opacity: 0.8;
+        font-size: 0.95rem;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px dashed var(--border); /* Usando border global */
+        color: var(--text-light); /* Texto mais claro */
+    }
+</style>
+
+<div class="card-container">
+  <div class="card-header">
+    <h2>💳 Pagamento com Cartão</h2>
+    <p>Pague com cartão de crédito ou débito com segurança e praticidade.</p>
+  </div>
+
+  <div class="card-section">
+    <h4>🧾 Cartões aceitos</h4>
+    <p>Aceitamos as principais bandeiras de cartões de crédito e débito, garantindo a sua tranquilidade:</p>
+    <div class="card-icons">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" alt="Visa">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="MasterCard">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Elo_logo.png" alt="Elo">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/8/89/Hipercard_logo.svg" alt="Hipercard">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/3/30/American_Express_logo.svg" alt="Amex">
+    </div>
+  </div>
+
+  <div class="card-section">
+    <h4>⚙️ Como funciona</h4>
+    <p>
+      Nosso processo de pagamento é simples e totalmente criptografado.
+      No momento da finalização, você será direcionado para um ambiente seguro (certificação PCI) para inserir os dados do seu cartão.
+      A aprovação é geralmente automática e instantânea.
+    </p>
+  </div>
+
+  <div class="card-section">
+    <h4>🎯 Opções de parcelamento</h4>
+    <ul class="card-list">
+      <li><strong>Parcelamento</strong> em até <strong>12x</strong> no crédito.</li>
+      <li><strong>Benefício:</strong> Sem juros em compras a partir de R$100.</li>
+      <li><strong>Débito:</strong> Aprovação imediata do pagamento.</li>
+      <li><strong>Tecnologia:</strong> Segurança e criptografia de ponta para proteger seus dados.</li>
+    </ul>
+  </div>
+
+  <div class="card-section">
+    <h4>⚠️ Atenção</h4>
+    <div class="card-alert">
+      A confirmação do pedido está sujeita à autorização da sua operadora de cartão de crédito/débito. 
+      Em caso de falha na transação ou limite insuficiente, você será notificado para tentar outro método de pagamento.
+    </div>
+  </div>
+
+  <div class="card-footer">
+    💬 Se precisar de ajuda com seu pagamento, nossa equipe de suporte está à disposição.
+  </div>
+</div>
+{% endblock %}

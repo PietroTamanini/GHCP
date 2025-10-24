@@ -81,9 +81,44 @@
 .cart-actions-footer { justify-content: flex-end; }
 .cart-empty { text-align: center; padding: 50px 20px; }
 .cart-empty p { font-size: 1.2em; color: var(--text-light); margin-bottom: 25px; }
-@media (max-width: 600px) { .cart-container { padding: 25px; } }
+
+/* Mensagens flash */
+.flash-container { max-width: 800px; margin: 20px auto; }
+.alert {
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    font-weight: 600;
+    text-align: center;
+    animation: fadeIn 0.4s ease-in-out;
+}
+.alert-success { background: #d1f7c4; color: #0f5132; }
+.alert-warning { background: #fff3cd; color: #664d03; }
+.alert-error, .alert-danger { background: #f8d7da; color: #842029; }
+.alert-info { background: #cff4fc; color: #055160; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+    .cart-container { padding: 25px; }
+}
 </style>
 
+<!-- 🟢 BLOCO DE MENSAGENS FLASH -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-container">
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<!-- 🛒 CONTEÚDO DO CARRINHO -->
 <div class="cart-container">
     <h2 class="cart-title">🛒 Carrinho de Compras</h2>
 
@@ -113,7 +148,9 @@
         <div class="cart-summary">
             <p>Total de Itens Diferentes: <strong>{{ produtos_carrinho|length }}</strong></p>
             <p>Total de Produtos: <strong>{{ total_itens }}</strong></p>
-            <p style="font-size:1.5em;font-weight:bold;color:var(--primary-dark);">Total Geral: R$ {{ "%.2f"|format(total_geral) }}</p>
+            <p style="font-size:1.5em;font-weight:bold;color:var(--primary-dark);">
+                Total Geral: R$ {{ "%.2f"|format(total_geral) }}
+            </p>
         </div>
 
         <div class="cart-actions-footer">
@@ -122,11 +159,24 @@
         </div>
     </form>
     {% else %}
-    <p class="cart-empty">Seu carrinho está vazio :(</p>
-    <p style="text-align:center; margin-top:20px;">
-        <a href="{{ url_for('listar_produtos') }}" class="btn-action btn-primary w-100">Voltar às Compras</a>
-    </p>
+    <div class="cart-empty">
+        <p>Seu carrinho está vazio :(</p>
+        <p>
+            <a href="{{ url_for('listar_produtos') }}" class="btn-action btn-primary w-100">Voltar às Compras</a>
+        </p>
+    </div>
     {% endif %}
 </div>
+
+<!-- 🔄 SCRIPT PARA FAZER AS MENSAGENS SUMIREM DEPOIS DE ALGUNS SEGUNDOS -->
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(el => {
+      el.style.transition = 'opacity 0.5s ease';
+      el.style.opacity = '0';
+      setTimeout(() => el.remove(), 500);
+    });
+  }, 4000); // 4 segundos
+</script>
 
 {% endblock %}

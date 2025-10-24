@@ -1,0 +1,110 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Concorrentes{% endblock %}
+
+{% block page_title %}📊 Gestão de Concorrentes{% endblock %}
+
+{% block content %}
+<div class="table-header">
+    <h3>Lista de Concorrentes</h3>
+    <div class="table-actions">
+        <a href="{{ url_for('admin_novo_concorrente') }}" class="btn btn-primary">
+            ➕ Novo Concorrente
+        </a>
+    </div>
+</div>
+
+<div class="data-table">
+    <table>
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Empresa</th>
+                <th>Cargo</th>
+                <th>Email</th>
+                <th>Telefone</th>
+                <th>Interesse</th>
+                <th>Status</th>
+                <th>Data</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for concorrente in concorrentes %}
+            <tr>
+                <td>
+                    <strong>{{ concorrente.nome }}</strong>
+                    {% if concorrente.observacoes %}
+                    <br><small style="color: var(--text-light);">{{ concorrente.observacoes[:50] }}...</small>
+                    {% endif %}
+                </td>
+                <td>{{ concorrente.empresa }}</td>
+                <td>{{ concorrente.cargo or '-' }}</td>
+                <td>
+                    <a href="mailto:{{ concorrente.email }}" style="color: var(--primary); text-decoration: none;">
+                        {{ concorrente.email }}
+                    </a>
+                </td>
+                <td>{{ concorrente.telefone or '-' }}</td>
+                <td>{{ concorrente.interesse or '-' }}</td>
+                <td>
+                    <span class="badge 
+                        {% if concorrente.status == 'contatado' %}badge-success
+                        {% elif concorrente.status == 'pendente' %}badge-warning
+                        {% elif concorrente.status == 'recusado' %}badge-danger
+                        {% else %}badge-info{% endif %}">
+                        {{ concorrente.status|title }}
+                    </span>
+                </td>
+                <td>{{ concorrente.data_cadastro.strftime('%d/%m/%Y') }}</td>
+                <td>
+                    <div style="display: flex; gap: 8px;">
+                        <a href="{{ url_for('admin_editar_concorrente', id_concorrente=concorrente.id_concorrente) }}" 
+                           class="btn btn-sm btn-primary" title="Editar">
+                            ✏️
+                        </a>
+                        <form method="POST" action="{{ url_for('admin_excluir_concorrente', id_concorrente=concorrente.id_concorrente) }}" 
+                              style="display: inline;" onsubmit="return confirm('Tem certeza que deseja excluir este concorrente?')">
+                            <button type="submit" class="btn btn-sm btn-danger" title="Excluir">
+                                🗑️
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="9" style="text-align: center; padding: 40px; color: var(--text-light);">
+                    📝 Nenhum concorrente cadastrado ainda.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Estatísticas Rápidas -->
+<div class="stats-grid" style="margin-top: 40px;">
+    <div class="stat-card">
+        <h3>Total de Concorrentes</h3>
+        <div class="value">{{ concorrentes|length }}</div>
+        <div class="trend up">📈 Todos os registros</div>
+    </div>
+    
+    <div class="stat-card">
+        <h3>Pendentes</h3>
+        <div class="value" style="color: var(--warning);">
+            {{ concorrentes|selectattr('status', 'equalto', 'pendente')|list|length }}
+        </div>
+        <div class="trend">⏳ Aguardando contato</div>
+    </div>
+    
+    <div class="stat-card">
+        <h3>Contatados</h3>
+        <div class="value" style="color: var(--success);">
+            {{ concorrentes|selectattr('status', 'equalto', 'contatado')|list|length }}
+        </div>
+        <div class="trend up">✅ Contato realizado</div>
+    </div>
+</div>
+{% endblock %}

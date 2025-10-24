@@ -1,14 +1,175 @@
 {% extends 'base.html' %}
 
-{% set titulo = "Política de Cookies" %}
+{% set titulo = "Política de Cookies e Tecnologias Semelhantes" %}
 
 {% block conteudo %}
-<div class="card">
+<style>
+    /* Estilos baseados no seu modelo anterior, adaptados para o tema "Política de Cookies" */
+    :root {
+      --card-primary: #e67e22; /* Cor quente (Laranja/Cookies) para o tema */
+      --card-bg-light: #ffffff;
+      --card-bg-dark: rgba(255, 255, 255, 0.05);
+      --card-text-light: #222;
+      --card-text-dark: #ddd;
+      --card-border-light: #e5e5e5;
+      --card-border-dark: rgba(255, 255, 255, 0.1);
+    }
+
+    body.dark-mode .card-container {
+      background: var(--card-bg-dark);
+      color: var(--card-text-dark);
+      border: 1px solid var(--card-border-dark);
+    }
+
+    body.light-mode .card-container {
+      background: var(--card-bg-light);
+      color: var(--card-text-light);
+      border: 1px solid var(--card-border-light);
+    }
+
+    .card-container {
+      max-width: 900px;
+      margin: 50px auto;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      padding: 40px;
+      transition: background 0.3s ease, color 0.3s ease;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .card-header {
+      text-align: center;
+      margin-bottom: 35px;
+    }
+
+    .card-header h2 {
+      font-size: 2.0rem;
+      color: var(--card-primary);
+      margin-bottom: 10px;
+    }
+    
+    .card-header p {
+        font-size: 1.1rem;
+        opacity: 0.8;
+    }
+
+    .card-section {
+      /* Estilo da barra lateral para destacar cada tópico */
+      border-left: 4px solid var(--card-primary);
+      border-radius: 10px;
+      padding: 25px;
+      margin-bottom: 30px;
+    }
+    
+    body.dark-mode .card-section {
+        background: rgba(255,255,255,0.03);
+    }
+    body.light-mode .card-section {
+        background: rgba(0,0,0,0.01);
+    }
+
+    .card-section h4 {
+      color: var(--card-primary);
+      font-weight: 700;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.4rem;
+    }
+
+    .card-section p {
+      text-align: justify;
+      line-height: 1.7;
+      margin-bottom: 15px;
+      font-size: 1.0rem;
+    }
+
+    .card-alert {
+      background: rgba(255, 193, 7, 0.1); /* Amarelo para avisos de configuração */
+      border-left: 4px solid #ffc107;
+      padding: 20px;
+      border-radius: 10px;
+      color: #ffc107;
+      margin-top: 20px;
+    }
+    
+    .card-footer {
+      text-align: center;
+      opacity: 0.7;
+      font-size: 0.9rem;
+      margin-top: 40px;
+      border-top: 1px dashed var(--card-border-light);
+      padding-top: 20px;
+    }
+    
+    .card-list {
+        list-style-type: none;
+        padding-left: 0;
+    }
+    .card-list li {
+        margin-bottom: 10px;
+        position: relative;
+        padding-left: 20px;
+        border-bottom: 1px dotted var(--card-border-light);
+        padding-bottom: 5px;
+    }
+    .card-list li::before {
+        content: "•";
+        color: var(--card-primary);
+        font-weight: bold;
+        display: inline-block;
+        width: 1em;
+        margin-left: -1em;
+    }
+</style>
+
+<div class="card-container">
     <div class="card-header">
         <h2>🍪 Política de Cookies</h2>
+        <p>Esta política explica o que são cookies, como os usamos e como você pode gerenciá-los.</p>
     </div>
-    <div class="card-body">
-        <p>Usamos cookies para melhorar sua experiência...</p>
+
+    <div class="card-section">
+        <h4><i class="fas fa-question-circle"></i> 1. O que são Cookies?</h4>
+        <p>
+            Cookies são pequenos arquivos de texto que são armazenados no seu computador ou dispositivo móvel quando você visita um site. 
+            Eles são amplamente utilizados para fazer com que os sites funcionem de maneira mais eficiente e para fornecer informações aos proprietários do site.
+        </p>
+    </div>
+
+    <div class="card-section">
+        <h4><i class="fas fa-list-ul"></i> 2. Tipos de Cookies</h4>
+        <p>Utilizamos diferentes tipos de cookies para finalidades distintas:</p>
+        <ul class="card-list">
+            <li><strong>Cookies Essenciais/Obrigatórios:</strong> Necessários para que o site funcione corretamente (ex: carrinho de compras, login).</li>
+            <li><strong>Cookies de Desempenho/Análise:</strong> Coletam informações sobre como os visitantes usam o site (ex: quais páginas são mais populares).</li>
+            <li><strong>Cookies de Funcionalidade:</strong> Lembram das suas preferências (ex: idioma, região) para personalizar sua experiência.</li>
+            <li><strong>Cookies de Marketing/Publicidade:</strong> Usados para exibir anúncios mais relevantes aos seus interesses, dentro e fora do nosso site.</li>
+        </ul>
+    </div>
+
+    <div class="card-section">
+        <h4><i class="fas fa-sliders-h"></i> 3. Gerenciando suas Preferências</h4>
+        <p>
+            Você tem o direito de decidir se aceita ou rejeita cookies. A maioria dos navegadores permite que você gerencie as configurações de cookies.
+            Lembre-se que desativar cookies pode impactar a funcionalidade de nosso site.
+        </p>
+        <div class="card-alert">
+             Para desativar cookies, acesse as configurações do seu navegador (Chrome, Firefox, Safari, Edge) e ajuste as opções de privacidade e segurança.
+        </div>
+    </div>
+    
+    <div class="card-section">
+        <h4><i class="fas fa-info-circle"></i> 4. Mais Informações</h4>
+        <p>
+            Alguns cookies podem ser de terceiros (ex: Google Analytics, redes sociais). Nós não controlamos a forma como esses terceiros coletam ou usam suas informações.
+            Recomendamos que você leia as políticas de cookies deles para mais detalhes.
+        </p>
+    </div>
+
+    <div class="card-footer">
+        Ao continuar a navegar em nosso site, você concorda com o uso de cookies conforme esta Política.
     </div>
 </div>
 {% endblock %}

@@ -1,0 +1,68 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Detalhes do Contato{% endblock %}
+
+{% block page_title %}👁️ Detalhes da Mensagem{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <form method="POST" action="{{ url_for('admin_detalhes_contato', id_suporte=contato.id_suporte) }}">
+        <div class="form-grid">
+            <!-- Informações do Contato -->
+            <div class="form-group">
+                <label>Nome</label>
+                <input type="text" class="form-control" value="{{ contato.nome }}" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" class="form-control" value="{{ contato.email }}" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>Data de Envio</label>
+                <input type="text" class="form-control" value="{{ contato.data_envio.strftime('%d/%m/%Y %H:%M') }}" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="status">Status</label>
+                <select id="status" name="status" class="form-control">
+                    <option value="pendente" {% if contato.status == 'pendente' %}selected{% endif %}>Pendente</option>
+                    <option value="respondido" {% if contato.status == 'respondido' %}selected{% endif %}>Respondido</option>
+                    <option value="fechado" {% if contato.status == 'fechado' %}selected{% endif %}>Fechado</option>
+                </select>
+            </div>
+
+            <!-- Mensagem Completa -->
+            <div class="form-group full-width">
+                <label>Mensagem Completa</label>
+                <textarea class="form-control" rows="8" readonly style="background: var(--secondary);">
+{% for line in contato.mensagem.split('\n') %}
+{{ line }}
+{% endfor %}
+                </textarea>
+            </div>
+
+            <!-- Observações -->
+            <div class="form-group full-width">
+                <label for="observacoes">Observações Internas</label>
+                <textarea id="observacoes" name="observacoes" class="form-control" rows="4" 
+                          placeholder="Anotações sobre o atendimento...">{{ contato.observacoes or '' }}</textarea>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{{ url_for('admin_contatos') }}" class="btn btn-warning">
+                ↩️ Voltar
+            </a>
+            <button type="submit" class="btn btn-primary">
+                💾 Atualizar Status
+            </button>
+            <a href="mailto:{{ contato.email }}?subject=Resposta - GHCP Informática" 
+               class="btn btn-success" target="_blank">
+                📧 Responder por Email
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

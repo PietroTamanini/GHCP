@@ -1,0 +1,341 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ produto.nome }} - Loja GHCP{% endblock %}
+
+{% block conteudo %}
+<style>
+    .breadcrumb {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
+        font-size: 14px;
+        color: var(--text-light);
+    }
+    .breadcrumb a {
+        color: var(--primary);
+        text-decoration: none;
+        transition: var(--transition);
+    }
+    .breadcrumb a:hover {
+        color: var(--primary-dark);
+    }
+    .product-detail-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 50px;
+        margin-bottom: 50px;
+    }
+    .product-image-section {
+        background: var(--glass);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 30px;
+        box-shadow: var(--shadow);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 500px;
+    }
+    .product-image-section img {
+        max-width: 100%;
+        max-height: 500px;
+        object-fit: contain;
+        border-radius: 10px;
+    }
+    .product-info-section {
+        background: var(--glass);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 40px;
+        box-shadow: var(--shadow);
+    }
+    .product-brand {
+        color: var(--text-light);
+        font-size: 14px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 10px;
+    }
+    .product-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--dark);
+        margin-bottom: 20px;
+        line-height: 1.2;
+    }
+    .product-price {
+        font-size: 3rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--danger) 0%, var(--accent) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 30px;
+    }
+    .product-stock {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 30px;
+    }
+    .stock-available {
+        background: rgba(0,208,132,0.1);
+        color: var(--success);
+        border: 2px solid var(--success);
+    }
+    .stock-low {
+        background: rgba(255,184,0,0.1);
+        color: var(--warning);
+        border: 2px solid var(--warning);
+    }
+    .stock-out {
+        background: rgba(255,51,102,0.1);
+        color: var(--danger);
+        border: 2px solid var(--danger);
+    }
+    .product-description {
+        margin: 30px 0;
+        padding: 25px;
+        background: var(--secondary);
+        border-radius: 10px;
+        border-left: 4px solid var(--primary);
+    }
+    .product-description h3 {
+        color: var(--primary);
+        margin-bottom: 15px;
+        font-size: 1.3rem;
+    }
+    .product-description p {
+        color: var(--text);
+        line-height: 1.8;
+        font-size: 1rem;
+    }
+    .quantity-selector {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+    .quantity-label {
+        font-weight: 600;
+        color: var(--text);
+        font-size: 1rem;
+    }
+    .quantity-input {
+        width: 80px;
+        padding: 12px;
+        border: 2px solid var(--border);
+        border-radius: 10px;
+        text-align: center;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text);
+        background: var(--glass);
+        transition: var(--transition);
+    }
+    .quantity-input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(0,102,255,0.1);
+    }
+    .btn-add-cart {
+        width: 100%;
+        padding: 18px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.2rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: var(--transition);
+        box-shadow: var(--shadow);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+    .btn-add-cart:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+    }
+    .btn-add-cart:disabled {
+        background: var(--text-light);
+        cursor: not-allowed;
+        transform: none;
+    }
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: var(--secondary);
+        color: var(--text);
+        text-decoration: none;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: var(--transition);
+        border: 2px solid var(--border);
+        margin-bottom: 20px;
+    }
+    .btn-back:hover {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+        transform: translateY(-2px);
+    }
+    .product-specs {
+        margin-top: 30px;
+        padding: 25px;
+        background: var(--secondary);
+        border-radius: 10px;
+    }
+    .product-specs h3 {
+        color: var(--primary);
+        margin-bottom: 20px;
+        font-size: 1.3rem;
+    }
+    .spec-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border);
+    }
+    .spec-item:last-child {
+        border-bottom: none;
+    }
+    .spec-label {
+        font-weight: 600;
+        color: var(--text-light);
+    }
+    .spec-value {
+        font-weight: 600;
+        color: var(--text);
+    }
+    @media (max-width: 968px) {
+        .product-detail-container {
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+        .product-title {
+            font-size: 2rem;
+        }
+        .product-price {
+            font-size: 2.5rem;
+        }
+    }
+</style>
+
+<a href="{{ url_for('listar_produtos') }}" class="btn-back">
+    ← Voltar para Produtos
+</a>
+
+<div class="breadcrumb">
+    <a href="{{ url_for('inicio') }}">Início</a>
+    <span>/</span>
+    <a href="{{ url_for('listar_produtos') }}">Produtos</a>
+    <span>/</span>
+    <span>{{ produto.nome }}</span>
+</div>
+
+<div class="product-detail-container">
+    <div class="product-image-section">
+        {# CORRIGIDO: Acessar primeiro elemento do array de imagens #}
+        {% if produto.imagens and produto.imagens|length > 0 %}
+            <img src="{{ url_for('static', filename='uploads/produtos/' ~ produto.imagens[0]) }}" 
+                 alt="{{ produto.nome }}">
+        {% else %}
+            <img src="{{ url_for('static', filename='img/produto-sem-imagem.jpg') }}" 
+                 alt="Imagem padrão">
+        {% endif %}
+    </div>
+
+    <div class="product-info-section">
+        <div class="product-brand">{{ produto.marca }}</div>
+        <h1 class="product-title">{{ produto.nome }}</h1>
+        
+        <div class="product-price">
+            R$ {{ "{:,.2f}".format(produto.preco).replace(",", "X").replace(".", ",").replace("X", ".") }}
+        </div>
+
+        {% if produto.estoque > 10 %}
+            <span class="product-stock stock-available">✅ Em estoque ({{ produto.estoque }} unidades)</span>
+        {% elif produto.estoque > 0 %}
+            <span class="product-stock stock-low">⚠️ Últimas {{ produto.estoque }} unidades!</span>
+        {% else %}
+            <span class="product-stock stock-out">❌ Produto esgotado</span>
+        {% endif %}
+
+        {% if produto.descricao %}
+        <div class="product-description">
+            <h3>📝 Descrição do Produto</h3>
+            <p>{{ produto.descricao }}</p>
+        </div>
+        {% endif %}
+
+        <form action="{{ url_for('adicionar_carrinho', id_produto=produto.id_produto) }}" method="POST">
+            <div class="quantity-selector">
+                <label class="quantity-label">Quantidade:</label>
+                <input type="number" name="quantidade" value="1" min="1" max="{{ produto.estoque }}" 
+                       class="quantity-input" {% if produto.estoque == 0 %}disabled{% endif %}>
+            </div>
+
+            <button type="submit" class="btn-add-cart" {% if produto.estoque == 0 %}disabled{% endif %}>
+                <span>🛒</span>
+                <span>{% if produto.estoque > 0 %}Adicionar ao Carrinho{% else %}Produto Indisponível{% endif %}</span>
+            </button>
+        </form>
+
+        <div class="product-specs">
+            <h3>📊 Especificações</h3>
+            <div class="spec-item">
+                <span class="spec-label">Categoria:</span>
+                <span class="spec-value">{{ produto.categoria }}</span>
+            </div>
+            <div class="spec-item">
+                <span class="spec-label">Marca:</span>
+                <span class="spec-value">{{ produto.marca }}</span>
+            </div>
+            {% if produto.peso %}
+            <div class="spec-item">
+                <span class="spec-label">Peso:</span>
+                <span class="spec-value">{{ produto.peso }} kg</span>
+            </div>
+            {% endif %}
+            {% if produto.dimensoes %}
+            <div class="spec-item">
+                <span class="spec-label">Dimensões:</span>
+                <span class="spec-value">{{ produto.dimensoes }}</span>
+            </div>
+            {% endif %}
+            <div class="spec-item">
+                <span class="spec-label">Disponibilidade:</span>
+                <span class="spec-value">{{ produto.estoque }} un. em estoque</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if avaliacoes %}
+<div style="background: var(--glass); border: 1px solid var(--border); border-radius: var(--radius); padding: 40px; box-shadow: var(--shadow); margin-top: 50px;">
+    <h2 style="color: var(--primary); margin-bottom: 30px; font-size: 2rem;">⭐ Avaliações dos Clientes</h2>
+    {% for avaliacao in avaliacoes %}
+    <div style="padding: 20px; background: var(--secondary); border-radius: 10px; margin-bottom: 20px; border-left: 4px solid var(--primary);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <strong style="color: var(--text); font-size: 1.1rem;">{{ avaliacao.cliente_nome }}</strong>
+            <span style="color: var(--warning); font-size: 1.2rem;">
+                {% for i in range(avaliacao.nota) %}★{% endfor %}
+                {% for i in range(5 - avaliacao.nota) %}☆{% endfor %}
+            </span>
+        </div>
+        <p style="color: var(--text); line-height: 1.6;">{{ avaliacao.comentario }}</p>
+        <small style="color: var(--text-light); font-size: 0.85rem;">{{ avaliacao.data_avaliacao.strftime('%d/%m/%Y') }}</small>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% endblock %}

@@ -11,6 +11,15 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 app.secret_key = 'GHCP-2o25'
 
+@app.template_filter('from_json')
+def from_json_filter(value):
+    if value:
+        try:
+            return json.loads(value)
+        except:
+            return []
+    return []
+
 DB_CONFIG = {
     'host': 'localhost',
     'port': '3306',
@@ -86,14 +95,75 @@ def inicio():
         conn = get_db_connection()
         if not conn:
             flash('Erro ao conectar ao banco de dados.', 'error')
-            return render_template('index.html', produtos=[])
+            return render_template('index.html', produtos_destaque=[])
+        
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM produto WHERE ativo = TRUE ORDER BY data_cadastro DESC LIMIT 8")
-        produtos = cursor.fetchall()
-        return render_template('index.html', produtos=produtos)
+        
+        # Buscar produtos em destaque (ativos) - máximo 8 produtos
+        cursor.execute("""
+            SELECT p.* 
+            FROM produto p 
+            WHERE p.ativo = TRUE 
+            ORDER BY p.destaque DESC, p.data_cadastro DESC 
+            LIMIT 8
+        """)
+        produtos_base = cursor.fetchall()
+        
+        # Buscar ofertas ativas
+        cursor.execute("""
+            SELECT o.*, p.nome, p.descricao, p.categoria, p.marca, p.imagens
+            FROM ofertas o
+            JOIN produto p ON o.id_produto = p.id_produto
+            WHERE o.ativa = TRUE 
+            AND (o.validade IS NULL OR o.validade >= CURDATE())
+            AND p.ativo = TRUE
+            ORDER BY o.desconto DESC
+            LIMIT 6
+        """)
+        ofertas = cursor.fetchall()
+        
+        # Combinar produtos base com ofertas
+        produtos_destaque = []
+        
+        # Primeiro adicionar as ofertas
+        for oferta in ofertas:
+            produto_com_oferta = {
+                'id_produto': oferta['id_produto'],
+                'nome': oferta['nome'],
+                'descricao': oferta['descricao'],
+                'categoria': oferta['categoria'],
+                'marca': oferta['marca'],
+                'preco': oferta['preco_original'],
+                'preco_com_desconto': oferta['preco_com_desconto'],
+                'desconto': oferta['desconto'],
+                'tem_oferta': True,
+                'imagens': oferta['imagens']
+            }
+            produtos_destaque.append(produto_com_oferta)
+        
+        # Adicionar produtos base (sem repetir)
+        produtos_base_ids = [p['id_produto'] for p in produtos_destaque]
+        for produto in produtos_base:
+            if produto['id_produto'] not in produtos_base_ids and len(produtos_destaque) < 8:
+                produto_base = {
+                    'id_produto': produto['id_produto'],
+                    'nome': produto['nome'],
+                    'descricao': produto['descricao'],
+                    'categoria': produto['categoria'],
+                    'marca': produto['marca'],
+                    'preco': produto['preco'],
+                    'preco_com_desconto': produto['preco'],
+                    'desconto': 0,
+                    'tem_oferta': False,
+                    'imagens': produto['imagens']
+                }
+                produtos_destaque.append(produto_base)
+        
+        return render_template('index.html', produtos_destaque=produtos_destaque)
+        
     except mysql.connector.Error as err:
         flash(f'Erro ao carregar produtos: {err}', 'error')
-        return render_template('index.html', produtos=[])
+        return render_template('index.html', produtos_destaque=[])
     finally:
         if conn and conn.is_connected():
             cursor.close()
@@ -516,38 +586,53 @@ def listar_produtos():
         conn = get_db_connection()
         if not conn:
             flash('Erro ao conectar ao banco de dados.', 'error')
-            return render_template('produtos.html', produtos=[])
+            return render_template('produtos.html', produtos=[], categorias=[], marcas=[])
+        
         cursor = conn.cursor(dictionary=True)
         categoria = request.args.get('categoria')
         marca = request.args.get('marca')
         busca = request.args.get('busca')
+        
         query = "SELECT * FROM produto WHERE ativo = TRUE"
         params = []
+        
         if categoria:
             query += " AND categoria = %s"
             params.append(categoria)
+        
         if marca:
             query += " AND marca = %s"
             params.append(marca)
+        
         if busca:
             query += " AND (nome LIKE %s OR descricao LIKE %s)"
             params.extend([f"%{busca}%", f"%{busca}%"])
+        
         query += " ORDER BY data_cadastro DESC"
+        
         cursor.execute(query, params)
         produtos = cursor.fetchall()
+        
+        # PROCESSAR IMAGENS JSON - IMPORTANTE!
+        for produto in produtos:
+            if produto.get('imagens'):
+                try:
+                    produto['imagens'] = json.loads(produto['imagens'])
+                except:
+                    produto['imagens'] = []
+        
         cursor.execute("SELECT DISTINCT categoria FROM produto WHERE ativo = TRUE ORDER BY categoria")
         categorias = [row['categoria'] for row in cursor.fetchall()]
+        
         cursor.execute("SELECT DISTINCT marca FROM produto WHERE ativo = TRUE ORDER BY marca")
         marcas = [row['marca'] for row in cursor.fetchall()]
-        updated_produtos = [
-            {**p, 'imagens': json.loads(p['imagens'])[0] if p['imagens'] else None}
-            for p in produtos
-        ]
-        print(updated_produtos)
-        return render_template('produtos.html', produtos=updated_produtos, categorias=categorias, marcas=marcas)
+        
+        return render_template('produtos.html', produtos=produtos, categorias=categorias, marcas=marcas)
+    
     except mysql.connector.Error as err:
         flash(f'Erro ao carregar produtos: {err}', 'error')
         return render_template('produtos.html', produtos=[], categorias=[], marcas=[])
+    
     finally:
         if conn and conn.is_connected():
             cursor.close()
@@ -560,22 +645,47 @@ def detalhes_produto(id_produto):
         if not conn:
             flash('Erro ao conectar ao banco de dados.', 'error')
             return redirect(url_for('listar_produtos'))
+        
         cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT * FROM produto WHERE id_produto = %s AND ativo = TRUE", (id_produto,))
         produto = cursor.fetchone()
+        
         if not produto:
             flash('❌ Produto não encontrado.', 'error')
             return redirect(url_for('listar_produtos'))
+        
+        # DEBUG - ADICIONE ESTAS LINHAS:
+        print("=" * 50)
+        print(f"DEBUG - ID Produto: {id_produto}")
+        print(f"DEBUG - Campo imagens (raw): {produto.get('imagens')}")
+        print(f"DEBUG - Tipo: {type(produto.get('imagens'))}")
+        
+        # PROCESSAR IMAGENS JSON
+        if produto.get('imagens'):
+            try:
+                produto['imagens'] = json.loads(produto['imagens'])
+                print(f"DEBUG - Imagens processadas: {produto['imagens']}")
+                print(f"DEBUG - Tipo após processar: {type(produto['imagens'])}")
+            except Exception as e:
+                print(f"DEBUG - Erro ao processar: {e}")
+                produto['imagens'] = []
+        
+        print("=" * 50)
+        # FIM DEBUG
+        
         cursor.execute("""
             SELECT a.*, c.nome as cliente_nome FROM avaliacoes a
             JOIN clientes c ON a.id_cliente = c.id_cliente
             WHERE a.id_produto = %s AND a.aprovado = TRUE ORDER BY a.data_avaliacao DESC
         """, (id_produto,))
         avaliacoes = cursor.fetchall()
+        
         return render_template('produto_detalhes.html', produto=produto, avaliacoes=avaliacoes)
+    
     except mysql.connector.Error as err:
         flash(f'Erro ao carregar produto: {err}', 'error')
         return redirect(url_for('listar_produtos'))
+    
     finally:
         if conn and conn.is_connected():
             cursor.close()
@@ -669,16 +779,87 @@ def limpar_carrinho():
 
 @app.route('/finalizar-carrinho', methods=['GET', 'POST'])
 def finalizar_carrinho():
+    # 🧱 0️⃣ Verifica login antes de qualquer coisa
+    if 'usuario_id' not in session:
+        flash('⚠️ Faça login para finalizar sua compra.', 'warning')
+        return redirect(url_for('login', next=url_for('finalizar_carrinho')))
+
     produtos_carrinho = session.get('carrinho', [])
     total_geral = sum(item['preco'] * item['quantidade'] for item in produtos_carrinho)
+
     if request.method == 'POST':
         nome = request.form.get('nome')
         email = request.form.get('email')
         endereco = request.form.get('endereco')
         pagamento = request.form.get('pagamento')
-        session['carrinho'] = []
-        return redirect(url_for('compra_sucedida'))
-    return render_template('finalizar-carrinho.html', produtos_carrinho=produtos_carrinho, total_geral=total_geral)
+
+        if not produtos_carrinho:
+            flash('⚠️ Seu carrinho está vazio.', 'warning')
+            return redirect(url_for('carrinho'))
+
+        try:
+            conn = get_db_connection()
+            if not conn:
+                flash('Erro ao conectar ao banco de dados.', 'error')
+                return redirect(url_for('carrinho'))
+            cursor = conn.cursor(dictionary=True)
+
+            # 🧱 1️⃣ Verifica estoque
+            for item in produtos_carrinho:
+                cursor.execute("SELECT nome, estoque FROM produto WHERE id_produto = %s", (item['id_produto'],))
+                produto_db = cursor.fetchone()
+                if not produto_db:
+                    flash(f"❌ Produto '{item['nome']}' não encontrado.", 'error')
+                    return redirect(url_for('carrinho'))
+                if produto_db['estoque'] <= 0:
+                    flash(f"⚠️ O produto '{produto_db['nome']}' está esgotado.", 'warning')
+                    return redirect(url_for('carrinho'))
+                if item['quantidade'] > produto_db['estoque']:
+                    flash(f"⚠️ Quantidade insuficiente de '{produto_db['nome']}' em estoque (disponível: {produto_db['estoque']}).", 'warning')
+                    return redirect(url_for('carrinho'))
+
+            # 🧾 2️⃣ Cria o pedido
+            cursor.execute("""
+                INSERT INTO pedidos (id_cliente, total, forma_pagamento, status, data_pedido)
+                VALUES (%s, %s, %s, %s, NOW())
+            """, (session['usuario_id'], total_geral, pagamento, 'concluido'))
+            pedido_id = cursor.lastrowid
+
+            # 🛒 3️⃣ Adiciona itens e atualiza estoque
+            for item in produtos_carrinho:
+                cursor.execute("""
+                    INSERT INTO itens_pedido (id_pedido, id_produto, quantidade, preco_unitario)
+                    VALUES (%s, %s, %s, %s)
+                """, (pedido_id, item['id_produto'], item['quantidade'], item['preco']))
+
+                cursor.execute("""
+                    UPDATE produto
+                    SET estoque = estoque - %s
+                    WHERE id_produto = %s
+                """, (item['quantidade'], item['id_produto']))
+
+            conn.commit()
+
+            # ✅ Compra finalizada
+            session.pop('carrinho', None)
+            flash('🎉 Compra finalizada com sucesso!', 'success')
+            return redirect(url_for('compra_sucedida'))
+
+        except mysql.connector.Error as err:
+            if conn:
+                conn.rollback()
+            flash(f'❌ Erro ao finalizar compra: {err}', 'error')
+            return redirect(url_for('carrinho'))
+        finally:
+            if conn and conn.is_connected():
+                cursor.close()
+                conn.close()
+
+    # GET → mostra a tela de finalização
+    return render_template('finalizar-carrinho.html',
+                           produtos_carrinho=produtos_carrinho,
+                           total_geral=total_geral)
+
 
 @app.route('/compra-sucedida')
 def compra_sucedida():
@@ -692,9 +873,9 @@ def pix():
 def boleto():
     return render_template('boleto.html')
 
-@app.route('/cartoes-credito')
+@app.route('/cartoes')
 def cartoes():
-    return render_template('cartoes-credito.html')
+    return render_template('cartoes.html')
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
@@ -740,38 +921,104 @@ def admin_logout():
 @app.route('/admin/dashboard')
 @admin_required
 def admin_dashboard():
+    # Inicializar variáveis com valores padrão
+    total_clientes = 0
+    total_produtos = 0
+    pedidos_hoje = 0
+    receita_hoje = 0
+    diagnosticos_pendentes = 0
+    estoque_baixo = []
+    pedidos_recentes = []
+    diagnosticos_recentes = []
+    
     try:
         conn = get_db_connection()
         if not conn:
             flash('Erro ao conectar ao banco de dados.', 'error')
-            return render_template('admin/dashboard.html')
+            return render_template('admin/dashboard.html', 
+                                 total_clientes=total_clientes,
+                                 total_produtos=total_produtos,
+                                 pedidos_hoje=pedidos_hoje,
+                                 receita_hoje=receita_hoje,
+                                 diagnosticos_pendentes=diagnosticos_pendentes,
+                                 estoque_baixo=estoque_baixo,
+                                 pedidos_recentes=pedidos_recentes,
+                                 diagnosticos_recentes=diagnosticos_recentes)
+        
         cursor = conn.cursor(dictionary=True)
+        
+        # Consulta para total de clientes
         cursor.execute("SELECT COUNT(*) as total FROM clientes WHERE ativo = TRUE")
         total_clientes = cursor.fetchone()['total']
+        
+        # Consulta para total de produtos
         cursor.execute("SELECT COUNT(*) as total FROM produto WHERE ativo = TRUE")
         total_produtos = cursor.fetchone()['total']
+        
+        # Consulta para pedidos de hoje
         cursor.execute("SELECT COUNT(*) as total FROM pedidos WHERE DATE(data_pedido) = CURDATE()")
         pedidos_hoje = cursor.fetchone()['total']
+        
+        # Consulta para receita de hoje
         cursor.execute("SELECT SUM(total) as total FROM pedidos WHERE DATE(data_pedido) = CURDATE() AND status != 'cancelado'")
-        receita_hoje = cursor.fetchone()['total'] or 0
-        cursor.execute("SELECT COUNT(*) as total FROM diagnosticos WHERE status = 'recebido' OR status = 'em_analise'")
-        diagnosticos_pendentes = cursor.fetchone()['total']
-        cursor.execute("SELECT * FROM produto WHERE estoque <= 5 AND ativo = TRUE ORDER BY estoque ASC LIMIT 5")
-        estoque_baixo = cursor.fetchall()
-        cursor.execute("SELECT p.*, c.nome as cliente_nome FROM pedidos p JOIN clientes c ON p.id_cliente = c.id_cliente ORDER BY p.data_pedido DESC LIMIT 5")
-        pedidos_recentes = cursor.fetchall()
-        cursor.execute("SELECT * FROM diagnosticos ORDER BY data_entrada DESC LIMIT 5")
-        diagnosticos_recentes = cursor.fetchall()
-        return render_template('admin/dashboard.html', total_clientes=total_clientes, total_produtos=total_produtos,
-                             pedidos_hoje=pedidos_hoje, receita_hoje=receita_hoje, diagnosticos_pendentes=diagnosticos_pendentes,
-                             estoque_baixo=estoque_baixo, pedidos_recentes=pedidos_recentes, diagnosticos_recentes=diagnosticos_recentes)
+        receita_result = cursor.fetchone()
+        receita_hoje = receita_result['total'] or 0
+        
+        # Consulta para diagnósticos pendentes
+        try:
+            cursor.execute("SELECT COUNT(*) as total FROM diagnosticos WHERE status = 'recebido' OR status = 'em_analise'")
+            diagnosticos_pendentes = cursor.fetchone()['total']
+        except mysql.connector.Error:
+            # Se a tabela diagnosticos não existir, usar 0
+            diagnosticos_pendentes = 0
+        
+        # Consulta para estoque baixo
+        try:
+            cursor.execute("SELECT * FROM produto WHERE estoque <= 5 AND ativo = TRUE ORDER BY estoque ASC LIMIT 5")
+            estoque_baixo = cursor.fetchall()
+        except mysql.connector.Error:
+            estoque_baixo = []
+        
+        # Consulta para pedidos recentes
+        try:
+            cursor.execute("SELECT p.*, c.nome as cliente_nome FROM pedidos p JOIN clientes c ON p.id_cliente = c.id_cliente ORDER BY p.data_pedido DESC LIMIT 5")
+            pedidos_recentes = cursor.fetchall()
+        except mysql.connector.Error:
+            pedidos_recentes = []
+        
+        # Consulta para diagnósticos recentes
+        try:
+            cursor.execute("SELECT * FROM diagnosticos ORDER BY data_entrada DESC LIMIT 5")
+            diagnosticos_recentes = cursor.fetchall()
+        except mysql.connector.Error:
+            diagnosticos_recentes = []
+        
+        return render_template('admin/dashboard.html', 
+                             total_clientes=total_clientes,
+                             total_produtos=total_produtos,
+                             pedidos_hoje=pedidos_hoje,
+                             receita_hoje=receita_hoje,
+                             diagnosticos_pendentes=diagnosticos_pendentes,
+                             estoque_baixo=estoque_baixo,
+                             pedidos_recentes=pedidos_recentes,
+                             diagnosticos_recentes=diagnosticos_recentes)
+                             
     except mysql.connector.Error as err:
         flash(f'Erro ao carregar dashboard: {err}', 'error')
-        return render_template('admin/dashboard.html')
+        # Retornar com valores padrão em caso de erro
+        return render_template('admin/dashboard.html', 
+                             total_clientes=total_clientes,
+                             total_produtos=total_produtos,
+                             pedidos_hoje=pedidos_hoje,
+                             receita_hoje=receita_hoje,
+                             diagnosticos_pendentes=diagnosticos_pendentes,
+                             estoque_baixo=estoque_baixo,
+                             pedidos_recentes=pedidos_recentes,
+                             diagnosticos_recentes=diagnosticos_recentes)
     finally:
         if conn and conn.is_connected():
             cursor.close()
-            conn.close()
+            conn.close()    
 
 @app.route('/admin/produtos')
 @admin_required
@@ -819,15 +1066,19 @@ def admin_novo_produto():
         peso = request.form.get('peso', '0').replace(',', '.')
         dimensoes = request.form.get('dimensoes', '').strip()
         destaque = request.form.get('destaque') == 'on'
+        
         if not all([nome, marca, preco, categoria]):
             flash('❌ Preencha todos os campos obrigatórios.', 'error')
             return render_template('admin/produto_form.html')
+        
         try:
             conn = get_db_connection()
             if not conn:
                 flash('Erro ao conectar ao banco de dados.', 'error')
                 return render_template('admin/produto_form.html')
+            
             cursor = conn.cursor()
+            
             imagens = []
             if 'imagens' in request.files:
                 files = request.files.getlist('imagens')
@@ -840,23 +1091,37 @@ def admin_novo_produto():
                         os.makedirs(os.path.dirname(filepath), exist_ok=True)
                         file.save(filepath)
                         imagens.append(unique_filename)
+            
             cursor.execute("""
                 INSERT INTO produto (nome, marca, preco, descricao, estoque, categoria, imagens, peso, dimensoes, destaque)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (nome, marca, float(preco), descricao, int(estoque), categoria, json.dumps(imagens) if imagens else None,
                   float(peso) if peso else 0, dimensoes, destaque))
+            
             conn.commit()
-            cursor.execute("INSERT INTO logs_sistema (id_funcionario, acao, modulo, descricao) VALUES (%s, 'CADASTRO', 'PRODUTOS', %s)",
-                          (session['admin_id'], f'Produto cadastrado: {nome}'))
-            conn.commit()
+            
+            # CORRIGIDO: Verificar se admin_id existe antes de inserir log
+            if session.get('admin_id'):
+                try:
+                    cursor.execute("""
+                        INSERT INTO logs_sistema (id_funcionario, acao, modulo, descricao)
+                        VALUES (%s, 'CADASTRO', 'PRODUTOS', %s)
+                    """, (session['admin_id'], f'Produto cadastrado: {nome}'))
+                    conn.commit()
+                except mysql.connector.Error:
+                    pass  # Ignora erro de log se falhar
+            
             flash('✅ Produto cadastrado com sucesso!', 'success')
             return redirect(url_for('admin_produtos'))
+        
         except mysql.connector.Error as err:
             flash(f'Erro ao cadastrar produto: {err}', 'error')
+        
         finally:
             if conn and conn.is_connected():
                 cursor.close()
                 conn.close()
+    
     return render_template('admin/produto_form.html')
 
 @app.route('/admin/produto/editar/<int:id_produto>', methods=['GET', 'POST'])
@@ -867,7 +1132,9 @@ def admin_editar_produto(id_produto):
         if not conn:
             flash('Erro ao conectar ao banco de dados.', 'error')
             return redirect(url_for('admin_produtos'))
+        
         cursor = conn.cursor(dictionary=True)
+        
         if request.method == 'POST':
             nome = request.form.get('nome', '').strip()
             marca = request.form.get('marca', '').strip()
@@ -879,9 +1146,11 @@ def admin_editar_produto(id_produto):
             dimensoes = request.form.get('dimensoes', '').strip()
             destaque = request.form.get('destaque') == 'on'
             ativo = request.form.get('ativo') == 'on'
+            
             cursor.execute("SELECT imagens FROM produto WHERE id_produto = %s", (id_produto,))
             produto_atual = cursor.fetchone()
             imagens = json.loads(produto_atual['imagens']) if produto_atual['imagens'] else []
+            
             if 'imagens' in request.files:
                 files = request.files.getlist('imagens')
                 for file in files:
@@ -893,34 +1162,246 @@ def admin_editar_produto(id_produto):
                         os.makedirs(os.path.dirname(filepath), exist_ok=True)
                         file.save(filepath)
                         imagens.append(unique_filename)
+            
             imagens_remover = request.form.getlist('imagens_remover')
             imagens = [img for img in imagens if img not in imagens_remover]
+            
             cursor.execute("""
                 UPDATE produto SET nome = %s, marca = %s, preco = %s, descricao = %s, estoque = %s, categoria = %s, 
                 imagens = %s, peso = %s, dimensoes = %s, destaque = %s, ativo = %s WHERE id_produto = %s
             """, (nome, marca, float(preco), descricao, int(estoque), categoria, json.dumps(imagens) if imagens else None,
                   float(peso) if peso else 0, dimensoes, destaque, ativo, id_produto))
+            
             conn.commit()
-            cursor.execute("INSERT INTO logs_sistema (id_funcionario, acao, modulo, descricao) VALUES (%s, 'EDICAO', 'PRODUTOS', %s)",
-                          (session['admin_id'], f'Produto editado: {nome} (ID: {id_produto})'))
-            conn.commit()
+            
+            # CORRIGIDO: Verificar se admin_id existe antes de inserir log
+            if session.get('admin_id'):
+                try:
+                    cursor.execute("""
+                        INSERT INTO logs_sistema (id_funcionario, acao, modulo, descricao)
+                        VALUES (%s, 'EDICAO', 'PRODUTOS', %s)
+                    """, (session['admin_id'], f'Produto editado: {nome} (ID: {id_produto})'))
+                    conn.commit()
+                except mysql.connector.Error:
+                    pass  # Ignora erro de log se falhar
+            
             flash('✅ Produto atualizado com sucesso!', 'success')
             return redirect(url_for('admin_produtos'))
+        
         else:
             cursor.execute("SELECT * FROM produto WHERE id_produto = %s", (id_produto,))
             produto = cursor.fetchone()
-            produto['imagens'] = json.loads(produto['imagens']) if produto['imagens'] else []
+            
             if not produto:
                 flash('❌ Produto não encontrado.', 'error')
                 return redirect(url_for('admin_produtos'))
+            
+            # Processar imagens para exibição
+            if produto.get('imagens'):
+                try:
+                    produto['imagens'] = json.loads(produto['imagens'])
+                except:
+                    produto['imagens'] = []
+            
             return render_template('admin/produto_form.html', produto=produto)
+    
     except mysql.connector.Error as err:
         flash(f'Erro ao carregar produto: {err}', 'error')
         return redirect(url_for('admin_produtos'))
+    
     finally:
         if conn and conn.is_connected():
             cursor.close()
             conn.close()
+            
+@app.route('/admin/ofertas')
+def admin_ofertas():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT o.id_oferta, o.desconto, o.preco_original, o.preco_com_desconto,
+               o.validade, o.ativa, p.nome AS nome_produto
+        FROM ofertas o
+        JOIN produto p ON o.id_produto = p.id_produto
+        ORDER BY o.validade DESC
+    """)
+    ofertas = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return render_template('admin/ofertas.html', ofertas=ofertas)
+
+@app.route('/admin/ofertas/nova', methods=['GET', 'POST'])
+def admin_nova_oferta():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Buscar produtos ativos
+    cursor.execute("SELECT id_produto, nome, preco FROM produto WHERE ativo = TRUE ORDER BY nome ASC")
+    produtos = cursor.fetchall()
+
+    if request.method == 'POST':
+        id_produto = request.form.get('id_produto')
+        desconto = float(request.form.get('desconto', 0))
+        validade = request.form.get('validade')
+
+        # Buscar preço original do produto
+        cursor.execute("SELECT preco FROM produto WHERE id_produto = %s", (id_produto,))
+        produto = cursor.fetchone()
+        if not produto:
+            flash('Produto não encontrado.', 'error')
+            return redirect(url_for('admin_nova_oferta'))
+
+        preco_original = float(produto['preco'])
+        preco_com_desconto = preco_original - (preco_original * (desconto / 100))
+
+        # Inserir oferta
+        cursor.execute("""
+            INSERT INTO ofertas (id_produto, desconto, preco_original, preco_com_desconto, validade, ativa)
+            VALUES (%s, %s, %s, %s, %s, TRUE)
+        """, (id_produto, desconto, preco_original, preco_com_desconto, validade))
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+        flash('🎉 Oferta criada com sucesso!', 'success')
+        return redirect(url_for('admin_ofertas'))
+
+    cursor.close()
+    conn.close()
+    return render_template('admin/nova_oferta.html', produtos=produtos)
+
+@app.route('/admin/oferta/editar/<int:id_oferta>', methods=['GET', 'POST'])
+@admin_required
+def admin_editar_oferta(id_oferta):
+    try:
+        conn = get_db_connection()
+        if not conn:
+            flash('Erro ao conectar ao banco de dados.', 'error')
+            return redirect(url_for('admin_ofertas'))
+        
+        cursor = conn.cursor(dictionary=True)
+        
+        if request.method == 'POST':
+            id_produto = request.form.get('id_produto')
+            desconto = float(request.form.get('desconto', 0))
+            validade = request.form.get('validade')
+            ativa = request.form.get('ativa') == 'on'
+            
+            # Buscar preço original do produto
+            cursor.execute("SELECT preco FROM produto WHERE id_produto = %s", (id_produto,))
+            produto = cursor.fetchone()
+            if not produto:
+                flash('Produto não encontrado.', 'error')
+                return redirect(url_for('admin_editar_oferta', id_oferta=id_oferta))
+            
+            preco_original = float(produto['preco'])
+            preco_com_desconto = preco_original - (preco_original * (desconto / 100))
+            
+            # Atualizar oferta
+            cursor.execute("""
+                UPDATE ofertas 
+                SET id_produto = %s, desconto = %s, preco_original = %s, 
+                    preco_com_desconto = %s, validade = %s, ativa = %s
+                WHERE id_oferta = %s
+            """, (id_produto, desconto, preco_original, preco_com_desconto, validade, ativa, id_oferta))
+            conn.commit()
+            
+            # Log
+            if session.get('admin_id'):
+                try:
+                    cursor.execute("""
+                        INSERT INTO logs_sistema (id_funcionario, acao, modulo, descricao)
+                        VALUES (%s, 'EDICAO', 'OFERTAS', %s)
+                    """, (session['admin_id'], f'Oferta editada: ID {id_oferta}'))
+                    conn.commit()
+                except mysql.connector.Error:
+                    pass
+            
+            flash('✅ Oferta atualizada com sucesso!', 'success')
+            return redirect(url_for('admin_ofertas'))
+        
+        else:
+            # GET - carregar dados da oferta
+            cursor.execute("""
+                SELECT o.*, p.nome as nome_produto 
+                FROM ofertas o
+                JOIN produto p ON o.id_produto = p.id_produto
+                WHERE o.id_oferta = %s
+            """, (id_oferta,))
+            oferta = cursor.fetchone()
+            
+            if not oferta:
+                flash('❌ Oferta não encontrada.', 'error')
+                return redirect(url_for('admin_ofertas'))
+            
+            # Buscar produtos ativos
+            cursor.execute("SELECT id_produto, nome, preco FROM produto WHERE ativo = TRUE ORDER BY nome ASC")
+            produtos = cursor.fetchall()
+            
+            return render_template('admin/editar_oferta.html', oferta=oferta, produtos=produtos)
+    
+    except mysql.connector.Error as err:
+        flash(f'Erro ao editar oferta: {err}', 'error')
+        return redirect(url_for('admin_ofertas'))
+    
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+
+
+@app.route('/admin/oferta/excluir/<int:id_oferta>', methods=['GET', 'POST'])
+@admin_required
+def admin_excluir_oferta(id_oferta):
+    try:
+        conn = get_db_connection()
+        if not conn:
+            flash('Erro ao conectar ao banco de dados.', 'error')
+            return redirect(url_for('admin_ofertas'))
+        
+        cursor = conn.cursor(dictionary=True)
+        
+        # Buscar nome do produto para o log
+        cursor.execute("""
+            SELECT p.nome 
+            FROM ofertas o
+            JOIN produto p ON o.id_produto = p.id_produto
+            WHERE o.id_oferta = %s
+        """, (id_oferta,))
+        oferta = cursor.fetchone()
+        
+        if not oferta:
+            flash('❌ Oferta não encontrada.', 'error')
+            return redirect(url_for('admin_ofertas'))
+        
+        nome_produto = oferta['nome']
+        
+        # Excluir oferta
+        cursor.execute("DELETE FROM ofertas WHERE id_oferta = %s", (id_oferta,))
+        conn.commit()
+        
+        # Log
+        if session.get('admin_id'):
+            try:
+                cursor.execute("""
+                    INSERT INTO logs_sistema (id_funcionario, acao, modulo, descricao)
+                    VALUES (%s, 'EXCLUSAO', 'OFERTAS', %s)
+                """, (session['admin_id'], f'Oferta excluída: {nome_produto} (ID: {id_oferta})'))
+                conn.commit()
+            except mysql.connector.Error:
+                pass
+        
+        flash(f'🗑️ Oferta de {nome_produto} excluída com sucesso!', 'success')
+    
+    except mysql.connector.Error as err:
+        flash(f'Erro ao excluir oferta: {err}', 'error')
+    
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+    
+    return redirect(url_for('admin_ofertas'))
 
 @app.route('/admin/clientes')
 @admin_required
@@ -1169,6 +1650,199 @@ def admin_alternar_status_funcionario(id_funcionario):
             conn.close()
     return redirect(url_for('admin_funcionarios'))
 
+@app.route('/admin/concorrentes')
+@admin_required
+def admin_concorrentes():
+    try:
+        conn = get_db_connection()
+        if not conn:
+            flash('Erro ao conectar ao banco de dados.', 'error')
+            return render_template('admin/concorrentes.html', concorrentes=[])
+        
+        cursor = conn.cursor(dictionary=True)
+        
+        # Buscar concorrentes
+        cursor.execute("""
+            SELECT * FROM concorrentes 
+            ORDER BY data_cadastro DESC
+        """)
+        concorrentes = cursor.fetchall()
+        
+        return render_template('admin/concorrentes.html', concorrentes=concorrentes)
+        
+    except mysql.connector.Error as err:
+        flash(f'Erro ao carregar concorrentes: {err}', 'error')
+        return render_template('admin/concorrentes.html', concorrentes=[])
+    
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+
+@app.route('/admin/concorrente/novo', methods=['GET', 'POST'])
+@admin_required
+def admin_novo_concorrente():
+    if request.method == 'POST':
+        nome = request.form.get('nome', '').strip()
+        email = request.form.get('email', '').strip()
+        telefone = request.form.get('telefone', '').strip()
+        empresa = request.form.get('empresa', '').strip()
+        cargo = request.form.get('cargo', '').strip()
+        interesse = request.form.get('interesse', '').strip()
+        mensagem = request.form.get('mensagem', '').strip()
+        status = request.form.get('status', 'pendente')
+        
+        if not all([nome, email, empresa]):
+            flash('❌ Preencha todos os campos obrigatórios.', 'error')
+            return render_template('admin/concorrente_form.html')
+        
+        try:
+            conn = get_db_connection()
+            if not conn:
+                flash('Erro ao conectar ao banco de dados.', 'error')
+                return render_template('admin/concorrente_form.html')
+            
+            cursor = conn.cursor()
+            
+            cursor.execute("""
+                INSERT INTO concorrentes (nome, email, telefone, empresa, cargo, interesse, mensagem, status)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """, (nome, email, telefone, empresa, cargo, interesse, mensagem, status))
+            
+            conn.commit()
+            
+            # Log da ação
+            if session.get('admin_id'):
+                try:
+                    cursor.execute("""
+                        INSERT INTO logs_sistema (id_funcionario, acao, modulo, descricao)
+                        VALUES (%s, 'CADASTRO', 'CONCORRENTES', %s)
+                    """, (session['admin_id'], f'Concorrente cadastrado: {nome}'))
+                    conn.commit()
+                except mysql.connector.Error:
+                    pass
+            
+            flash('✅ Concorrente cadastrado com sucesso!', 'success')
+            return redirect(url_for('admin_concorrentes'))
+        
+        except mysql.connector.Error as err:
+            flash(f'Erro ao cadastrar concorrente: {err}', 'error')
+        
+        finally:
+            if conn and conn.is_connected():
+                cursor.close()
+                conn.close()
+    
+    return render_template('admin/concorrente_form.html')
+
+@app.route('/admin/concorrente/editar/<int:id_concorrente>', methods=['GET', 'POST'])
+@admin_required
+def admin_editar_concorrente(id_concorrente):
+    try:
+        conn = get_db_connection()
+        if not conn:
+            flash('Erro ao conectar ao banco de dados.', 'error')
+            return redirect(url_for('admin_concorrentes'))
+        
+        cursor = conn.cursor(dictionary=True)
+        
+        if request.method == 'POST':
+            nome = request.form.get('nome', '').strip()
+            email = request.form.get('email', '').strip()
+            telefone = request.form.get('telefone', '').strip()
+            empresa = request.form.get('empresa', '').strip()
+            cargo = request.form.get('cargo', '').strip()
+            interesse = request.form.get('interesse', '').strip()
+            mensagem = request.form.get('mensagem', '').strip()
+            status = request.form.get('status', 'pendente')
+            observacoes = request.form.get('observacoes', '').strip()
+            
+            cursor.execute("""
+                UPDATE concorrentes 
+                SET nome = %s, email = %s, telefone = %s, empresa = %s, cargo = %s, 
+                    interesse = %s, mensagem = %s, status = %s, observacoes = %s
+                WHERE id_concorrente = %s
+            """, (nome, email, telefone, empresa, cargo, interesse, mensagem, status, observacoes, id_concorrente))
+            
+            conn.commit()
+            
+            # Log da ação
+            if session.get('admin_id'):
+                try:
+                    cursor.execute("""
+                        INSERT INTO logs_sistema (id_funcionario, acao, modulo, descricao)
+                        VALUES (%s, 'EDICAO', 'CONCORRENTES', %s)
+                    """, (session['admin_id'], f'Concorrente editado: {nome} (ID: {id_concorrente})'))
+                    conn.commit()
+                except mysql.connector.Error:
+                    pass
+            
+            flash('✅ Concorrente atualizado com sucesso!', 'success')
+            return redirect(url_for('admin_concorrentes'))
+        
+        else:
+            cursor.execute("SELECT * FROM concorrentes WHERE id_concorrente = %s", (id_concorrente,))
+            concorrente = cursor.fetchone()
+            
+            if not concorrente:
+                flash('❌ Concorrente não encontrado.', 'error')
+                return redirect(url_for('admin_concorrentes'))
+            
+            return render_template('admin/concorrente_form.html', concorrente=concorrente)
+    
+    except mysql.connector.Error as err:
+        flash(f'Erro ao editar concorrente: {err}', 'error')
+        return redirect(url_for('admin_concorrentes'))
+    
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+
+@app.route('/admin/concorrente/excluir/<int:id_concorrente>', methods=['POST'])
+@admin_required
+def admin_excluir_concorrente(id_concorrente):
+    try:
+        conn = get_db_connection()
+        if not conn:
+            flash('Erro ao conectar ao banco de dados.', 'error')
+            return redirect(url_for('admin_concorrentes'))
+        
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute("SELECT nome FROM concorrentes WHERE id_concorrente = %s", (id_concorrente,))
+        concorrente = cursor.fetchone()
+        
+        if not concorrente:
+            flash('❌ Concorrente não encontrado.', 'error')
+            return redirect(url_for('admin_concorrentes'))
+        
+        cursor.execute("DELETE FROM concorrentes WHERE id_concorrente = %s", (id_concorrente,))
+        conn.commit()
+        
+        # Log da ação
+        if session.get('admin_id'):
+            try:
+                cursor.execute("""
+                    INSERT INTO logs_sistema (id_funcionario, acao, modulo, descricao)
+                    VALUES (%s, 'EXCLUSAO', 'CONCORRENTES', %s)
+                """, (session['admin_id'], f'Concorrente excluído: {concorrente["nome"]} (ID: {id_concorrente})'))
+                conn.commit()
+            except mysql.connector.Error:
+                pass
+        
+        flash(f'🗑️ Concorrente {concorrente["nome"]} excluído com sucesso!', 'success')
+    
+    except mysql.connector.Error as err:
+        flash(f'Erro ao excluir concorrente: {err}', 'error')
+    
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+    
+    return redirect(url_for('admin_concorrentes'))
+
 @app.route('/admin/relatorios')
 @admin_required
 def admin_relatorios():
@@ -1195,6 +1869,113 @@ def admin_relatorios():
         if conn and conn.is_connected():
             cursor.close()
             conn.close()
+
+@app.route('/admin/contatos')
+@admin_required
+def admin_contatos():
+    try:
+        conn = get_db_connection()
+        if not conn:
+            flash('Erro ao conectar ao banco de dados.', 'error')
+            return render_template('admin/contatos.html', contatos=[])
+        
+        cursor = conn.cursor(dictionary=True)
+        
+        # Buscar contatos da tabela suporte
+        cursor.execute("""
+            SELECT * FROM suporte 
+            ORDER BY data_envio DESC
+        """)
+        contatos = cursor.fetchall()
+        
+        return render_template('admin/contatos.html', contatos=contatos)
+        
+    except mysql.connector.Error as err:
+        flash(f'Erro ao carregar contatos: {err}', 'error')
+        return render_template('admin/contatos.html', contatos=[])
+    
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+
+@app.route('/admin/contato/<int:id_suporte>', methods=['GET', 'POST'])
+@admin_required
+def admin_detalhes_contato(id_suporte):
+    try:
+        conn = get_db_connection()
+        if not conn:
+            flash('Erro ao conectar ao banco de dados.', 'error')
+            return redirect(url_for('admin_contatos'))
+        
+        cursor = conn.cursor(dictionary=True)
+        
+        if request.method == 'POST':
+            status = request.form.get('status', 'pendente')
+            observacoes = request.form.get('observacoes', '').strip()
+            
+            cursor.execute("""
+                UPDATE suporte 
+                SET status = %s, observacoes = %s
+                WHERE id_suporte = %s
+            """, (status, observacoes, id_suporte))
+            
+            conn.commit()
+            
+            flash('✅ Contato atualizado com sucesso!', 'success')
+            return redirect(url_for('admin_contatos'))
+        
+        else:
+            cursor.execute("SELECT * FROM suporte WHERE id_suporte = %s", (id_suporte,))
+            contato = cursor.fetchone()
+            
+            if not contato:
+                flash('❌ Contato não encontrado.', 'error')
+                return redirect(url_for('admin_contatos'))
+            
+            return render_template('admin/contato_detalhes.html', contato=contato)
+    
+    except mysql.connector.Error as err:
+        flash(f'Erro ao carregar contato: {err}', 'error')
+        return redirect(url_for('admin_contatos'))
+    
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+
+@app.route('/admin/contato/excluir/<int:id_suporte>', methods=['POST'])
+@admin_required
+def admin_excluir_contato(id_suporte):
+    try:
+        conn = get_db_connection()
+        if not conn:
+            flash('Erro ao conectar ao banco de dados.', 'error')
+            return redirect(url_for('admin_contatos'))
+        
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute("SELECT nome FROM suporte WHERE id_suporte = %s", (id_suporte,))
+        contato = cursor.fetchone()
+        
+        if not contato:
+            flash('❌ Contato não encontrado.', 'error')
+            return redirect(url_for('admin_contatos'))
+        
+        cursor.execute("DELETE FROM suporte WHERE id_suporte = %s", (id_suporte,))
+        conn.commit()
+        
+        flash(f'🗑️ Contato de {contato["nome"]} excluído com sucesso!', 'success')
+    
+    except mysql.connector.Error as err:
+        flash(f'Erro ao excluir contato: {err}', 'error')
+    
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+    
+    return redirect(url_for('admin_contatos'))
 
 @app.route('/admin/diagnosticos')
 @admin_required
@@ -1391,16 +2172,118 @@ def garantia():
     return render_template('central-garantia.html', titulo="Central de Garantia")
 
 @app.route('/sobre')
-def sobre():
+def sobre_nos():
     return render_template('sobre.html')
 
-@app.route('/contato')
+@app.route('/contato', methods=['GET', 'POST'])
 def contato():
+    if request.method == 'POST':
+        # Pegar os dados do formulário
+        nome = request.form.get('nome', '').strip()
+        email = request.form.get('email', '').strip()
+        telefone = request.form.get('telefone', '').strip()
+        assunto = request.form.get('assunto', '').strip()
+        mensagem = request.form.get('mensagem', '').strip()
+        
+        # Validar campos obrigatórios
+        if not all([nome, email, assunto, mensagem]):
+            flash('❌ Por favor, preencha todos os campos obrigatórios.', 'error')
+            return render_template('contato.html')
+        
+        try:
+            conn = get_db_connection()
+            if not conn:
+                flash('Erro ao conectar ao banco de dados.', 'error')
+                return render_template('contato.html')
+            
+            cursor = conn.cursor()
+            
+            # Inserir na tabela suporte (que já existe)
+            cursor.execute("""
+                INSERT INTO suporte (nome, email, mensagem, status)
+                VALUES (%s, %s, %s, %s)
+            """, (nome, email, f"ASSUNTO: {assunto}\nTELEFONE: {telefone}\nMENSAGEM: {mensagem}", "pendente"))
+            
+            conn.commit()
+            
+            flash('✅ Mensagem enviada com sucesso! Entraremos em contato em breve.', 'success')
+            return redirect(url_for('contato_sucesso'))
+            
+        except mysql.connector.Error as err:
+            flash(f'❌ Erro ao enviar mensagem: {err}', 'error')
+            return render_template('contato.html')
+        
+        finally:
+            if conn and conn.is_connected():
+                cursor.close()
+                conn.close()
+
     return render_template('contato.html')
 
-@app.route('/trabalhe-conosco')
+@app.route('/contato-sucesso')
+def contato_sucesso():
+    return render_template('contato_sucesso.html')
+
+@app.route('/trabalhe-conosco', methods=['GET', 'POST'])
 def trabalhe_conosco():
+    if request.method == 'POST':
+        # 1. Pegar os dados do formulário
+        nome = request.form.get('nome', '').strip()
+        email = request.form.get('email', '').strip()
+        telefone = request.form.get('telefone', '').strip()
+        formacao = request.form.get('formacao', '').strip()
+        conhecimento = request.form.get('conhecimento', '').strip()
+        ingles = request.form.get('ingles', '').strip()
+        seguranca = request.form.get('seguranca', '').strip()
+        
+        # Validar campos obrigatórios
+        if not all([nome, email, formacao, conhecimento, ingles, seguranca]):
+            flash('❌ Por favor, preencha todos os campos obrigatórios.', 'error')
+            return render_template('trabalhe_conosco.html')
+        
+        try:
+            conn = get_db_connection()
+            if not conn:
+                flash('Erro ao conectar ao banco de dados.', 'error')
+                return render_template('trabalhe_conosco.html')
+            
+            cursor = conn.cursor()
+            
+            # Criar mensagem com todos os dados do formulário
+            mensagem_completa = f"""
+            FORMAÇÃO: {formacao}
+            CONHECIMENTO PRÁTICO: {conhecimento}
+            INGLÊS: {ingles}
+            SEGURANÇA DA INFORMAÇÃO: {seguranca}
+            TELEFONE: {telefone if telefone else 'Não informado'}
+            """
+            
+            # Inserir na tabela concorrentes
+            cursor.execute("""
+                INSERT INTO concorrentes (nome, email, telefone, empresa, cargo, interesse, mensagem, status)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """, (nome, email, telefone, "Candidato GHCP", "Candidato", "Trabalhe Conosco", mensagem_completa, "pendente"))
+            
+            conn.commit()
+            
+            flash('✅ Seus dados foram enviados com sucesso! Entraremos em contato em breve.', 'success')
+            return redirect(url_for('trabalhe_conosco_sucesso'))
+            
+        except mysql.connector.Error as err:
+            flash(f'❌ Erro ao enviar dados: {err}', 'error')
+            return render_template('trabalhe_conosco.html')
+        
+        finally:
+            if conn and conn.is_connected():
+                cursor.close()
+                conn.close()
+
+    # Se for um GET, apenas renderiza a página do formulário
     return render_template('trabalhe_conosco.html')
+
+@app.route('/trabalhe-conosco-sucesso')
+def trabalhe_conosco_sucesso():
+    return render_template('trabalhe_conosco_sucesso.html')
 
 @app.route('/faq')
 def faq():

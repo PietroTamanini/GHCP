@@ -1,0 +1,77 @@
+{% extends "admin/base.html" %}
+{% block title %}Nova Oferta{% endblock %}
+{% block page_title %}Nova Oferta{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2 style="margin-bottom: 30px;">➕ Cadastrar Nova Oferta</h2>
+    
+    <form method="POST" class="form-grid">
+        <div class="form-group full-width">
+            <label for="id_produto">Produto:</label>
+            <select name="id_produto" id="id_produto" class="form-control" required>
+                <option value="">Selecione um produto</option>
+                {% for produto in produtos %}
+                <option value="{{ produto.id_produto }}">
+                    {{ produto.nome }} – R$ {{ "%.2f"|format(produto.preco) }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="desconto">Desconto (%):</label>
+            <input type="number" name="desconto" id="desconto" class="form-control" 
+                   min="1" max=100" step="0.1" required>
+        </div>
+
+        <div class="form-group">
+            <label for="validade">Validade:</label>
+            <input type="date" name="validade" id="validade" class="form-control" required>
+        </div>
+
+        <div class="form-actions">
+            <a href="{{ url_for('admin_ofertas') }}" class="btn btn-secondary">↩️ Voltar</a>
+            <button type="submit" class="btn btn-success">💾 Salvar Oferta</button>
+        </div>
+    </form>
+</div>
+
+<style>
+/* Ajustes específicos para tema escuro */
+.dark-theme .form-container {
+    background: rgba(26, 29, 41, 0.9);
+    border-color: #2d3748;
+}
+
+.dark-theme .form-control {
+    background: #2d3748;
+    border-color: #4a5568;
+    color: #e2e8f0;
+}
+
+.dark-theme .form-control:focus {
+    background: #3a3a3a;
+    border-color: var(--primary);
+}
+
+.dark-theme select.form-control option {
+    background: #2d3748;
+    color: #e2e8f0;
+}
+
+.dark-theme label {
+    color: #e2e8f0;
+}
+
+/* Ajuste para botão secundário no tema escuro */
+.dark-theme .btn-secondary {
+    background: #4a5568;
+    color: #e2e8f0;
+}
+
+.dark-theme .btn-secondary:hover {
+    background: #5a6678;
+}
+</style>
+{% endblock %}

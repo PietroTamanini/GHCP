@@ -58,6 +58,9 @@
     transform: translateY(-3px);
     box-shadow: var(--shadow);
 }
+.hidden {
+    display: none;
+}
 </style>
 
 <div class="checkout-container">
@@ -73,15 +76,76 @@
         <input type="text" name="endereco" required>
 
         <label>Forma de Pagamento</label>
-        <select name="pagamento" required>
+        <select id="pagamento" name="pagamento" required>
             <option value="">Selecione</option>
             <option value="pix">PIX</option>
             <option value="cartao">Cartão</option>
+            <option value="boleto">Boleto</option>
         </select>
 
-        <p>Total a Pagar: <strong>R$ {{ "%.2f"|format(total_geral) }}</strong></p>
+        <!-- Campos do Cartão -->
+        <div id="cartao-info" class="hidden">
+            <label>Tipo de Cartão</label>
+            <select id="tipo-cartao" name="tipo_cartao">
+                <option value="">Selecione</option>
+                <option value="credito">Crédito</option>
+                <option value="debito">Débito</option>
+            </select>
+
+            <div id="credito-info" class="hidden">
+                <label>Parcelamento</label>
+                <select id="parcelas" name="parcelas">
+                    <option value="">Selecione</option>
+                </select>
+                <p id="valor-parcela" style="font-weight:600; color:var(--primary)"></p>
+            </div>
+        </div>
+
+        <p>Total a Pagar: 
+            <strong id="total">R$ {{ "%.2f"|format(total_geral) }}</strong>
+        </p>
         <button type="submit" class="btn-finalizar">💰 Confirmar Compra</button>
     </form>
 </div>
+
+<script>
+const pagamento = document.getElementById('pagamento');
+const cartaoInfo = document.getElementById('cartao-info');
+const tipoCartao = document.getElementById('tipo-cartao');
+const creditoInfo = document.getElementById('credito-info');
+const parcelasSelect = document.getElementById('parcelas');
+const valorParcela = document.getElementById('valor-parcela');
+
+const total = parseFloat("{{ total_geral }}");
+
+pagamento.addEventListener('change', () => {
+    cartaoInfo.classList.toggle('hidden', pagamento.value !== 'cartao');
+});
+
+tipoCartao.addEventListener('change', () => {
+    creditoInfo.classList.toggle('hidden', tipoCartao.value !== 'credito');
+    if (tipoCartao.value === 'credito') preencherParcelas();
+});
+
+function preencherParcelas() {
+    parcelasSelect.innerHTML = '<option value="">Selecione</option>';
+    for (let i = 1; i <= 6; i++) {
+        parcelasSelect.innerHTML += `<option value="${i}">${i}x sem juros</option>`;
+    }
+    for (let i = 7; i <= 12; i++) {
+        parcelasSelect.innerHTML += `<option value="${i}">${i}x com juros</option>`;
+    }
+}
+
+parcelasSelect.addEventListener('change', () => {
+    const parcelas = parseInt(parcelasSelect.value);
+    let totalComJuros = total;
+    if (parcelas > 6) {
+        totalComJuros *= 1.05; // 5% de juros total (exemplo)
+    }
+    const valor = totalComJuros / parcelas;
+    valorParcela.textContent = `Total: R$ ${totalComJuros.toFixed(2)} — ${parcelas}x de R$ ${valor.toFixed(2)}`;
+});
+</script>
 
 {% endblock %}

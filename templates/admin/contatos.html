@@ -1,0 +1,111 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Contatos{% endblock %}
+
+{% block page_title %}📞 Mensagens de Contato{% endblock %}
+
+{% block content %}
+<div class="table-header">
+    <h3>Lista de Mensagens Recebidas</h3>
+    <div class="table-actions">
+        <span class="btn btn-info">
+            Total: {{ contatos|length }} mensagens
+        </span>
+    </div>
+</div>
+
+<div class="data-table">
+    <table>
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Assunto</th>
+                <th>Data</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for contato in contatos %}
+            <tr>
+                <td>
+                    <strong>{{ contato.nome }}</strong>
+                    {% if contato.observacoes %}
+                    <br><small style="color: var(--text-light);">{{ contato.observacoes[:50] }}...</small>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="mailto:{{ contato.email }}" style="color: var(--primary); text-decoration: none;">
+                        {{ contato.email }}
+                    </a>
+                </td>
+                <td>
+                    {% set mensagem_lines = contato.mensagem.split('\n') %}
+                    {% if mensagem_lines and mensagem_lines[0].startswith('ASSUNTO:') %}
+                        {{ mensagem_lines[0].replace('ASSUNTO: ', '') }}
+                    {% else %}
+                        {{ contato.mensagem[:50] }}...
+                    {% endif %}
+                </td>
+                <td>{{ contato.data_envio.strftime('%d/%m/%Y %H:%M') }}</td>
+                <td>
+                    <span class="badge 
+                        {% if contato.status == 'respondido' %}badge-success
+                        {% elif contato.status == 'pendente' %}badge-warning
+                        {% elif contato.status == 'fechado' %}badge-danger
+                        {% else %}badge-info{% endif %}">
+                        {{ contato.status|title }}
+                    </span>
+                </td>
+                <td>
+                    <div style="display: flex; gap: 8px;">
+                        <a href="{{ url_for('admin_detalhes_contato', id_suporte=contato.id_suporte) }}" 
+                           class="btn btn-sm btn-primary" title="Ver Detalhes">
+                            👁️
+                        </a>
+                        <form method="POST" action="{{ url_for('admin_excluir_contato', id_suporte=contato.id_suporte) }}" 
+                              style="display: inline;" onsubmit="return confirm('Tem certeza que deseja excluir esta mensagem?')">
+                            <button type="submit" class="btn btn-sm btn-danger" title="Excluir">
+                                🗑️
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-light);">
+                    📝 Nenhuma mensagem de contato recebida.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Estatísticas Rápidas -->
+<div class="stats-grid" style="margin-top: 40px;">
+    <div class="stat-card">
+        <h3>Total de Mensagens</h3>
+        <div class="value">{{ contatos|length }}</div>
+        <div class="trend up">📈 Todas as mensagens</div>
+    </div>
+    
+    <div class="stat-card">
+        <h3>Pendentes</h3>
+        <div class="value" style="color: var(--warning);">
+            {{ contatos|selectattr('status', 'equalto', 'pendente')|list|length }}
+        </div>
+        <div class="trend">⏳ Aguardando resposta</div>
+    </div>
+    
+    <div class="stat-card">
+        <h3>Respondidas</h3>
+        <div class="value" style="color: var(--success);">
+            {{ contatos|selectattr('status', 'equalto', 'respondido')|list|length }}
+        </div>
+        <div class="trend up">✅ Resposta enviada</div>
+    </div>
+</div>
+{% endblock %}

@@ -1,15 +1,182 @@
 {% extends 'base.html' %}
 
-{% set titulo = "Trocas e Devoluções" %}
+{% set titulo = "Política de Trocas e Devoluções" %}
 
 {% block conteudo %}
-<div class="card">
+<style>
+    /* Estilos baseados no seu modelo anterior, adaptados para o tema "Trocas e Devoluções" */
+    :root {
+      --card-primary: #27ae60; /* Cor Verde de renovação/política */
+      --card-bg-light: #ffffff;
+      --card-bg-dark: rgba(255, 255, 255, 0.05);
+      --card-text-light: #222;
+      --card-text-dark: #ddd;
+      --card-border-light: #e5e5e5;
+      --card-border-dark: rgba(255, 255, 255, 0.1);
+    }
+
+    body.dark-mode .card-container {
+      background: var(--card-bg-dark);
+      color: var(--card-text-dark);
+      border: 1px solid var(--card-border-dark);
+    }
+
+    body.light-mode .card-container {
+      background: var(--card-bg-light);
+      color: var(--card-text-light);
+      border: 1px solid var(--card-border-light);
+    }
+
+    .card-container {
+      max-width: 900px;
+      margin: 50px auto;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      padding: 40px;
+      transition: background 0.3s ease, color 0.3s ease;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .card-header {
+      text-align: center;
+      margin-bottom: 35px;
+    }
+
+    .card-header h2 {
+      font-size: 2.0rem;
+      color: var(--card-primary);
+      margin-bottom: 10px;
+    }
+    
+    .card-header p {
+        font-size: 1.1rem;
+        opacity: 0.8;
+    }
+
+    .card-section {
+      /* Estilo da barra lateral para destacar cada tópico */
+      border-left: 4px solid var(--card-primary);
+      border-radius: 10px;
+      padding: 25px;
+      margin-bottom: 30px;
+    }
+    
+    body.dark-mode .card-section {
+        background: rgba(255,255,255,0.03);
+    }
+    body.light-mode .card-section {
+        background: rgba(0,0,0,0.01);
+    }
+
+    .card-section h4 {
+      color: var(--card-primary);
+      font-weight: 700;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.4rem;
+    }
+
+    .card-section p {
+      text-align: justify;
+      line-height: 1.7;
+      margin-bottom: 15px;
+      font-size: 1.0rem;
+    }
+    
+    .card-list {
+        list-style-type: none;
+        padding-left: 0;
+    }
+    .card-list li {
+        margin-bottom: 10px;
+        position: relative;
+        padding-left: 20px;
+        line-height: 1.5;
+    }
+    .card-list li::before {
+        content: "✅";
+        color: var(--card-primary);
+        font-weight: bold;
+        display: inline-block;
+        width: 1em;
+        margin-left: -1em;
+    }
+    
+    .card-alert {
+      background: rgba(230, 126, 34, 0.1); /* Laranja para aviso/procedimento */
+      border-left: 4px solid #e67e22;
+      padding: 20px;
+      border-radius: 10px;
+      color: #e67e22;
+      margin-top: 20px;
+    }
+
+    .card-footer {
+      text-align: center;
+      opacity: 0.7;
+      font-size: 0.9rem;
+      margin-top: 40px;
+      border-top: 1px dashed var(--card-border-light);
+      padding-top: 20px;
+    }
+</style>
+
+<div class="card-container">
     <div class="card-header">
-        <h2>🔄 Trocas e Devoluções</h2>
+        <h2>🔄 Política de Trocas e Devoluções</h2>
+        <p>Garantia de satisfação: Veja como realizar sua troca ou devolução de forma simples e segura.</p>
     </div>
-    <div class="card-body">
-        <p>Aceitamos trocas em até 30 dias. Entre em contato para iniciar o processo.</p>
-        <p>Produtos devem estar em condição original.</p>
+
+    <div class="card-section">
+        <h4><i class="fas fa-calendar-check"></i> 1. Prazos</h4>
+        <p>
+            Oferecemos diferentes prazos dependendo da sua necessidade, respeitando sempre o Código de Defesa do Consumidor.
+        </p>
+        <ul class="card-list">
+            <li><strong>Desistência/Arrependimento:</strong> 7 dias corridos, contados a partir da data de recebimento do produto.</li>
+            <li><strong>Troca por Tamanho/Cor:</strong> Aceitamos trocas em até <strong>30 dias</strong> corridos após o recebimento.</li>
+            <li><strong>Defeito de Fabricação:</strong> 90 dias corridos para produtos duráveis.</li>
+        </ul>
+    </div>
+
+    <div class="card-section">
+        <h4><i class="fas fa-box-open"></i> 2. Condição do Produto</h4>
+        <p>
+            Para que a troca ou devolução seja aceita, é crucial que o item respeite as seguintes condições:
+        </p>
+        <ul class="card-list">
+            <li>O produto deve estar em sua embalagem original, com todos os acessórios e manuais.</li>
+            <li>Não pode apresentar quaisquer indícios de uso, lavagem ou modificação pelo cliente.</li>
+            <li>A etiqueta original deve estar intacta e fixada ao produto.</li>
+        </ul>
+    </div>
+
+    <div class="card-section">
+        <h4><i class="fas fa-forward"></i> 3. Como Iniciar o Processo</h4>
+        <p>
+            Para solicitar uma troca ou devolução, o procedimento deve ser iniciado através do nosso canal de atendimento:
+        </p>
+        <div class="card-alert">
+             Para evitar atrasos, tenha em mãos o número do seu pedido e o motivo detalhado da solicitação (ex: cor errada, tamanho incorreto, defeito).
+        </div>
+    </div>
+    
+    <div class="card-section">
+        <h4><i class="fas fa-hand-holding-usd"></i> 4. Opções de Reembolso</h4>
+        <p>
+            Após o recebimento e inspeção do produto em nosso centro de distribuição, você poderá escolher entre:
+        </p>
+        <ul class="card-list">
+            <li>**Estorno** (para compras no cartão de crédito).</li>
+            <li>**Crédito na loja** para uso em futuras compras.</li>
+            <li>**Transferência Bancária** (para compras feitas via Boleto ou Pix).</li>
+        </ul>
+    </div>
+
+    <div class="card-footer">
+        Esta política está em conformidade com o Código de Defesa do Consumidor brasileiro.
     </div>
 </div>
 {% endblock %}

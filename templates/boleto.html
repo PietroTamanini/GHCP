@@ -1,14 +1,174 @@
 {% extends 'base.html' %}
 
-{% set titulo = "Boleto Bancário" %}
+{% set titulo = "Detalhes do Boleto Bancário" %}
 
 {% block conteudo %}
-<div class="card">
+<style>
+    /* Estilos do seu modelo (Cartão) aplicados ao Boleto */
+    :root {
+      --card-primary: #0066ff; /* Cor principal - usei azul para boletos, mas você pode mudar para a cor que quiser */
+      --card-bg-light: #ffffff;
+      --card-bg-dark: rgba(255, 255, 255, 0.05);
+      --card-text-light: #222;
+      --card-text-dark: #ddd;
+      --card-border-light: #e5e5e5;
+      --card-border-dark: rgba(255, 255, 255, 0.1);
+    }
+
+    body.dark-mode .card-container {
+      background: var(--card-bg-dark);
+      color: var(--card-text-dark);
+      border: 1px solid var(--card-border-dark);
+    }
+
+    body.light-mode .card-container {
+      background: var(--card-bg-light);
+      color: var(--card-text-light);
+      border: 1px solid var(--card-border-light);
+    }
+
+    .card-container {
+      max-width: 900px;
+      margin: 50px auto;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      padding: 40px;
+      transition: background 0.3s ease, color 0.3s ease;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .card-header {
+      text-align: center;
+      margin-bottom: 35px;
+    }
+
+    .card-header h2 {
+      font-size: 1.8rem;
+      color: var(--card-primary);
+      margin-bottom: 10px;
+    }
+
+    .card-section {
+      border-left: 4px solid var(--card-primary);
+      border-radius: 10px;
+      padding: 25px;
+      margin-bottom: 25px;
+      /* Se estiver usando Bootstrap (que não está aqui), esta linha faria parte do dark mode: */
+      /* background: rgba(255,255,255,0.03); */ 
+    }
+    
+    body.dark-mode .card-section {
+        background: rgba(255,255,255,0.03);
+    }
+    body.light-mode .card-section {
+        background: rgba(0,0,0,0.01);
+    }
+
+    .card-section h4 {
+      color: var(--card-primary);
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .card-section p {
+      text-align: justify;
+      line-height: 1.6;
+    }
+
+    /* Lista adaptada para o contexto do Boleto */
+    .card-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .card-list li {
+      border: 1px solid var(--card-border-dark);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin: 6px 0;
+      /* background: rgba(255,255,255,0.02); */
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    body.dark-mode .card-list li {
+        background: rgba(255,255,255,0.02);
+    }
+    body.light-mode .card-list li {
+        border: 1px solid var(--card-border-light);
+        background: #f9f9f9;
+    }
+
+    .card-list li.discount::before {
+      content: "⭐"; /* Ícone para desconto */
+    }
+    .card-list li.warning::before {
+      content: "⚠️"; /* Ícone para aviso */
+    }
+    .card-list li.info::before {
+      content: "⏳"; /* Ícone para prazo */
+    }
+
+    .card-alert {
+      background: rgba(255, 193, 7, 0.1);
+      border-left: 4px solid #ffc107;
+      padding: 20px;
+      border-radius: 10px;
+      color: #ffc107;
+    }
+
+    .card-footer {
+      text-align: center;
+      opacity: 0.8;
+      font-size: 0.95rem;
+      margin-top: 30px;
+    }
+
+    /* Removido o .card-icons pois não se aplica a boleto */
+</style>
+
+<div class="card-container">
     <div class="card-header">
         <h2>📄 Boleto Bancário</h2>
+        <p>Pague de forma tradicional e segura, com a vantagem do desconto.</p>
     </div>
-    <div class="card-body">
-        <p>Pague via boleto com 5% de desconto. Vencimento em 3 dias.</p>
+
+    <div class="card-section">
+        <h4>💰 Vantagens e Prazo</h4>
+        <ul class="card-list">
+            <li class="discount">Desconto: Você garante <strong>5% de desconto</strong> no valor total do pedido.</li>
+            <li class="warning">Vencimento: O boleto tem vencimento em <strong>3 dias</strong> após a emissão.</li>
+            <li class="info">Compensação: A confirmação do pagamento pode levar de 1 a 2 dias úteis.</li>
+        </ul>
+    </div>
+
+    <div class="card-section">
+        <h4>⚙️ Como Pagar</h4>
+        <p>
+            O boleto pode ser pago em qualquer banco (agência ou aplicativo), casas lotéricas, ou caixas eletrônicos,
+            até a data de vencimento. Recomendamos copiar o código de barras para agilizar o processo.
+        </p>
+    </div>
+
+    <div class="card-section">
+        <h4>❌ Não Pagamento / Vencimento</h4>
+        <div class="card-alert">
+            <strong>Atenção:</strong> Após a data de vencimento (3 dias), o boleto não poderá ser pago e o pedido será automaticamente cancelado.
+            Para prosseguir com a compra, será necessário gerar um novo pedido.
+        </div>
+    </div>
+
+    <div class="card-section">
+        <h4>🛡️ Segurança e Dicas</h4>
+        <p>
+            Sempre verifique o nome do beneficiário (o nome da nossa empresa) e o valor exato antes de finalizar a transação no seu banco.
+            Não são cobradas taxas adicionais no momento do pagamento do boleto.
+        </p>
+    </div>
+
+    <div class="card-footer">
+        A compensação do boleto é garantida pelo sistema bancário brasileiro.
     </div>
 </div>
 {% endblock %}

@@ -1,0 +1,77 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Excluir Oferta{% endblock %}
+{% block page_title %}🗑️ Excluir Oferta{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="warning-message" style="text-align: center; padding: 40px 20px;">
+        <div style="font-size: 64px; margin-bottom: 20px;">⚠️</div>
+        <h2 style="color: var(--danger); margin-bottom: 16px;">Confirmar Exclusão</h2>
+        <p style="font-size: 18px; margin-bottom: 24px; color: var(--text);">
+            Tem certeza que deseja excluir a oferta do produto?
+        </p>
+        
+        <div style="background: var(--secondary); padding: 24px; border-radius: 12px; margin: 24px 0; border-left: 4px solid var(--danger);">
+            <h3 style="color: var(--danger); margin-bottom: 12px;">{{ oferta.nome_produto }}</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; text-align: left;">
+                <div>
+                    <strong>Desconto:</strong><br>
+                    <span style="font-size: 24px; color: var(--danger); font-weight: bold;">
+                        {{ "%.0f"|format(oferta.desconto) }}%
+                    </span>
+                </div>
+                <div>
+                    <strong>Preço Original:</strong><br>
+                    <span style="text-decoration: line-through; color: var(--text-light);">
+                        R$ {{ "%.2f"|format(oferta.preco_original) }}
+                    </span>
+                </div>
+                <div>
+                    <strong>Preço com Desconto:</strong><br>
+                    <span style="font-size: 20px; color: var(--success); font-weight: bold;">
+                        R$ {{ "%.2f"|format(oferta.preco_com_desconto) }}
+                    </span>
+                </div>
+                <div>
+                    <strong>Validade:</strong><br>
+                    {{ oferta.validade.strftime('%d/%m/%Y') if oferta.validade else 'Não definida' }}
+                </div>
+            </div>
+        </div>
+
+        <p style="color: var(--text-light); margin-bottom: 32px;">
+            <strong>Atenção:</strong> Esta ação não pode ser desfeita. A oferta será permanentemente removida do sistema.
+        </p>
+
+        <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ url_for('admin_ofertas') }}" class="btn btn-warning" style="min-width: 140px;">
+                ↩️ Cancelar
+            </a>
+            <form method="POST" action="{{ url_for('admin_excluir_oferta', id_oferta=oferta.id_oferta) }}" style="display: inline;">
+                <button type="submit" class="btn btn-danger" style="min-width: 140px;" 
+                        onclick="return confirm('Tem certeza absoluta? Esta ação é irreversível!');">
+                    🗑️ Excluir
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .warning-message {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    @media (max-width: 768px) {
+        .warning-message {
+            padding: 20px 10px;
+        }
+        
+        .btn {
+            min-width: 120px !important;
+        }
+    }
+</style>
+{% endblock %}

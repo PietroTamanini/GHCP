@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% set titulo = "Mensagem Enviada com Sucesso" %}
+
+{% block conteudo %}
+<div class="success-container">
+    <div class="success-icon">
+        ✅
+    </div>
+    <div class="success-title">Mensagem Enviada!</div>
+    <div class="success-message">
+        Obrigado pelo seu contato! <br>
+        Sua mensagem foi recebida e nossa equipe entrará em contato em breve.
+    </div>
+    <a href="{{ url_for('inicio') }}" class="btn-home">
+        🏠 Voltar para Home
+    </a>
+</div>
+
+<style>
+    .success-container {
+        max-width: 600px;
+        margin: 80px auto;
+        background: var(--glass);
+        padding: 40px;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--border);
+        text-align: center;
+        backdrop-filter: blur(10px);
+    }
+
+    .success-icon {
+        font-size: 5em;
+        color: var(--success);
+        margin-bottom: 20px;
+    }
+
+    .success-title {
+        font-size: 2.2em;
+        font-weight: 900;
+        color: var(--success);
+        margin-bottom: 15px;
+    }
+
+    .success-message {
+        font-size: 1.1em;
+        color: var(--text);
+        line-height: 1.6;
+        margin-bottom: 40px;
+    }
+
+    .btn-home {
+        background: var(--success);
+        color: white;
+        padding: 12px 25px;
+        border-radius: 8px;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-block;
+        transition: transform 0.3s;
+    }
+
+    .btn-home:hover {
+        background: #00b36e;
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}

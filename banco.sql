@@ -1,7 +1,25 @@
 CREATE DATABASE IF NOT EXISTS loja_informatica;
 USE loja_informatica;
 
+-- Remover tabelas existentes (em ordem correta para evitar problemas de FK)
+DROP TABLE IF EXISTS itens_pedido;
+DROP TABLE IF EXISTS pedidos;
+DROP TABLE IF EXISTS avaliacoes;
+DROP TABLE IF EXISTS preferencias;
+DROP TABLE IF EXISTS enderecos;
+DROP TABLE IF EXISTS carrinho_abandonado;
+DROP TABLE IF EXISTS historico_senhas;
+DROP TABLE IF EXISTS clientes;
+DROP TABLE IF EXISTS logs_sistema;
+DROP TABLE IF EXISTS diagnosticos;
+DROP TABLE IF EXISTS funcionarios;
+DROP TABLE IF EXISTS cupons;
+DROP TABLE IF EXISTS ofertas;
 DROP TABLE IF EXISTS produto;
+DROP TABLE IF EXISTS suporte;
+DROP TABLE IF EXISTS concorrentes;
+
+-- Tabela produto
 CREATE TABLE produto (
     id_produto INT PRIMARY KEY AUTO_INCREMENT,
     nome VARCHAR(255) NOT NULL,
@@ -13,7 +31,6 @@ CREATE TABLE produto (
     categoria VARCHAR(100),
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
     data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
     imagens JSON,
     destaque BOOLEAN DEFAULT FALSE,
     peso DECIMAL(8,2) DEFAULT 0,
@@ -26,7 +43,7 @@ CREATE TABLE produto (
     INDEX idx_estoque (estoque)
 );
 
-DROP TABLE IF EXISTS clientes;
+-- Tabela clientes
 CREATE TABLE clientes (
     id_cliente INT PRIMARY KEY AUTO_INCREMENT,
     nome VARCHAR(255) NOT NULL,
@@ -46,7 +63,26 @@ CREATE TABLE clientes (
     INDEX idx_data_cadastro (data_cadastro)
 );
 
-DROP TABLE IF EXISTS enderecos;
+-- Tabela concorrentes
+CREATE TABLE concorrentes (
+    id_concorrente INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    telefone VARCHAR(20),
+    empresa VARCHAR(255) NOT NULL,
+    cargo VARCHAR(100),
+    interesse VARCHAR(100),
+    mensagem TEXT,
+    status ENUM('pendente', 'contatado', 'em_negociacao', 'contratado', 'recusado') DEFAULT 'pendente',
+    observacoes TEXT,
+    data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_nome (nome),
+    INDEX idx_empresa (empresa),
+    INDEX idx_status (status),
+    INDEX idx_data_cadastro (data_cadastro)
+);
+
+-- Tabela enderecos
 CREATE TABLE enderecos (
     id_endereco INT PRIMARY KEY AUTO_INCREMENT,
     id_cliente INT NOT NULL,
@@ -66,14 +102,14 @@ CREATE TABLE enderecos (
     INDEX idx_principal (id_cliente, principal)
 );
 
-DROP TABLE IF EXISTS pedidos;
+-- Tabela pedidos
 CREATE TABLE pedidos (
     id_pedido INT PRIMARY KEY AUTO_INCREMENT,
     id_cliente INT NOT NULL,
     id_endereco INT,
     data_pedido TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     total DECIMAL(10, 2) NOT NULL,
-    status ENUM('pendente', 'aprovado', 'enviado', 'entregue', 'cancelado') DEFAULT 'pendente',
+    status ENUM('pendente', 'aprovado', 'enviado', 'entregue', 'cancelado', 'concluido') DEFAULT 'pendente',
     forma_pagamento VARCHAR(50),
     codigo_rastreio VARCHAR(100),
     observacoes TEXT,
@@ -84,7 +120,7 @@ CREATE TABLE pedidos (
     INDEX idx_data (data_pedido)
 );
 
-DROP TABLE IF EXISTS itens_pedido;
+-- Tabela itens_pedido
 CREATE TABLE itens_pedido (
     id_item INT PRIMARY KEY AUTO_INCREMENT,
     id_pedido INT NOT NULL,
@@ -98,20 +134,21 @@ CREATE TABLE itens_pedido (
     INDEX idx_produto (id_produto)
 );
 
-DROP TABLE IF EXISTS preferencias;
+-- Tabela preferencias
 CREATE TABLE preferencias (
     id_preferencia INT PRIMARY KEY AUTO_INCREMENT,
     id_cliente INT NOT NULL UNIQUE,
     email_notificacoes BOOLEAN DEFAULT TRUE,
     sms_notificacoes BOOLEAN DEFAULT FALSE,
     ofertas_personalizadas BOOLEAN DEFAULT TRUE,
+    newsletter BOOLEAN DEFAULT TRUE,
     tema_escuro BOOLEAN DEFAULT FALSE,
     idioma VARCHAR(10) DEFAULT 'pt-BR',
     data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente) ON DELETE CASCADE
 );
 
-DROP TABLE IF EXISTS avaliacoes;
+-- Tabela avaliacoes
 CREATE TABLE avaliacoes (
     id_avaliacao INT PRIMARY KEY AUTO_INCREMENT,
     id_cliente INT NOT NULL,
@@ -128,7 +165,7 @@ CREATE TABLE avaliacoes (
     INDEX idx_nota (nota)
 );
 
-DROP TABLE IF EXISTS historico_senhas;
+-- Tabela historico_senhas
 CREATE TABLE historico_senhas (
     id_historico INT PRIMARY KEY AUTO_INCREMENT,
     id_cliente INT NOT NULL,
@@ -139,7 +176,7 @@ CREATE TABLE historico_senhas (
     INDEX idx_cliente (id_cliente)
 );
 
-DROP TABLE IF EXISTS carrinho_abandonado;
+-- Tabela carrinho_abandonado
 CREATE TABLE carrinho_abandonado (
     id_carrinho INT PRIMARY KEY AUTO_INCREMENT,
     id_cliente INT NOT NULL,
@@ -150,7 +187,7 @@ CREATE TABLE carrinho_abandonado (
     FOREIGN KEY (id_produto) REFERENCES produto(id_produto) ON DELETE CASCADE
 );
 
-DROP TABLE IF EXISTS cupons;
+-- Tabela cupons
 CREATE TABLE cupons (
     id_cupom INT PRIMARY KEY AUTO_INCREMENT,
     codigo VARCHAR(50) NOT NULL UNIQUE,
@@ -165,7 +202,23 @@ CREATE TABLE cupons (
     INDEX idx_codigo (codigo)
 );
 
-DROP TABLE IF EXISTS funcionarios;
+-- Tabela ofertas
+CREATE TABLE ofertas (
+    id_oferta INT PRIMARY KEY AUTO_INCREMENT,
+    id_produto INT NOT NULL,
+    desconto DECIMAL(5, 2) NOT NULL,
+    preco_original DECIMAL(10, 2) NOT NULL,
+    preco_com_desconto DECIMAL(10, 2) NOT NULL,
+    validade DATE,
+    ativa BOOLEAN DEFAULT TRUE,
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_produto) REFERENCES produto(id_produto) ON DELETE CASCADE,
+    INDEX idx_produto (id_produto),
+    INDEX idx_ativa (ativa),
+    INDEX idx_validade (validade)
+);
+
+-- Tabela funcionarios
 CREATE TABLE funcionarios (
     id_funcionario INT PRIMARY KEY AUTO_INCREMENT,
     nome VARCHAR(255) NOT NULL,
@@ -179,7 +232,7 @@ CREATE TABLE funcionarios (
     INDEX idx_cargo (cargo)
 );
 
-DROP TABLE IF EXISTS diagnosticos;
+-- Tabela diagnosticos
 CREATE TABLE diagnosticos (
     id_diagnostico INT PRIMARY KEY AUTO_INCREMENT,
     id_cliente INT,
@@ -204,7 +257,7 @@ CREATE TABLE diagnosticos (
     INDEX idx_data (data_entrada)
 );
 
-DROP TABLE IF EXISTS logs_sistema;
+-- Tabela logs_sistema
 CREATE TABLE logs_sistema (
     id_log INT PRIMARY KEY AUTO_INCREMENT,
     id_funcionario INT,
@@ -218,6 +271,21 @@ CREATE TABLE logs_sistema (
     INDEX idx_data (data_log)
 );
 
+-- Tabela suporte
+CREATE TABLE suporte (
+    id_suporte INT PRIMARY KEY AUTO_INCREMENT,
+    nome VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    mensagem TEXT NOT NULL,
+    data_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('pendente', 'respondido', 'fechado') DEFAULT 'pendente',
+    observacoes TEXT,
+    INDEX idx_email (email),
+    INDEX idx_status (status)
+);
+
+-- VIEWS
+
 DROP VIEW IF EXISTS view_vendas;
 CREATE VIEW view_vendas AS
 SELECT 
@@ -229,7 +297,7 @@ SELECT
     COUNT(ip.id_item) as total_itens
 FROM pedidos p
 JOIN clientes c ON p.id_cliente = c.id_cliente
-JOIN itens_pedido ip ON p.id_pedido = ip.id_pedido
+LEFT JOIN itens_pedido ip ON p.id_pedido = ip.id_pedido
 GROUP BY p.id_pedido;
 
 DROP VIEW IF EXISTS view_produtos_mais_vendidos;
@@ -307,9 +375,9 @@ WHERE p.estoque <= 10 AND p.ativo = TRUE
 GROUP BY p.id_produto
 ORDER BY p.estoque ASC;
 
+-- TRIGGERS
 DELIMITER //
 
-DROP TRIGGER IF EXISTS after_cliente_senha_update;
 CREATE TRIGGER after_cliente_senha_update
 AFTER UPDATE ON clientes
 FOR EACH ROW
@@ -320,7 +388,6 @@ BEGIN
     END IF;
 END//
 
-DROP TRIGGER IF EXISTS after_pedido_insert;
 CREATE TRIGGER after_pedido_insert
 AFTER INSERT ON itens_pedido
 FOR EACH ROW
@@ -330,7 +397,6 @@ BEGIN
     WHERE id_produto = NEW.id_produto;
 END//
 
-DROP TRIGGER IF EXISTS after_pedido_cancel;
 CREATE TRIGGER after_pedido_cancel
 AFTER UPDATE ON pedidos
 FOR EACH ROW
@@ -343,7 +409,6 @@ BEGIN
     END IF;
 END//
 
-DROP TRIGGER IF EXISTS after_funcionario_login;
 CREATE TRIGGER after_funcionario_login
 AFTER UPDATE ON funcionarios
 FOR EACH ROW
@@ -356,9 +421,9 @@ END//
 
 DELIMITER ;
 
+-- STORED PROCEDURES
 DELIMITER //
 
-DROP PROCEDURE IF EXISTS sp_estatisticas_vendas;
 CREATE PROCEDURE sp_estatisticas_vendas(IN data_inicio DATE, IN data_fim DATE)
 BEGIN
     SELECT 
@@ -371,7 +436,6 @@ BEGIN
     AND status != 'cancelado';
 END//
 
-DROP PROCEDURE IF EXISTS sp_aumento_preco_categoria;
 CREATE PROCEDURE sp_aumento_preco_categoria(IN categoria_nome VARCHAR(100), IN percentual DECIMAL(5,2))
 BEGIN
     UPDATE produto 
@@ -381,9 +445,9 @@ END//
 
 DELIMITER ;
 
+-- FUNCTIONS
 DELIMITER //
 
-DROP FUNCTION IF EXISTS fn_calcular_idade;
 CREATE FUNCTION fn_calcular_idade(data_nascimento DATE)
 RETURNS INT
 READS SQL DATA
@@ -392,7 +456,6 @@ BEGIN
     RETURN TIMESTAMPDIFF(YEAR, data_nascimento, CURDATE());
 END//
 
-DROP FUNCTION IF EXISTS fn_verificar_estoque;
 CREATE FUNCTION fn_verificar_estoque(id_prod INT, qtd INT)
 RETURNS BOOLEAN
 READS SQL DATA
@@ -405,20 +468,12 @@ END//
 
 DELIMITER ;
 
-CREATE INDEX IF NOT EXISTS idx_produto_preco ON produto(preco);
-CREATE INDEX IF NOT EXISTS idx_produto_estoque ON produto(estoque);
-CREATE INDEX IF NOT EXISTS idx_pedidos_data_status ON pedidos(data_pedido, status);
-CREATE INDEX IF NOT EXISTS idx_clientes_data_cadastro ON clientes(data_cadastro);
-CREATE INDEX IF NOT EXISTS idx_itens_pedido_preco ON itens_pedido(preco_unitario)
+-- ÍNDICES ADICIONAIS
+CREATE INDEX idx_produto_preco ON produto(preco);
+CREATE INDEX idx_produto_estoque ON produto(estoque);
+CREATE INDEX idx_pedidos_data_status ON pedidos(data_pedido, status);
+CREATE INDEX idx_clientes_data_cadastro ON clientes(data_cadastro);
+CREATE INDEX idx_itens_pedido_preco ON itens_pedido(preco_unitario);
 
-DROP TABLE IF EXISTS suporte;
-CREATE TABLE suporte (
-    id_suporte INT PRIMARY KEY AUTO_INCREMENT,
-    nome VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    mensagem TEXT NOT NULL,
-    data_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status ENUM('pendente', 'respondido', 'fechado') DEFAULT 'pendente',
-    INDEX idx_email (email),
-    INDEX idx_status (status)
-);
+-- CONFIRMAÇÃO
+SELECT '✅ Banco de dados limpo criado com sucesso!' as Status;

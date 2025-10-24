@@ -3,30 +3,92 @@
 {% set titulo = "Contato - Fale Conosco" %}
 
 {% block conteudo %}
-<div class="card">
-    <div class="card-header">
-        <h2>📞 Contato</h2>
+<section style="padding: 40px 20px; max-width: 800px; margin: 0 auto;">
+    <!-- Título -->
+    <div style="text-align: center; margin-bottom: 40px;">
+        <h1 style="font-size: 2.5rem; font-weight: 900; color: var(--primary); margin-bottom: 10px;">📞 Fale Conosco</h1>
+        <p style="font-size: 1.1rem; color: var(--text-light); max-width: 700px; margin: 0 auto;">
+            Tem alguma dúvida, sugestão ou precisa de suporte? Entre em contato conosco!
+        </p>
     </div>
-    <div class="card-body">
-        <p>Entre em contato conosco para dúvidas, sugestões ou suporte.</p>
-        <p><strong>E-mail:</strong> contato@ghcp.com.br</p>
-        <p><strong>Telefone:</strong> (69) 99999-9999</p>
-        <p><strong>Endereço:</strong> Rua Exemplo, 123 - São Paulo/SP</p>
-        <form method="POST" action="/enviar-contato">
-            <div class="form-group">
-                <label>Nome</label>
-                <input type="text" class="form-control" required>
+
+    <!-- Informações de Contato -->
+    <div style="
+        background: var(--glass);
+        border-radius: var(--radius);
+        padding: 30px;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(10px);
+        margin-bottom: 30px;
+    ">
+        <h2 style="font-size: 1.8rem; font-weight: 800; color: var(--primary); margin-bottom: 20px;">📱 Nossos Contatos</h2>
+        <div style="display: grid; gap: 15px;">
+            <p style="display: flex; align-items: center; gap: 10px;">
+                <strong>📧 E-mail:</strong> contato@ghcp.com.br
+            </p>
+            <p style="display: flex; align-items: center; gap: 10px;">
+                <strong>📞 Telefone:</strong> (69) 99999-9999
+            </p>
+            <p style="display: flex; align-items: center; gap: 10px;">
+                <strong>🏢 Endereço:</strong> Rua Exemplo, 123 - São Paulo/SP
+            </p>
+            <p style="display: flex; align-items: center; gap: 10px;">
+                <strong>🕒 Horário de Atendimento:</strong> Segunda a Sexta, 8h às 18h
+            </p>
+        </div>
+    </div>
+
+    <!-- Formulário de Contato -->
+    <div style="
+        background: var(--glass);
+        border-radius: var(--radius);
+        padding: 30px;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(10px);
+    ">
+        <h2 style="font-size: 1.8rem; font-weight: 800; color: var(--primary); margin-bottom: 20px;">✉️ Envie sua Mensagem</h2>
+        <form method="POST" action="{{ url_for('contato') }}" style="display: grid; gap: 20px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <label style="display: flex; flex-direction: column; font-weight: 600; color: var(--text);">
+                    Nome Completo *
+                    <input type="text" name="nome" placeholder="Seu nome completo" required style="padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
+                </label>
+
+                <label style="display: flex; flex-direction: column; font-weight: 600; color: var(--text);">
+                    Telefone
+                    <input type="tel" name="telefone" placeholder="(11) 99999-9999" style="padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
+                </label>
             </div>
-            <div class="form-group">
-                <label>E-mail</label>
-                <input type="email" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label>Mensagem</label>
-                <textarea class="form-control" rows="5" required></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">Enviar</button>
+
+            <label style="display: flex; flex-direction: column; font-weight: 600; color: var(--text);">
+                Email *
+                <input type="email" name="email" placeholder="seu@email.com" required style="padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
+            </label>
+
+            <label style="display: flex; flex-direction: column; font-weight: 600; color: var(--text);">
+                Assunto *
+                <input type="text" name="assunto" placeholder="Assunto da mensagem" required style="padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
+            </label>
+
+            <label style="display: flex; flex-direction: column; font-weight: 600; color: var(--text);">
+                Mensagem *
+                <textarea name="mensagem" rows="6" placeholder="Descreva sua dúvida, sugestão ou solicitação..." required style="padding: 12px; border-radius: 8px; border: 1px solid var(--border); resize: vertical;"></textarea>
+            </label>
+
+            <button type="submit" style="
+                background: var(--primary);
+                color: white;
+                padding: 15px 30px;
+                border: none;
+                border-radius: 8px;
+                font-weight: 700;
+                cursor: pointer;
+                transition: transform 0.3s, background 0.3s;
+                font-size: 1.1em;
+            " onmouseover="this.style.background='#004aad'; this.style.transform='scale(1.02)'" onmouseout="this.style.background='var(--primary)'; this.style.transform='scale(1)'">
+                📤 Enviar Mensagem
+            </button>
         </form>
     </div>
-</div>
+</section>
 {% endblock %}

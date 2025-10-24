@@ -3,18 +3,149 @@
 {% set titulo = "Rastrear Pedido" %}
 
 {% block conteudo %}
-<div class="card">
+<style>
+    /* Estilos baseados no seu modelo anterior, adaptados para o tema "Rastreio" */
+    :root {
+      --card-primary: #3498db; /* Azul de logística/informação */
+      --card-bg-light: #ffffff;
+      --card-bg-dark: rgba(255, 255, 255, 0.05);
+      --card-text-light: #222;
+      --card-text-dark: #ddd;
+      --card-border-light: #e5e5e5;
+      --card-border-dark: rgba(255, 255, 255, 0.1);
+    }
+
+    body.dark-mode .card-container {
+      background: var(--card-bg-dark);
+      color: var(--card-text-dark);
+      border: 1px solid var(--card-border-dark);
+    }
+
+    body.light-mode .card-container {
+      background: var(--card-bg-light);
+      color: var(--card-text-light);
+      border: 1px solid var(--card-border-light);
+    }
+
+    .card-container {
+      max-width: 600px; /* Reduzindo para focar no formulário */
+      margin: 50px auto;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      padding: 40px;
+      transition: background 0.3s ease, color 0.3s ease;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .card-header {
+      text-align: center;
+      margin-bottom: 35px;
+    }
+
+    .card-header h2 {
+      font-size: 2.0rem;
+      color: var(--card-primary);
+      margin-bottom: 10px;
+    }
+    
+    .card-header p {
+        font-size: 1.1rem;
+        opacity: 0.8;
+    }
+    
+    /* Estilo para a seção principal (o formulário) */
+    .card-section {
+      padding: 25px;
+      margin-bottom: 30px;
+      border: 1px solid var(--card-border-light); /* Borda ao redor do form */
+      border-radius: 10px;
+    }
+    
+    body.dark-mode .card-section {
+        border: 1px solid var(--card-border-dark);
+        background: rgba(255,255,255,0.03);
+    }
+
+    /* Estilização para o botão de Rastrear */
+    .btn-primary {
+        background-color: var(--card-primary);
+        border-color: var(--card-primary);
+        font-weight: 600;
+        padding: 10px 20px;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        width: 100%; /* Botão full-width */
+        margin-top: 15px;
+    }
+    
+    .btn-primary:hover {
+        background-color: #2980b9; /* Um tom de azul mais escuro no hover */
+        border-color: #2980b9;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .form-group label {
+        font-weight: 600;
+        color: var(--card-primary);
+        margin-bottom: 8px;
+        display: block;
+    }
+    
+    .form-control {
+        border-radius: 6px;
+        padding: 12px;
+        border: 1px solid var(--card-border-light);
+    }
+    
+    body.dark-mode .form-control {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: var(--card-text-dark);
+        border: 1px solid var(--card-border-dark);
+    }
+    
+    .card-footer {
+      text-align: center;
+      opacity: 0.7;
+      font-size: 0.9rem;
+      margin-top: 40px;
+      border-top: 1px dashed var(--card-border-light);
+      padding-top: 20px;
+    }
+</style>
+
+<div class="card-container">
     <div class="card-header">
         <h2>📦 Rastrear Pedido</h2>
+        <p>Insira seu código de rastreio para verificar o status de sua encomenda.</p>
     </div>
-    <div class="card-body">
+
+    <div class="card-section">
         <form method="POST" action="/rastrear">
-            <div class="form-group">
-                <label>Código de Rastreio</label>
-                <input type="text" class="form-control" required>
+            <div class="form-group mb-4">
+                <label for="trackingCode">
+                    <i class="fas fa-barcode me-2"></i> Código de Rastreio
+                </label>
+                <input type="text" 
+                       class="form-control" 
+                       id="trackingCode" 
+                       name="tracking_code" 
+                       placeholder="Ex: AB123456789BR" 
+                       required>
             </div>
-            <button type="submit" class="btn btn-primary">Rastrear</button>
+            
+            <div class="text-center mb-4">
+                <small class="text-muted">
+                    O código foi enviado para seu e-mail após o despacho da encomenda.
+                </small>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-search me-2"></i> Rastrear Encomenda
+            </button>
         </form>
+    </div>
+    
+    <div class="card-footer">
+        O rastreamento será feito junto ao sistema oficial da transportadora.
     </div>
 </div>
 {% endblock %}

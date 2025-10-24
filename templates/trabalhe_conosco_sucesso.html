@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% set titulo = "Requisitos Enviados com Sucesso" %}
+
+{% block conteudo %}
+
+<style>
+    /* Estilos base do container, usando suas variáveis */
+    .success-container {
+        max-width: 600px;
+        margin: 80px auto;
+        /* Usando a variável --glass para o fundo */
+        background: var(--glass); 
+        padding: 40px;
+        border-radius: var(--radius);
+        /* Shadow mais suave para o efeito "flutuante" */
+        box-shadow: var(--shadow-lg); 
+        /* Borda sutil */
+        border: 1px solid var(--border); 
+        text-align: center;
+        /* Adicionando o efeito de blur, se --glass o tiver */
+        backdrop-filter: blur(10px);
+    }
+
+    /* Ícone de Sucesso */
+    .success-icon {
+        font-size: 5em;
+        /* Cor de destaque para o sucesso, pode ser --primary ou uma variável --success */
+        color: var(--primary); 
+        margin-bottom: 20px;
+        /* Animação suave */
+        transform: scale(1);
+        transition: transform 0.3s ease;
+    }
+    .success-icon:hover {
+        transform: scale(1.05);
+    }
+
+    .success-title {
+        font-size: 2.2em;
+        font-weight: 900;
+        /* Usando a cor primária para o título principal */
+        color: var(--primary); 
+        margin-bottom: 15px;
+        letter-spacing: 0.5px;
+    }
+
+    .success-message {
+        font-size: 1.1em;
+        /* Usando a cor de texto padrão */
+        color: var(--text); 
+        line-height: 1.6;
+        margin-bottom: 40px;
+    }
+
+    /* Botão mais vibrante */
+    .btn-home {
+        /* Fundo com a cor primária, sem gradiente para manter a simplicidade, mas você pode usar o gradiente se preferir */
+        background: var(--primary); 
+        color: white;
+        padding: 12px 25px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 1em;
+        border: none;
+        cursor: pointer;
+        transition: transform 0.3s, box-shadow 0.3s;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-home:hover {
+        /* Efeito de hover mais sutil */
+        background: var(--primary-dark); 
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Responsividade */
+    @media (max-width: 600px) {
+        .success-container {
+            margin: 40px 20px;
+            padding: 30px 20px;
+        }
+        .success-icon {
+            font-size: 4em;
+        }
+        .success-title {
+            font-size: 1.8em;
+        }
+    }
+</style>
+
+<div class="success-container">
+    <div class="success-icon">
+        🚀
+    </div>
+    <div class="success-title">Requisitos Enviados!</div>
+    <div class="success-message">
+        Obrigado pelo seu interesse! <br>
+        Seu formulário foi recebido e será analisado por nossa equipe de RH.<br>
+        <span style="font-weight: 600; display: block; margin-top: 10px;">Entraremos em contato em breve.</span>
+    </div>
+    <a href="{{ url_for('trabalhe_conosco') }}" class="btn-home">
+        <span style="margin-right: 8px;">🏡</span> Explorar Outras Vagas
+    </a>
+</div>
+
+{% endblock %}

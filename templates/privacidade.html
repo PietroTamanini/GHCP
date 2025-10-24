@@ -1,14 +1,179 @@
 {% extends 'base.html' %}
 
-{% set titulo = "Política de Privacidade" %}
+{% set titulo = "Política de Privacidade e Proteção de Dados" %}
 
 {% block conteudo %}
-<div class="card">
+<style>
+    /* Estilos baseados no seu modelo anterior, adaptados para o tema "Política de Privacidade" */
+    :root {
+      --card-primary: #1abc9c; /* Cor de segurança e confiança (Teal) */
+      --card-bg-light: #ffffff;
+      --card-bg-dark: rgba(255, 255, 255, 0.05);
+      --card-text-light: #222;
+      --card-text-dark: #ddd;
+      --card-border-light: #e5e5e5;
+      --card-border-dark: rgba(255, 255, 255, 0.1);
+    }
+
+    body.dark-mode .card-container {
+      background: var(--card-bg-dark);
+      color: var(--card-text-dark);
+      border: 1px solid var(--card-border-dark);
+    }
+
+    body.light-mode .card-container {
+      background: var(--card-bg-light);
+      color: var(--card-text-light);
+      border: 1px solid var(--card-border-light);
+    }
+
+    .card-container {
+      max-width: 900px;
+      margin: 50px auto;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      padding: 40px;
+      transition: background 0.3s ease, color 0.3s ease;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .card-header {
+      text-align: center;
+      margin-bottom: 35px;
+    }
+
+    .card-header h2 {
+      font-size: 2.0rem;
+      color: var(--card-primary);
+      margin-bottom: 10px;
+    }
+    
+    .card-header p {
+        font-size: 1.1rem;
+        opacity: 0.8;
+    }
+
+    .card-section {
+      /* Estilo da barra lateral para destacar cada tópico */
+      border-left: 4px solid var(--card-primary);
+      border-radius: 10px;
+      padding: 25px;
+      margin-bottom: 30px;
+    }
+    
+    body.dark-mode .card-section {
+        background: rgba(255,255,255,0.03);
+    }
+    body.light-mode .card-section {
+        background: rgba(0,0,0,0.01);
+    }
+
+    .card-section h4 {
+      color: var(--card-primary);
+      font-weight: 700;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.4rem;
+    }
+
+    .card-section p {
+      text-align: justify;
+      line-height: 1.7;
+      margin-bottom: 15px;
+      font-size: 1.0rem;
+    }
+
+    .card-alert {
+      background: rgba(52, 152, 219, 0.1); /* Azul para avisos de privacidade/LGPD */
+      border-left: 4px solid #3498db;
+      padding: 20px;
+      border-radius: 10px;
+      color: #3498db;
+      margin-top: 20px;
+    }
+    
+    .card-footer {
+      text-align: center;
+      opacity: 0.7;
+      font-size: 0.9rem;
+      margin-top: 40px;
+      border-top: 1px dashed var(--card-border-light);
+      padding-top: 20px;
+    }
+    
+    .card-list {
+        list-style-type: none;
+        padding-left: 0;
+    }
+    .card-list li {
+        margin-bottom: 10px;
+        position: relative;
+        padding-left: 20px;
+    }
+    .card-list li::before {
+        content: "•";
+        color: var(--card-primary);
+        font-weight: bold;
+        display: inline-block;
+        width: 1em;
+        margin-left: -1em;
+    }
+</style>
+
+<div class="card-container">
     <div class="card-header">
         <h2>🔒 Política de Privacidade</h2>
+        <p>A sua confiança é a nossa prioridade. Esta política explica como coletamos, usamos e protegemos seus dados.</p>
     </div>
-    <div class="card-body">
-        <p>Respeitamos sua privacidade. Seus dados são protegidos...</p>
+
+    <div class="card-section">
+        <h4><i class="fas fa-user-shield"></i> 1. Dados Coletados</h4>
+        <p>
+            Coletamos informações essenciais para a prestação dos nossos serviços e para melhorar sua experiência.
+            Essas informações podem ser fornecidas diretamente por você ou coletadas automaticamente.
+        </p>
+        <ul class="card-list">
+            <li><strong>Dados Pessoais:</strong> Nome, e-mail, telefone, endereço de entrega e informações de pagamento.</li>
+            <li><strong>Dados de Navegação:</strong> Endereço IP, tipo de navegador, páginas visitadas e tempo de permanência.</li>
+        </ul>
+    </div>
+
+    <div class="card-section">
+        <h4><i class="fas fa-purpose"></i> 2. Finalidade do Tratamento</h4>
+        <p>
+            O tratamento dos seus dados tem como finalidade principal garantir a execução do contrato de compra e venda
+            e aprimorar a comunicação, conforme detalhado abaixo:
+        </p>
+        <ul class="card-list">
+            <li>Processamento e entrega de pedidos.</li>
+            <li>Envio de comunicações (como status de pedido ou newsletters, se houver consentimento).</li>
+            <li>Melhoria da experiência do usuário e personalização do conteúdo.</li>
+        </ul>
+    </div>
+
+    <div class="card-section">
+        <h4><i class="fas fa-lock"></i> 3. Compartilhamento e Segurança</h4>
+        <p>
+            Seus dados são confidenciais e não serão vendidos ou alugados a terceiros. O compartilhamento ocorre
+            estritamente com parceiros necessários para a prestação do serviço (ex: transportadoras e processadores de pagamento).
+        </p>
+        <div class="card-alert">
+             Utilizamos tecnologia de criptografia SSL para garantir que todas as transações de dados entre você e nossos servidores sejam seguras e protegidas.
+        </div>
+    </div>
+    
+    <div class="card-section">
+        <h4><i class="fas fa-user-check"></i> 4. Seus Direitos</h4>
+        <p>
+            Conforme a legislação de proteção de dados, você tem o direito de acessar, corrigir, solicitar a exclusão ou a portabilidade dos seus dados
+            a qualquer momento. Para exercer esses direitos, entre em contato com nosso Encarregado de Dados (DPO).
+        </p>
+    </div>
+
+    <div class="card-footer">
+        Política atualizada em Outubro de 2025. O uso continuado do site implica sua concordância com a Política.
     </div>
 </div>
 {% endblock %}

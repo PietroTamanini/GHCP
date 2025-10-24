@@ -3,15 +3,156 @@
 {% set titulo = "FAQ - Perguntas Frequentes" %}
 
 {% block conteudo %}
-<div class="card">
+<style>
+    /* Estilos baseados no seu modelo anterior, adaptados para o tema "FAQ" */
+    :root {
+      --card-primary: #f39c12; /* Cor de Destaque/Atenção (Laranja) */
+      --card-bg-light: #ffffff;
+      --card-bg-dark: rgba(255, 255, 255, 0.05);
+      --card-text-light: #222;
+      --card-text-dark: #ddd;
+      --card-border-light: #e5e5e5;
+      --card-border-dark: rgba(255, 255, 255, 0.1);
+    }
+
+    body.dark-mode .card-container {
+      background: var(--card-bg-dark);
+      color: var(--card-text-dark);
+      border: 1px solid var(--card-border-dark);
+    }
+
+    body.light-mode .card-container {
+      background: var(--card-bg-light);
+      color: var(--card-text-light);
+      border: 1px solid var(--card-border-light);
+    }
+
+    .card-container {
+      max-width: 900px;
+      margin: 50px auto;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      padding: 40px;
+      transition: background 0.3s ease, color 0.3s ease;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .card-header {
+      text-align: center;
+      margin-bottom: 35px;
+    }
+
+    .card-header h2 {
+      font-size: 2.0rem;
+      color: var(--card-primary);
+      margin-bottom: 10px;
+    }
+    
+    .card-header p {
+        font-size: 1.1rem;
+        opacity: 0.8;
+    }
+    
+    /* Estilo para cada Item do FAQ (Acordeão Visual) */
+    .faq-item {
+        margin-bottom: 20px;
+        border: 1px solid var(--card-border-light);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        transition: border-color 0.3s;
+    }
+    
+    body.dark-mode .faq-item {
+        border: 1px solid var(--card-border-dark);
+    }
+    
+    .faq-question {
+        padding: 18px 25px;
+        background-color: var(--card-primary);
+        color: white;
+        font-weight: 600;
+        font-size: 1.15rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .faq-answer {
+        padding: 20px 25px;
+        line-height: 1.6;
+        background-color: rgba(0,0,0,0.01); /* Fundo leve para a resposta */
+    }
+    
+    body.dark-mode .faq-answer {
+        background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .faq-answer p {
+        margin-bottom: 0;
+    }
+    
+    .card-footer {
+      text-align: center;
+      opacity: 0.7;
+      font-size: 0.9rem;
+      margin-top: 40px;
+      border-top: 1px dashed var(--card-border-light);
+      padding-top: 20px;
+    }
+</style>
+
+<div class="card-container">
     <div class="card-header">
-        <h2>❓ Perguntas Frequentes</h2>
+        <h2>❓ Perguntas Frequentes (FAQ)</h2>
+        <p>Encontre respostas rápidas para as dúvidas mais comuns sobre nossos serviços e produtos.</p>
     </div>
-    <div class="card-body">
-        <h3>Como rastrear meu pedido?</h3>
-        <p>Use o código de rastreio enviado por e-mail.</p>
-        <h3>Qual é a política de devolução?</h3>
-        <p>Aceitamos devoluções em até 30 dias.</p>
+
+    <div class="faq-item">
+        <div class="faq-question">
+            <i class="fas fa-truck"></i> Como rastrear meu pedido e qual o prazo de entrega?
+        </div>
+        <div class="faq-answer">
+            <p><strong>Rastreio:</strong> Após a confirmação do envio, você receberá um código de rastreio por e-mail. Utilize este código no site da transportadora para acompanhar a entrega.</p>
+            <p><strong>Prazo:</strong> O prazo de entrega varia conforme a região e a modalidade de envio escolhida, sendo geralmente entre 5 e 15 dias úteis.</p>
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">
+            <i class="fas fa-undo-alt"></i> Qual é a política de devolução e troca?
+        </div>
+        <div class="faq-answer">
+            <p>Aceitamos devoluções em até <strong>7 dias corridos</strong> após o recebimento, em caso de arrependimento, e em até <strong>30 dias</strong> para defeitos de fabricação.</p>
+            <p>O produto deve ser devolvido em sua embalagem original, sem sinais de uso.</p>
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">
+            <i class="fas fa-credit-card"></i> Quais são os métodos de pagamento aceitos?
+        </div>
+        <div class="faq-answer">
+            <p>Aceitamos as seguintes formas de pagamento:</p>
+            <p><strong>Cartão de Crédito:</strong> Visa, Mastercard, Elo, Amex (com parcelamento em até X vezes).</p>
+            <p><strong>Boleto Bancário:</strong> Com 5% de desconto e vencimento em 3 dias úteis.</p>
+            <p><strong>Pix:</strong> Aprovação imediata.</p>
+        </div>
+    </div>
+    
+    <div class="faq-item">
+        <div class="faq-question">
+            <i class="fas fa-headset"></i> Preciso de ajuda! Como entro em contato com o suporte?
+        </div>
+        <div class="faq-answer">
+            <p>Nossa equipe de suporte está disponível de Segunda à Sexta, das 9h às 18h (Horário de Brasília).</p>
+            <p>Você pode nos contatar por E-mail (suporte@seusite.com.br) ou Chat Online, que estão monitorados em tempo real.</p>
+        </div>
+    </div>
+
+    <div class="card-footer">
+        Não encontrou sua resposta? Entre em contato conosco!
     </div>
 </div>
 {% endblock %}

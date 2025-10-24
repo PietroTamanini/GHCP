@@ -1,0 +1,91 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}{% if concorrente %}Editar{% else %}Novo{% endif %} Concorrente{% endblock %}
+
+{% block page_title %}{% if concorrente %}✏️ Editar{% else %}➕ Novo{% endif %} Concorrente{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <form method="POST" action="{% if concorrente %}{{ url_for('admin_editar_concorrente', id_concorrente=concorrente.id_concorrente) }}{% else %}{{ url_for('admin_novo_concorrente') }}{% endif %}">
+        <div class="form-grid">
+            <!-- Informações Pessoais -->
+            <div class="form-group">
+                <label for="nome">Nome Completo *</label>
+                <input type="text" id="nome" name="nome" class="form-control" 
+                       value="{{ concorrente.nome if concorrente else '' }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email *</label>
+                <input type="email" id="email" name="email" class="form-control" 
+                       value="{{ concorrente.email if concorrente else '' }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="telefone">Telefone</label>
+                <input type="tel" id="telefone" name="telefone" class="form-control" 
+                       value="{{ concorrente.telefone if concorrente else '' }}">
+            </div>
+
+            <!-- Informações Profissionais -->
+            <div class="form-group">
+                <label for="empresa">Empresa *</label>
+                <input type="text" id="empresa" name="empresa" class="form-control" 
+                       value="{{ concorrente.empresa if concorrente else '' }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="cargo">Cargo</label>
+                <input type="text" id="cargo" name="cargo" class="form-control" 
+                       value="{{ concorrente.cargo if concorrente else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="interesse">Área de Interesse</label>
+                <select id="interesse" name="interesse" class="form-control">
+                    <option value="">Selecione...</option>
+                    <option value="tecnologia" {% if concorrente and concorrente.interesse == 'tecnologia' %}selected{% endif %}>Tecnologia</option>
+                    <option value="vendas" {% if concorrente and concorrente.interesse == 'vendas' %}selected{% endif %}>Vendas</option>
+                    <option value="marketing" {% if concorrente and concorrente.interesse == 'marketing' %}selected{% endif %}>Marketing</option>
+                    <option value="administrativo" {% if concorrente and concorrente.interesse == 'administrativo' %}selected{% endif %}>Administrativo</option>
+                    <option value="suporte" {% if concorrente and concorrente.interesse == 'suporte' %}selected{% endif %}>Suporte Técnico</option>
+                    <option value="outro" {% if concorrente and concorrente.interesse == 'outro' %}selected{% endif %}>Outro</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="status">Status</label>
+                <select id="status" name="status" class="form-control">
+                    <option value="pendente" {% if concorrente and concorrente.status == 'pendente' %}selected{% endif %}>Pendente</option>
+                    <option value="contatado" {% if concorrente and concorrente.status == 'contatado' %}selected{% endif %}>Contatado</option>
+                    <option value="em_negociacao" {% if concorrente and concorrente.status == 'em_negociacao' %}selected{% endif %}>Em Negociação</option>
+                    <option value="contratado" {% if concorrente and concorrente.status == 'contratado' %}selected{% endif %}>Contratado</option>
+                    <option value="recusado" {% if concorrente and concorrente.status == 'recusado' %}selected{% endif %}>Recusado</option>
+                </select>
+            </div>
+
+            <!-- Mensagens -->
+            <div class="form-group full-width">
+                <label for="mensagem">Mensagem/Interesse</label>
+                <textarea id="mensagem" name="mensagem" class="form-control" rows="4" 
+                          placeholder="Descreva o interesse ou proposta do concorrente...">{{ concorrente.mensagem if concorrente else '' }}</textarea>
+            </div>
+
+            <div class="form-group full-width">
+                <label for="observacoes">Observações Internas</label>
+                <textarea id="observacoes" name="observacoes" class="form-control" rows="3" 
+                          placeholder="Anotações internas sobre o contato...">{{ concorrente.observacoes if concorrente else '' }}</textarea>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{{ url_for('admin_concorrentes') }}" class="btn btn-warning">
+                ↩️ Cancelar
+            </a>
+            <button type="submit" class="btn btn-primary">
+                {% if concorrente %}💾 Atualizar{% else %}✅ Cadastrar{% endif %} Concorrente
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
