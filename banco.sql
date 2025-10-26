@@ -468,6 +468,20 @@ END//
 
 DELIMITER ;
 
+-- PRO PIX FUNCIONAR
+CREATE TABLE pagamentos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100),
+    email VARCHAR(100),
+    endereco VARCHAR(255),
+    metodo VARCHAR(20),
+    valor DECIMAL(10,2),
+    data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+select * from pagamentos;
+
 -- ÍNDICES ADICIONAIS
 CREATE INDEX idx_produto_preco ON produto(preco);
 CREATE INDEX idx_produto_estoque ON produto(estoque);
