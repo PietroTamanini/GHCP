@@ -7,9 +7,14 @@ import os
 import json
 from datetime import datetime
 from werkzeug.utils import secure_filename
+import qrcode
+import io
+import base64
 
 app = Flask(__name__)
 app.secret_key = 'GHCP-2o25'
+
+
 
 @app.template_filter('from_json')
 def from_json_filter(value):
@@ -777,9 +782,65 @@ def limpar_carrinho():
     flash('🗑️ Carrinho limpo!', 'success')
     return redirect(url_for('carrinho'))
 
+def gerar_qrcode_pix(valor_total):
+    """Gera QR Code e código Copia e Cola PIX com base no valor total"""
+    chave_pix = "14057629939" 
+    nome_recebedor = "CAETANO GBUR PETRY"  
+    cidade_recebedor = "JOINVILLE"
+
+    def emv(id, valor):
+        tamanho = str(len(valor)).zfill(2)
+        return f"{id}{tamanho}{valor}"
+
+    merchant_account = emv("00", "br.gov.bcb.pix") + emv("01", chave_pix)
+    merchant_info = emv("26", merchant_account)
+    transaction_amount = emv("54", f"{valor_total:.2f}")
+    txid = emv("05", f"GHCP{int(valor_total * 100)}")
+
+    payload = (
+        emv("00", "01")
+        + emv("01", "12")
+        + merchant_info
+        + emv("52", "0000")
+        + emv("53", "986")
+        + transaction_amount
+        + emv("58", "BR")
+        + emv("59", nome_recebedor)
+        + emv("60", cidade_recebedor)
+        + emv("62", txid)
+    )
+
+    def crc16(payload):
+        polinomio = 0x1021
+        resultado = 0xFFFF
+        payload += "6304"
+        for byte in bytearray(payload, "utf-8"):
+            resultado ^= byte << 8
+            for _ in range(8):
+                if resultado & 0x8000:
+                    resultado = (resultado << 1) ^ polinomio
+                else:
+                    resultado <<= 1
+                resultado &= 0xFFFF
+        return f"{payload}{resultado:04X}"
+
+    copia_cola = crc16(payload)
+
+    img = qrcode.make(copia_cola)
+    buffer = io.BytesIO()
+    img.save(buffer, format="PNG")
+    qr_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+
+    return qr_base64, copia_cola
+
+
+@app.route('/gerar-pix/<float:valor>')
+def gerar_pix(valor):
+    qr_base64, copia_cola = gerar_qrcode_pix(valor)
+    return render_template('gerar_pix.html', valor=valor, qr_base64=qr_base64, copia_cola=copia_cola)
+
 @app.route('/finalizar-carrinho', methods=['GET', 'POST'])
 def finalizar_carrinho():
-    # 🧱 0️⃣ Verifica login antes de qualquer coisa
     if 'usuario_id' not in session:
         flash('⚠️ Faça login para finalizar sua compra.', 'warning')
         return redirect(url_for('login', next=url_for('finalizar_carrinho')))
@@ -799,9 +860,6 @@ def finalizar_carrinho():
 
         try:
             conn = get_db_connection()
-            if not conn:
-                flash('Erro ao conectar ao banco de dados.', 'error')
-                return redirect(url_for('carrinho'))
             cursor = conn.cursor(dictionary=True)
 
             # 🧱 1️⃣ Verifica estoque
@@ -811,18 +869,15 @@ def finalizar_carrinho():
                 if not produto_db:
                     flash(f"❌ Produto '{item['nome']}' não encontrado.", 'error')
                     return redirect(url_for('carrinho'))
-                if produto_db['estoque'] <= 0:
-                    flash(f"⚠️ O produto '{produto_db['nome']}' está esgotado.", 'warning')
-                    return redirect(url_for('carrinho'))
-                if item['quantidade'] > produto_db['estoque']:
-                    flash(f"⚠️ Quantidade insuficiente de '{produto_db['nome']}' em estoque (disponível: {produto_db['estoque']}).", 'warning')
+                if produto_db['estoque'] < item['quantidade']:
+                    flash(f"⚠️ Estoque insuficiente de '{produto_db['nome']}'.", 'warning')
                     return redirect(url_for('carrinho'))
 
             # 🧾 2️⃣ Cria o pedido
             cursor.execute("""
                 INSERT INTO pedidos (id_cliente, total, forma_pagamento, status, data_pedido)
                 VALUES (%s, %s, %s, %s, NOW())
-            """, (session['usuario_id'], total_geral, pagamento, 'concluido'))
+            """, (session['usuario_id'], total_geral, pagamento, 'pendente'))
             pedido_id = cursor.lastrowid
 
             # 🛒 3️⃣ Adiciona itens e atualiza estoque
@@ -831,23 +886,36 @@ def finalizar_carrinho():
                     INSERT INTO itens_pedido (id_pedido, id_produto, quantidade, preco_unitario)
                     VALUES (%s, %s, %s, %s)
                 """, (pedido_id, item['id_produto'], item['quantidade'], item['preco']))
-
                 cursor.execute("""
-                    UPDATE produto
-                    SET estoque = estoque - %s
-                    WHERE id_produto = %s
+                    UPDATE produto SET estoque = estoque - %s WHERE id_produto = %s
                 """, (item['quantidade'], item['id_produto']))
+
+            # 💾 4️⃣ Registra pagamento (opcional, mas recomendado)
+            cursor.execute("""
+                INSERT INTO pagamentos (nome, email, endereco, metodo, valor)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (nome, email, endereco, pagamento, total_geral))
 
             conn.commit()
 
-            # ✅ Compra finalizada
-            session.pop('carrinho', None)
-            flash('🎉 Compra finalizada com sucesso!', 'success')
-            return redirect(url_for('compra_sucedida'))
+            # 💸 5️⃣ Gera PIX se for o método escolhido
+            if pagamento == 'pix':
+                qr_base64, copia_cola = gerar_qrcode_pix(total_geral)
+                session.pop('carrinho', None)
+                flash('🎉 Compra finalizada com sucesso! Escaneie o QR Code para pagar via PIX.', 'success')
+                return render_template(
+                    'compra-sucedida.html',
+                    valor=total_geral,
+                    qr_base64=qr_base64,
+                    copia_cola=copia_cola,
+                    pedido_id=pedido_id
+                )
+            else:
+                flash('💳 Pagamento por cartão/boleto ainda não implementado.', 'info')
+                return redirect(url_for('inicio'))
 
         except mysql.connector.Error as err:
-            if conn:
-                conn.rollback()
+            conn.rollback()
             flash(f'❌ Erro ao finalizar compra: {err}', 'error')
             return redirect(url_for('carrinho'))
         finally:
@@ -855,7 +923,6 @@ def finalizar_carrinho():
                 cursor.close()
                 conn.close()
 
-    # GET → mostra a tela de finalização
     return render_template('finalizar-carrinho.html',
                            produtos_carrinho=produtos_carrinho,
                            total_geral=total_geral)

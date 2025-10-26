@@ -27,6 +27,50 @@
       margin-bottom: 30px;
   }
 
+  .pix-section {
+      margin-top: 30px;
+      background: rgba(0, 255, 170, 0.05);
+      border-radius: 15px;
+      padding: 25px;
+      border: 1px solid var(--border);
+  }
+
+  .pix-section img {
+      width: 240px;
+      border-radius: 12px;
+      margin-bottom: 15px;
+  }
+
+  .pix-section textarea {
+      width: 100%;
+      height: 100px;
+      resize: none;
+      padding: 10px;
+      border-radius: 10px;
+      border: 2px solid var(--border);
+      background: var(--secondary);
+      color: var(--text);
+      font-weight: 600;
+  }
+
+  .btn-copy {
+      background: linear-gradient(135deg, var(--success) 0%, #00b36e 100%);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 1em;
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+      margin-top: 10px;
+  }
+
+  .btn-copy:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+  }
+
   .btn-home {
       background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
       color: white;
@@ -39,6 +83,7 @@
       transition: var(--transition);
       text-decoration: none;
       display: inline-block;
+      margin-top: 20px;
   }
 
   .btn-home:hover {
@@ -60,9 +105,31 @@
     <div class="success-title">🎉 Compra Concluída!</div>
     <div class="success-message">
         Obrigado por comprar conosco.<br>
-        Seu pedido foi processado com sucesso.
+        Seu pedido foi processado com sucesso!
     </div>
+
+    {% if qr_base64 %}
+    <div class="pix-section">
+        <h3>💸 Pagamento via PIX</h3>
+        <p>Valor total: <strong>R$ {{ "%.2f"|format(valor) }}</strong></p>
+        <img src="data:image/png;base64,{{ qr_base64 }}" alt="QR Code PIX">
+
+        <p><strong>Código PIX (Copia e Cola):</strong></p>
+        <textarea readonly id="pix-code">{{ copia_cola }}</textarea>
+        <button class="btn-copy" onclick="copiarPix()">📋 Copiar Código</button>
+    </div>
+    {% endif %}
+
     <a href="{{ url_for('listar_produtos') }}" class="btn-home">🏠 Voltar ao Início</a>
 </div>
+
+<script>
+function copiarPix() {
+    const codigo = document.getElementById('pix-code');
+    codigo.select();
+    navigator.clipboard.writeText(codigo.value);
+    alert("✅ Código PIX copiado!");
+}
+</script>
 
 {% endblock %}
