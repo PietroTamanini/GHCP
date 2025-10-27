@@ -61,16 +61,44 @@
 .hidden {
     display: none;
 }
+.card-form {
+    background: rgba(0, 102, 255, 0.05);
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px solid var(--border);
+}
+.card-brands {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+.card-brand {
+    width: 50px;
+    height: 30px;
+    border-radius: 4px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    font-size: 10px;
+    font-weight: bold;
+}
 </style>
 
 <div class="checkout-container">
     <h2>💳 Finalizar Compra</h2>
-    <form method="POST" action="{{ url_for('finalizar_carrinho') }}">
+    <form id="form-checkout" method="POST" action="{{ url_for('processar_pagamento_cartao') }}">
         <label>Nome Completo</label>
-        <input type="text" name="nome" required>
+        <input type="text" name="nome" id="form-checkout__cardholderName" required>
 
         <label>Email</label>
-        <input type="email" name="email" required>
+        <input type="email" name="email" id="form-checkout__cardholderEmail" required>
+
+        <label>CPF</label>
+        <input type="text" name="cpf_titular" id="form-checkout__identificationNumber" 
+               placeholder="000.000.000-00" required maxlength="14">
 
         <label>Endereço</label>
         <input type="text" name="endereco" required>
@@ -78,74 +106,222 @@
         <label>Forma de Pagamento</label>
         <select id="pagamento" name="pagamento" required>
             <option value="">Selecione</option>
-            <option value="pix">PIX</option>
-            <option value="cartao">Cartão</option>
-            <option value="boleto">Boleto</option>
+            <option value="pix">PIX (10% desconto)</option>
+            <option value="boleto">Boleto (5% desconto)</option>
+            <option value="cartao">Cartão de Crédito/Débito</option>
         </select>
 
-        <!-- Campos do Cartão -->
-        <div id="cartao-info" class="hidden">
+        <!-- CAMPOS DO CARTÃO -->
+        <div id="cartao-info" class="hidden card-form">
+            <h3 style="margin-bottom: 15px; color: var(--primary);">💳 Dados do Cartão</h3>
+            
             <label>Tipo de Cartão</label>
-            <select id="tipo-cartao" name="tipo_cartao">
-                <option value="">Selecione</option>
+            <select id="tipo-cartao" name="tipo_pagamento">
                 <option value="credito">Crédito</option>
                 <option value="debito">Débito</option>
             </select>
 
-            <div id="credito-info" class="hidden">
-                <label>Parcelamento</label>
-                <select id="parcelas" name="parcelas">
-                    <option value="">Selecione</option>
-                </select>
-                <p id="valor-parcela" style="font-weight:600; color:var(--primary)"></p>
+            <label>Número do Cartão</label>
+            <input type="text" id="form-checkout__cardNumber" placeholder="0000 0000 0000 0000" 
+                   maxlength="19" required>
+            
+            <div class="card-brands">
+                <div class="card-brand">VISA</div>
+                <div class="card-brand">MASTER</div>
+                <div class="card-brand">ELO</div>
+                <div class="card-brand">AMEX</div>
             </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+                <div>
+                    <label>Validade (MM/AA)</label>
+                    <input type="text" id="form-checkout__expirationDate" 
+                           placeholder="12/28" maxlength="5" required>
+                </div>
+                <div>
+                    <label>CVV</label>
+                    <input type="text" id="form-checkout__securityCode" 
+                           placeholder="123" maxlength="4" required>
+                </div>
+            </div>
+
+            <div id="credito-info" class="hidden" style="margin-top: 15px;">
+                <label>Parcelamento</label>
+                <select id="form-checkout__installments" name="parcelas">
+                    <option value="1">1x sem juros</option>
+                    <option value="2">2x sem juros</option>
+                    <option value="3">3x sem juros</option>
+                    <option value="4">4x sem juros</option>
+                    <option value="5">5x sem juros</option>
+                    <option value="6">6x sem juros</option>
+                    <option value="7">7x com juros</option>
+                    <option value="8">8x com juros</option>
+                    <option value="9">9x com juros</option>
+                    <option value="10">10x com juros</option>
+                    <option value="11">11x com juros</option>
+                    <option value="12">12x com juros</option>
+                </select>
+                <p id="valor-parcela" style="font-weight:600; color:var(--primary); margin-top:10px;"></p>
+            </div>
+
+            <input type="hidden" name="token" id="token">
         </div>
 
         <p>Total a Pagar: 
-            <strong id="total">R$ {{ "%.2f"|format(total_geral) }}</strong>
+            <strong id="total" style="font-size: 1.5em; color: var(--primary);">
+                R$ {{ "%.2f"|format(total_geral) }}
+            </strong>
         </p>
-        <button type="submit" class="btn-finalizar">💰 Confirmar Compra</button>
+        <button type="submit" class="btn-finalizar" id="btn-submit">💰 Confirmar Compra</button>
     </form>
 </div>
 
+<script src="https://sdk.mercadopago.com/js/v2"></script>
 <script>
 const pagamento = document.getElementById('pagamento');
 const cartaoInfo = document.getElementById('cartao-info');
 const tipoCartao = document.getElementById('tipo-cartao');
 const creditoInfo = document.getElementById('credito-info');
-const parcelasSelect = document.getElementById('parcelas');
+const parcelasSelect = document.getElementById('form-checkout__installments');
 const valorParcela = document.getElementById('valor-parcela');
-
 const total = parseFloat("{{ total_geral }}");
 
+// Mostrar/Ocultar campos do cartão
 pagamento.addEventListener('change', () => {
-    cartaoInfo.classList.toggle('hidden', pagamento.value !== 'cartao');
+    if (pagamento.value === 'cartao') {
+        cartaoInfo.classList.remove('hidden');
+        carregarMercadoPago();
+    } else {
+        cartaoInfo.classList.add('hidden');
+    }
 });
 
+// Mostrar parcelamento apenas para crédito
 tipoCartao.addEventListener('change', () => {
-    creditoInfo.classList.toggle('hidden', tipoCartao.value !== 'credito');
-    if (tipoCartao.value === 'credito') preencherParcelas();
+    if (tipoCartao.value === 'credito') {
+        creditoInfo.classList.remove('hidden');
+    } else {
+        creditoInfo.classList.add('hidden');
+    }
 });
 
-function preencherParcelas() {
-    parcelasSelect.innerHTML = '<option value="">Selecione</option>';
-    for (let i = 1; i <= 6; i++) {
-        parcelasSelect.innerHTML += `<option value="${i}">${i}x sem juros</option>`;
-    }
-    for (let i = 7; i <= 12; i++) {
-        parcelasSelect.innerHTML += `<option value="${i}">${i}x com juros</option>`;
-    }
-}
-
+// Calcular valor das parcelas
 parcelasSelect.addEventListener('change', () => {
     const parcelas = parseInt(parcelasSelect.value);
     let totalComJuros = total;
+    
     if (parcelas > 6) {
-        totalComJuros *= 1.05; // 5% de juros total (exemplo)
+        totalComJuros *= 1.05; // 5% de juros total
     }
-    const valor = totalComJuros / parcelas;
-    valorParcela.textContent = `Total: R$ ${totalComJuros.toFixed(2)} — ${parcelas}x de R$ ${valor.toFixed(2)}`;
+    
+    const valorPorParcela = totalComJuros / parcelas;
+    valorParcela.textContent = `Total: R$ ${totalComJuros.toFixed(2)} — ${parcelas}x de R$ ${valorPorParcela.toFixed(2)}`;
 });
+
+// Máscaras de entrada
+document.getElementById('form-checkout__identificationNumber').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length > 11) value = value.slice(0, 11);
+    if (value.length > 9) {
+        value = value.slice(0, 3) + '.' + value.slice(3, 6) + '.' + value.slice(6, 9) + '-' + value.slice(9);
+    } else if (value.length > 6) {
+        value = value.slice(0, 3) + '.' + value.slice(3, 6) + '.' + value.slice(6);
+    } else if (value.length > 3) {
+        value = value.slice(0, 3) + '.' + value.slice(3);
+    }
+    e.target.value = value;
+});
+
+document.getElementById('form-checkout__cardNumber').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length > 16) value = value.slice(0, 16);
+    value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+    e.target.value = value;
+});
+
+document.getElementById('form-checkout__expirationDate').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length > 4) value = value.slice(0, 4);
+    if (value.length >= 2) {
+        value = value.slice(0, 2) + '/' + value.slice(2);
+    }
+    e.target.value = value;
+});
+
+// ============================================
+// INTEGRAÇÃO MERCADO PAGO
+// ============================================
+let mp;
+
+async function carregarMercadoPago() {
+    try {
+        const response = await fetch('/obter-public-key');
+        const data = await response.json();
+        mp = new MercadoPago(data.public_key);
+        
+        const cardForm = mp.cardForm({
+            amount: total.toFixed(2),
+            iframe: false,
+            form: {
+                id: "form-checkout",
+                cardNumber: {
+                    id: "form-checkout__cardNumber",
+                    placeholder: "Número do cartão",
+                },
+                expirationDate: {
+                    id: "form-checkout__expirationDate",
+                    placeholder: "MM/AA",
+                },
+                securityCode: {
+                    id: "form-checkout__securityCode",
+                    placeholder: "CVV",
+                },
+                cardholderName: {
+                    id: "form-checkout__cardholderName",
+                    placeholder: "Titular do cartão",
+                },
+                installments: {
+                    id: "form-checkout__installments",
+                    placeholder: "Parcelas",
+                },
+                identificationType: {
+                    id: "form-checkout__identificationType",
+                },
+                identificationNumber: {
+                    id: "form-checkout__identificationNumber",
+                    placeholder: "CPF",
+                },
+                issuer: {
+                    id: "form-checkout__issuer",
+                    placeholder: "Banco emissor",
+                },
+            },
+            callbacks: {
+                onFormMounted: error => {
+                    if (error) {
+                        console.warn("Form Mounted handling error: ", error);
+                    }
+                    console.log("Form mounted");
+                },
+                onSubmit: event => {
+                    event.preventDefault();
+                    const form = document.getElementById('form-checkout');
+                    
+                    cardForm.createCardToken().then(token => {
+                        document.getElementById('token').value = token.id;
+                        form.submit();
+                    }).catch(error => {
+                        console.error("Erro ao criar token:", error);
+                        alert("Erro ao processar o cartão. Verifique os dados.");
+                    });
+                },
+            },
+        });
+    } catch (error) {
+        console.error('Erro ao carregar Mercado Pago:', error);
+        alert('Erro ao carregar sistema de pagamento. Tente novamente.');
+    }
+}
 </script>
 
 {% endblock %}
