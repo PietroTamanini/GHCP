@@ -833,7 +833,6 @@ def gerar_qrcode_pix(valor_total):
 
     return qr_base64, copia_cola
 
-
 @app.route('/gerar-pix/<float:valor>')
 def gerar_pix(valor):
     qr_base64, copia_cola = gerar_qrcode_pix(valor)
@@ -862,7 +861,7 @@ def finalizar_carrinho():
             conn = get_db_connection()
             cursor = conn.cursor(dictionary=True)
 
-            # 🧱 1️⃣ Verifica estoque
+            # Pra ver o estoque
             for item in produtos_carrinho:
                 cursor.execute("SELECT nome, estoque FROM produto WHERE id_produto = %s", (item['id_produto'],))
                 produto_db = cursor.fetchone()
@@ -873,14 +872,14 @@ def finalizar_carrinho():
                     flash(f"⚠️ Estoque insuficiente de '{produto_db['nome']}'.", 'warning')
                     return redirect(url_for('carrinho'))
 
-            # 🧾 2️⃣ Cria o pedido
+            # Pra criar o pedido
             cursor.execute("""
                 INSERT INTO pedidos (id_cliente, total, forma_pagamento, status, data_pedido)
                 VALUES (%s, %s, %s, %s, NOW())
             """, (session['usuario_id'], total_geral, pagamento, 'pendente'))
             pedido_id = cursor.lastrowid
 
-            # 🛒 3️⃣ Adiciona itens e atualiza estoque
+            #  Pra adicionar itens e atualiza estoque
             for item in produtos_carrinho:
                 cursor.execute("""
                     INSERT INTO itens_pedido (id_pedido, id_produto, quantidade, preco_unitario)
@@ -943,6 +942,7 @@ def boleto():
 @app.route('/cartoes')
 def cartoes():
     return render_template('cartoes.html')
+
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
@@ -988,7 +988,6 @@ def admin_logout():
 @app.route('/admin/dashboard')
 @admin_required
 def admin_dashboard():
-    # Inicializar variáveis com valores padrão
     total_clientes = 0
     total_produtos = 0
     pedidos_hoje = 0
