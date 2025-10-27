@@ -2041,7 +2041,7 @@ def admin_excluir_contato(id_suporte):
         if conn and conn.is_connected():
             cursor.close()
             conn.close()
-    
+            
     return redirect(url_for('admin_contatos'))
 
 @app.route('/admin/diagnosticos')
