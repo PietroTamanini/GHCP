@@ -478,7 +478,7 @@ CREATE TABLE pagamentos (
     valor DECIMAL(10,2),
     data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
+--
 
 select * from pagamentos;
 
