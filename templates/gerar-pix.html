@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% set titulo = "Pagamento via PIX" %}
+{% block conteudo %}
+
+<style>
+.pix-container {
+    max-width: 600px;
+    margin: 80px auto;
+    background: var(--glass);
+    padding: 40px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    text-align: center;
+    border: 1px solid var(--border);
+}
+
+.pix-container h1 {
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+}
+
+.pix-container p {
+    color: var(--text-secondary);
+    margin-bottom: 25px;
+    font-size: 1rem;
+}
+
+.pix-box {
+    background: var(--bg-secondary);
+    padding: 15px;
+    border-radius: var(--radius);
+    border: 1px dashed var(--accent);
+    word-break: break-all;
+    font-family: monospace;
+    font-size: 0.95rem;
+    margin-bottom: 15px;
+}
+
+.qr-code {
+    margin: 25px 0;
+}
+
+.btn-copiar {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: var(--radius);
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-copiar:hover {
+    background: var(--accent-hover);
+}
+
+.success-message {
+    display: none;
+    background: var(--success);
+    color: #fff;
+    padding: 10px;
+    border-radius: var(--radius);
+    margin-top: 10px;
+    animation: fadeIn 0.3s ease;
+}
+
+.success-message.show {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+<div class="pix-container">
+    <h1>💸 Pagamento via PIX</h1>
+    <p>Use o código abaixo ou escaneie o QR Code para realizar o pagamento:</p>
+
+    <div class="qr-code">
+        <canvas id="pix-qr"></canvas>
+    </div>
+
+    <div class="pix-box" id="pix-codigo">
+        00020126360014BR.GOV.BCB.PIX0114+55479999999990214Pagamento+GHCP5204000053039865802BR5913Loja+GHCP+LTDA6009Joinville62070503***6304ABCD
+    </div>
+
+    <button class="btn-copiar" onclick="copiarPix()">📋 Copiar código PIX</button>
+    <div id="mensagem" class="success-message">✅ Código PIX copiado com sucesso!</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script>
+const codigoPix = document.getElementById('pix-codigo').innerText;
+
+// Gera o QR Code com base no código PIX
+QRcode.toCanvas(document.getElementById('pix-qr'), codigoPix, {
+    width: 220,
+    margin: 1,
+    color: {
+        dark: "#000000",
+        light: "#ffffff00" // transparente
+    }
+}, function (error) {
+    if (error) console.error(error);
+});
+
+function copiarPix() {
+    navigator.clipboard.writeText(codigoPix).then(() => {
+        const msg = document.getElementById('mensagem');
+        msg.classList.add('show');
+        setTimeout(() => msg.classList.remove('show'), 3000);
+    }).catch(() => {
+        alert('Erro ao copiar o código PIX. Copie manualmente.');
+    });
+}
+</script>
+
+{% endblock %}
