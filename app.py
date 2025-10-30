@@ -1,8 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 import mysql.connector
+from mysql.connector import Error
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 import re
+import time
 import os
 import json
 from datetime import datetime
@@ -204,6 +206,8 @@ def escolher_tipo_cadastro():
 def login():
     if 'usuario_id' in session or 'empresa_id' in session:
         return redirect(url_for('inicio'))
+    
+    tipo = request.args.get('tipo', 'cliente')
     
     if request.method == 'POST':
         email = request.form.get('email', '').strip().lower()
@@ -1553,66 +1557,329 @@ def admin_novo_produto():
     
     return render_template('admin/produto_form.html')
 
-
-@app.route('/admin/combo/novo', methods=['GET', 'POST'])
+@app.route('/admin/combos/editar/<int:id_combo>', methods=['GET', 'POST'])
 @admin_required
-def admin_novo_combo():
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+def admin_editar_combo(id_combo):
+    conn = None
+    try:
+        conn = get_db_connection()
+        if not conn:
+            flash('Erro ao conectar ao banco de dados.', 'error')
+            return redirect(url_for('admin_listar_combos'))
+        
+        cursor = conn.cursor(dictionary=True)
 
-    if request.method == 'POST':
-        nome = request.form.get('nome', '').strip()
-        preco = request.form.get('preco', '0').replace(',', '.')
-        descricao = request.form.get('descricao', '').strip()
-        produtos_ids = request.form.getlist('produtos')  # lista de produtos marcados
+        if request.method == 'POST':
+            # Processar o formulário de atualização
+            nome = request.form.get('nome', '').strip()
+            descricao = request.form.get('descricao', '').strip()
+            marca = request.form.get('marca', '').strip()
+            categoria = request.form.get('categoria', '').strip()
+            preco = request.form.get('preco', '0').replace(',', '.')
+            estoque = request.form.get('estoque', '0')
+            destaque = request.form.get('destaque') == 'on'
+            ativo = request.form.get('ativo') == 'on'
 
-        if not nome or not produtos_ids:
-            flash('❌ Informe o nome e selecione pelo menos um produto.', 'error')
-            cursor.close()
-            conn.close()
-            return render_template('admin/combo_form.html', produtos=[])
+            # Validar campos obrigatórios
+            if not nome:
+                flash('❌ O nome do combo é obrigatório.', 'error')
+                return redirect(url_for('admin_editar_combo', id_combo=id_combo))
 
-        try:
-            # Inserir combo
+            # Atualizar o combo
             cursor.execute("""
-                INSERT INTO combo (nome, preco, descricao)
-                VALUES (%s, %s, %s)
-            """, (nome, float(preco), descricao))
-            combo_id = cursor.lastrowid
+                UPDATE combos 
+                SET nome = %s, descricao = %s, marca = %s, categoria = %s, 
+                    preco = %s, estoque = %s, destaque = %s, ativo = %s
+                WHERE id_combo = %s
+            """, (nome, descricao, marca, categoria, float(preco), int(estoque), destaque, ativo, id_combo))
 
-            # Associar produtos ao combo
-            for pid in produtos_ids:
-                cursor.execute("""
-                    INSERT INTO combo_produto (id_combo, id_produto)
-                    VALUES (%s, %s)
-                """, (combo_id, pid))
+            # Processar produtos do combo
+            produtos_selecionados = request.form.getlist('produtos[]')
+            quantidades = request.form.getlist('quantidades[]')
+
+            # Remover produtos antigos
+            cursor.execute("DELETE FROM combo_produto WHERE id_combo = %s", (id_combo,))
+
+            # Adicionar novos produtos
+            for i, produto_id in enumerate(produtos_selecionados):
+                if produto_id and i < len(quantidades) and quantidades[i]:
+                    quantidade = int(quantidades[i])
+                    if quantidade > 0:
+                        cursor.execute("""
+                            INSERT INTO combo_produto (id_combo, id_produto, quantidade)
+                            VALUES (%s, %s, %s)
+                        """, (id_combo, int(produto_id), quantidade))
 
             conn.commit()
+            flash('✅ Combo atualizado com sucesso!', 'success')
+            return redirect(url_for('admin_listar_combos'))
 
-            # Log de ação
-            if session.get('admin_id'):
-                cursor.execute("""
-                    INSERT INTO logs_sistema (id_funcionario, acao, modulo, descricao)
-                    VALUES (%s, 'CADASTRO', 'COMBOS', %s)
-                """, (session['admin_id'], f'Combo criado: {nome}'))
-                conn.commit()
+        else:
+            # GET - Carregar dados para edição
+            cursor.execute("""
+                SELECT id_combo, nome, descricao, marca, categoria, estoque, 
+                       preco, ativo, destaque, imagem 
+                FROM combos 
+                WHERE id_combo = %s
+            """, (id_combo,))
+            combo = cursor.fetchone()
 
-            flash('✅ Combo criado com sucesso!', 'success')
-            return redirect(url_for('admin_produtos'))
+            if not combo:
+                flash('Combo não encontrado!', 'error')
+                return redirect(url_for('admin_listar_combos'))
 
-        except mysql.connector.Error as err:
-            flash(f'Erro ao cadastrar combo: {err}', 'error')
-        finally:
+            # Buscar produtos do combo
+            cursor.execute("""
+                SELECT p.id_produto, p.nome, p.marca, p.preco, p.estoque, 
+                       p.categoria, cp.quantidade 
+                FROM combo_produto cp 
+                JOIN produto p ON cp.id_produto = p.id_produto 
+                WHERE cp.id_combo = %s
+            """, (id_combo,))
+            produtos_combo = cursor.fetchall()
+
+            # Buscar todos os produtos disponíveis
+            cursor.execute("""
+                SELECT id_produto, nome, marca, preco, estoque, categoria 
+                FROM produto 
+                WHERE ativo = TRUE 
+                ORDER BY nome
+            """)
+            todos_produtos = cursor.fetchall()
+
+            return render_template('admin/editar_combo.html',
+                                 combo=combo,
+                                 produtos_combo=produtos_combo,
+                                 produtos_disponiveis=todos_produtos)
+
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        print(f"Erro ao editar combo: {str(e)}")
+        flash(f'Erro ao atualizar combo: {str(e)}', 'error')
+        return redirect(url_for('admin_editar_combo', id_combo=id_combo))
+    
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+    
+@app.route('/admin/combo/alternar/<int:id_combo>', methods=['POST'])
+@admin_required
+def admin_alternar_combo(id_combo):
+    try:
+        conn = get_db_connection()
+        if not conn:
+            flash('Erro ao conectar ao banco de dados.', 'error')
+            return redirect(url_for('admin_listar_combos'))
+        
+        cursor = conn.cursor()
+        
+        cursor.execute("UPDATE combos SET ativo = NOT ativo WHERE id_combo = %s", (id_combo,))
+        conn.commit()
+        
+        flash('✅ Status do combo alterado com sucesso!', 'success')
+        
+    except mysql.connector.Error as err:
+        flash(f'Erro ao alterar status: {err}', 'error')
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+    
+    return redirect(url_for('admin_listar_combos'))
+
+@app.route('/admin/combo/excluir/<int:id_combo>', methods=['POST'])
+@admin_required
+def admin_excluir_combo(id_combo):
+    try:
+        conn = get_db_connection()
+        if not conn:
+            flash('Erro ao conectar ao banco de dados.', 'error')
+            return redirect(url_for('admin_listar_combos'))
+        
+        cursor = conn.cursor()
+        
+        cursor.execute("DELETE FROM combos WHERE id_combo = %s", (id_combo,))
+        conn.commit()
+        
+        flash('🗑️ Combo excluído com sucesso!', 'success')
+        
+    except mysql.connector.Error as err:
+        flash(f'Erro ao excluir combo: {err}', 'error')
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+    
+    return redirect(url_for('admin_listar_combos'))
+
+@app.route('/admin/combos/novo', methods=['GET', 'POST'])
+@admin_required
+def admin_novo_combo():
+    conn = None
+    try:
+        conn = get_db_connection()
+        if not conn:
+            flash('Erro ao conectar ao banco de dados.', 'error')
+            return redirect(url_for('admin_listar_combos'))
+        
+        cursor = conn.cursor(dictionary=True)
+        
+        # Buscar todos os produtos disponíveis
+        cursor.execute("""
+            SELECT id_produto, nome, marca, preco, estoque, categoria 
+            FROM produto 
+            WHERE ativo = TRUE 
+            ORDER BY nome
+        """)
+        produtos = cursor.fetchall()
+        
+        if request.method == 'POST':
+            # Lógica para criar novo combo
+            nome = request.form.get('nome')
+            descricao = request.form.get('descricao')
+            preco = request.form.get('preco')
+            
+            if not nome:
+                flash('Nome do combo é obrigatório!', 'error')
+                return render_template('admin/novo_combo.html', produtos=produtos)
+            
+            # Inserir o combo
+            cursor.execute("""
+                INSERT INTO combos (nome, descricao, preco, ativo)
+                VALUES (%s, %s, %s, %s)
+            """, (nome, descricao, float(preco) if preco else 0, True))
+            
+            combo_id = cursor.lastrowid
+            
+            # Adicionar produtos ao combo (implementar conforme necessidade)
+            
+            conn.commit()
+            flash('Combo criado com sucesso!', 'success')
+            return redirect(url_for('admin_listar_combos'))
+        
+        return render_template('admin/novo_combo.html', produtos=produtos)
+        
+    except Exception as e:
+        print(f"Erro ao criar combo: {str(e)}")
+        flash('Erro ao carregar formulário!', 'error')
+        return redirect(url_for('admin_listar_combos'))
+    
+    finally:
+        if conn and conn.is_connected():
             cursor.close()
             conn.close()
 
-    # Se for GET: carrega produtos disponíveis para selecionar
-    cursor.execute("SELECT id_produto, nome, preco FROM produto WHERE ativo = 1 ORDER BY nome")
-    produtos = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return render_template('admin/combo_form.html', produtos=produtos)
-
+@app.route('/admin/combos/<int:id_combo>')
+@admin_required
+def admin_ver_combo(id_combo):
+    conn = None
+    try:
+        conn = get_db_connection()
+        if not conn:
+            flash('Erro ao conectar ao banco de dados.', 'error')
+            return redirect(url_for('admin_listar_combos'))
+        
+        cursor = conn.cursor(dictionary=True)
+        
+        # Buscar dados do combo
+        cursor.execute("""
+            SELECT id_combo, nome, descricao, marca, categoria, estoque, 
+                   preco, ativo, destaque, imagem 
+            FROM combos 
+            WHERE id_combo = %s
+        """, (id_combo,))
+        combo = cursor.fetchone()
+        
+        if not combo:
+            flash('Combo não encontrado!', 'error')
+            return redirect(url_for('admin_listar_combos'))
+        
+        # Buscar produtos do combo
+        cursor.execute("""
+            SELECT p.id_produto, p.nome, p.marca, p.preco, p.estoque, 
+                   p.categoria, cp.quantidade 
+            FROM combo_produto cp 
+            JOIN produto p ON cp.id_produto = p.id_produto 
+            WHERE cp.id_combo = %s
+        """, (id_combo,))
+        
+        produtos_combo = cursor.fetchall()
+        
+        return render_template('admin/ver_combo.html', 
+                             combo=combo, 
+                             produtos_combo=produtos_combo)
+        
+    except Exception as e:
+        print(f"Erro ao visualizar combo: {str(e)}")
+        flash('Erro ao carregar combo!', 'error')
+        return redirect(url_for('admin_listar_combos'))
+    
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+    
+@app.route('/admin/combos')
+@admin_required
+def admin_listar_combos():
+    conn = None
+    try:
+        conn = get_db_connection()
+        if not conn:
+            flash('Erro ao conectar ao banco de dados.', 'error')
+            return render_template('admin/combos.html', combos=[])
+        
+        cursor = conn.cursor(dictionary=True)
+        
+        # Verificar se a tabela combos existe
+        cursor.execute("""
+            SELECT COUNT(*) as existe
+            FROM information_schema.tables 
+            WHERE table_schema = DATABASE() 
+            AND table_name = 'combos'
+        """)
+        tabela_existe = cursor.fetchone()['existe'] > 0
+        
+        combos_list = []
+        
+        if tabela_existe:
+            # Buscar todos os combos
+            cursor.execute("SELECT * FROM combos ORDER BY data_criacao DESC")
+            combos = cursor.fetchall()
+            
+            # Converter para lista de dicionários
+            for combo in combos:
+                combos_list.append({
+                    'id_combo': combo['id_combo'],
+                    'nome': combo.get('nome', 'Sem nome'),
+                    'descricao': combo.get('descricao', ''),
+                    'marca': combo.get('marca', ''),
+                    'categoria': combo.get('categoria', ''),
+                    'estoque': combo.get('estoque', 0),
+                    'preco': float(combo.get('preco', 0)),
+                    'ativo': bool(combo.get('ativo', True)),
+                    'destaque': bool(combo.get('destaque', False)),
+                    'imagem': combo.get('imagem'),
+                    'data_criacao': combo.get('data_criacao')
+                })
+        
+        if not combos_list:
+            flash('Nenhum combo cadastrado ainda.', 'info')
+        
+        return render_template('admin/combos.html', combos=combos_list)
+        
+    except Exception as e:
+        print(f"ERRO: {str(e)}")
+        flash(f'Erro ao carregar combos: {str(e)}', 'error')
+        return render_template('admin/combos.html', combos=[])
+    
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+    
 @app.route('/admin/produto/editar/<int:id_produto>', methods=['GET', 'POST'])
 @admin_required
 def admin_editar_produto(id_produto):
@@ -2769,6 +3036,115 @@ def trabalhe_conosco():
 
     # Se for um GET, apenas renderiza a página do formulário
     return render_template('trabalhe_conosco.html')
+
+# NOVA ROTA: Listar Empresas Vendedoras Públicas
+@app.route('/empresas-vendedoras')
+def listar_empresas():
+    try:
+        conn = get_db_connection()
+        if not conn:
+            flash('Erro ao conectar ao banco de dados.', 'error')
+            return render_template('empresas_lista.html', empresas=[])
+        
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute("""
+            SELECT e.*, 
+                   COUNT(DISTINCT pe.id_produto) as total_produtos,
+                   AVG(ae.nota) as media_avaliacoes,
+                   COUNT(DISTINCT ae.id_avaliacao) as total_avaliacoes
+            FROM empresas e
+            LEFT JOIN produtos_empresa pe ON e.id_empresa = pe.id_empresa AND pe.ativo = TRUE
+            LEFT JOIN avaliacoes_empresas ae ON e.id_empresa = ae.id_empresa_avaliada AND ae.aprovado = TRUE
+            WHERE e.tipo_empresa IN ('vendedor', 'ambos') AND e.ativo = TRUE
+            GROUP BY e.id_empresa
+            ORDER BY media_avaliacoes DESC, total_produtos DESC
+        """)
+        empresas = cursor.fetchall()
+        
+        return render_template('empresas_lista.html', empresas=empresas)
+    
+    except mysql.connector.Error as err:
+        flash(f'Erro ao carregar empresas: {err}', 'error')
+        return render_template('empresas_lista.html', empresas=[])
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+
+# NOVA ROTA: Página Pública da Empresa
+@app.route('/empresa/<int:id_empresa>')
+def detalhes_empresa_publica(id_empresa):
+    try:
+        conn = get_db_connection()
+        if not conn:
+            flash('Erro ao conectar ao banco de dados.', 'error')
+            return redirect(url_for('listar_empresas'))
+        
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute("""
+            SELECT e.*,
+                   AVG(ae.nota) as media_avaliacoes,
+                   COUNT(DISTINCT ae.id_avaliacao) as total_avaliacoes
+            FROM empresas e
+            LEFT JOIN avaliacoes_empresas ae ON e.id_empresa = ae.id_empresa_avaliada AND ae.aprovado = TRUE
+            WHERE e.id_empresa = %s AND e.ativo = TRUE
+            GROUP BY e.id_empresa
+        """, (id_empresa,))
+        empresa = cursor.fetchone()
+        
+        if not empresa:
+            flash('❌ Empresa não encontrada.', 'error')
+            return redirect(url_for('listar_empresas'))
+        
+        # Produtos da empresa
+        cursor.execute("""
+            SELECT p.*, pe.preco_empresa, pe.estoque_empresa
+            FROM produtos_empresa pe
+            JOIN produto p ON pe.id_produto = p.id_produto
+            WHERE pe.id_empresa = %s AND pe.ativo = TRUE AND p.ativo = TRUE
+            ORDER BY p.data_cadastro DESC
+        """, (id_empresa,))
+        produtos = cursor.fetchall()
+        
+        # Processar imagens JSON
+        for produto in produtos:
+            if produto.get('imagens'):
+                try:
+                    produto['imagens'] = json.loads(produto['imagens'])
+                except:
+                    produto['imagens'] = []
+        
+        # Avaliações
+        cursor.execute("""
+            SELECT ae.*, 
+                   COALESCE(c.nome, e.nome_fantasia, e.razao_social) as avaliador_nome,
+                   CASE 
+                       WHEN ae.id_cliente IS NOT NULL THEN 'cliente'
+                       ELSE 'empresa'
+                   END as tipo_avaliador
+            FROM avaliacoes_empresas ae
+            LEFT JOIN clientes c ON ae.id_cliente = c.id_cliente
+            LEFT JOIN empresas e ON ae.id_empresa_avaliadora = e.id_empresa
+            WHERE ae.id_empresa_avaliada = %s AND ae.aprovado = TRUE
+            ORDER BY ae.data_avaliacao DESC
+            LIMIT 20
+        """, (id_empresa,))
+        avaliacoes = cursor.fetchall()
+        
+        return render_template('empresa_detalhes_publica.html', 
+                             empresa=empresa, 
+                             produtos=produtos,
+                             avaliacoes=avaliacoes)
+    
+    except mysql.connector.Error as err:
+        flash(f'Erro ao carregar empresa: {err}', 'error')
+        return redirect(url_for('listar_empresas'))
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
 
 @app.route('/trabalhe-conosco-sucesso')
 def trabalhe_conosco_sucesso():

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block conteudo %}
+<div class="container" style="max-width: 800px; margin: 0 auto;">
+    <div class="page-header">
+        <h1>Avaliar Empresa</h1>
+        <p>Compartilhe sua experiência com {{ empresa.nome_fantasia or empresa.razao_social }}</p>
+    </div>
+
+    <div class="company-card">
+        <div class="company-info">
+            <div class="company-icon">🏢</div>
+            <div class="company-details">
+                <h3>{{ empresa.nome_fantasia or empresa.razao_social }}</h3>
+                <p class="company-cnpj">{{ empresa.cnpj }}</p>
+                <p class="company-email">{{ empresa.email }}</p>
+            </div>
+        </div>
+    </div>
+
+    <form method="POST" action="{{ url_for('avaliar_empresa', id_empresa=empresa.id_empresa) }}" class="review-form">
+        <div class="form-group">
+            <label>Sua Avaliação *</label>
+            <div class="rating-stars">
+                <input type="radio" id="star5" name="nota" value="5" required>
+                <label for="star5">⭐</label>
+                <input type="radio" id="star4" name="nota" value="4">
+                <label for="star4">⭐</label>
+                <input type="radio" id="star3" name="nota" value="3">
+                <label for="star3">⭐</label>
+                <input type="radio" id="star2" name="nota" value="2">
+                <label for="star2">⭐</label>
+                <input type="radio" id="star1" name="nota" value="1">
+                <label for="star1">⭐</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="titulo">Título da Avaliação</label>
+            <input type="text" id="titulo" name="titulo" class="form-control" 
+                   placeholder="Ex: Excelente atendimento, produtos de qualidade" maxlength="200">
+        </div>
+
+        <div class="form-group">
+            <label for="comentario">Comentário Detalhado *</label>
+            <textarea id="comentario" name="comentario" class="form-control" rows="6" 
+                      placeholder="Compartilhe sua experiência com esta empresa... Como foi o atendimento? Qualidade dos produtos? Pontos fortes e fracos?" 
+                      required maxlength="1000"></textarea>
+            <div class="char-count"><span id="charCount">0</span>/1000 caracteres</div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{{ url_for('detalhes_empresa_publica', id_empresa=empresa.id_empresa) }}" class="btn btn-secondary">
+                Cancelar
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <span>Enviar Avaliação</span>
+                <span class="btn-arrow">→</span>
+            </button>
+        </div>
+    </form>
+</div>
+
+<style>
+    .company-card {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 32px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+    }
+
+    .dark-theme .company-card {
+        background: var(--dark);
+    }
+
+    .company-info {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .company-icon {
+        font-size: 48px;
+        flex-shrink: 0;
+    }
+
+    .company-details h3 {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .company-cnpj {
+        color: var(--primary);
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .company-email {
+        color: var(--text-light);
+        font-size: 14px;
+    }
+
+    /* Reutilize os estilos do formulário de avaliação de produtos */
+</style>
+
+<script>
+    // Mesmos scripts da avaliação de produtos
+    document.getElementById('comentario').addEventListener('input', function(e) {
+        document.getElementById('charCount').textContent = e.target.value.length;
+    });
+</script>
+{% endblock %}

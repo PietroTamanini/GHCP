@@ -1,0 +1,97 @@
+{% extends "admin/base.html" %}
+{% block title %}Novo Combo{% endblock %}
+{% block page_title %}🧩 Criar Novo Combo{% endblock %}
+
+{% block content %}
+<form method="POST" enctype="multipart/form-data" style="max-width: 800px; margin: auto; background: var(--bg-card); padding: 2rem; border-radius: 10px;">
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        <!-- Coluna 1 -->
+        <div>
+            <div class="form-group">
+                <label>Nome do Combo *</label>
+                <input type="text" name="nome" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label>Preço do Combo *</label>
+                <input type="text" name="preco" class="form-control" placeholder="Ex: 199.90" required>
+            </div>
+
+            <div class="form-group">
+                <label>Marca</label>
+                <input type="text" name="marca" class="form-control" placeholder="Ex: Loja XYZ">
+            </div>
+
+            <div class="form-group">
+                <label>Categoria</label>
+                <select name="categoria" class="form-control">
+                    <option value="">Selecione uma categoria</option>
+                    <option value="Combos">Combos</option>
+                    <option value="Promoções">Promoções</option>
+                    <option value="Kits">Kits</option>
+                    <option value="Ofertas Especiais">Ofertas Especiais</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Coluna 2 -->
+        <div>
+            <div class="form-group">
+                <label>Imagem do Combo</label>
+                <input type="file" name="imagem" class="form-control" accept="image/*">
+                <small style="color: var(--text-light);">Formatos: JPG, PNG, GIF. Tamanho máximo: 5MB</small>
+            </div>
+
+            <div class="form-group">
+                <label>Estoque *</label>
+                <input type="number" name="estoque" class="form-control" value="0" min="0" required>
+            </div>
+
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" name="destaque" value="1">
+                    Destacar este combo
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" name="ativo" value="1" checked>
+                    Combo ativo
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Descrição do Combo</label>
+        <textarea name="descricao" class="form-control" rows="4" placeholder="Descreva os benefícios e características deste combo..."></textarea>
+    </div>
+
+    <div class="form-group">
+        <label>Selecione os produtos para o combo:</label>
+        <div style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; padding: 1rem; background: var(--bg-body);">
+            {% for p in produtos %}
+                <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; border-bottom: 1px solid var(--border-light);">
+                    <input type="checkbox" name="produtos" value="{{ p.id_produto }}">
+                    <div>
+                        <strong>{{ p.nome }}</strong>
+                        <div style="font-size: 0.9rem; color: var(--text-light);">
+                            {{ p.marca }} - R$ {{ "%.2f"|format(p.preco) }} - Estoque: {{ p.estoque }}
+                        </div>
+                    </div>
+                </label>
+            {% else %}
+                <p style="text-align: center; color: var(--text-light); padding: 1rem;">Nenhum produto disponível.</p>
+            {% endfor %}
+        </div>
+        <small style="color: var(--text-light);">Selecione os produtos que farão parte deste combo</small>
+    </div>
+
+    <div style="margin-top: 2rem; text-align: right; display: flex; gap: 1rem; justify-content: flex-end;">
+        <a href="{{ url_for('admin_listar_combos') }}" class="btn btn-secondary">❌ Cancelar</a>
+        <button type="submit" class="btn btn-primary">💾 Salvar Combo</button>
+    </div>
+</form>
+{% endblock %}

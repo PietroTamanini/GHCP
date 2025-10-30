@@ -243,7 +243,6 @@
 
 <div class="product-detail-container">
     <div class="product-image-section">
-        {# CORRIGIDO: Acessar primeiro elemento do array de imagens #}
         {% if produto.imagens and produto.imagens|length > 0 %}
             <img src="{{ url_for('static', filename='uploads/produtos/' ~ produto.imagens[0]) }}" 
                  alt="{{ produto.nome }}">
@@ -319,23 +318,275 @@
     </div>
 </div>
 
-{% if avaliacoes %}
-<div style="background: var(--glass); border: 1px solid var(--border); border-radius: var(--radius); padding: 40px; box-shadow: var(--shadow); margin-top: 50px;">
-    <h2 style="color: var(--primary); margin-bottom: 30px; font-size: 2rem;">⭐ Avaliações dos Clientes</h2>
-    {% for avaliacao in avaliacoes %}
-    <div style="padding: 20px; background: var(--secondary); border-radius: 10px; margin-bottom: 20px; border-left: 4px solid var(--primary);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <strong style="color: var(--text); font-size: 1.1rem;">{{ avaliacao.cliente_nome }}</strong>
-            <span style="color: var(--warning); font-size: 1.2rem;">
-                {% for i in range(avaliacao.nota) %}★{% endfor %}
-                {% for i in range(5 - avaliacao.nota) %}☆{% endfor %}
+<!-- Seção de Avaliações -->
+<section class="reviews-section" style="margin-top: 60px;">
+    <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h2 style="font-size: 24px; font-weight: 700; color: var(--text);">Avaliações do Produto</h2>
+        <div class="rating-summary" style="display: flex; align-items: center; gap: 20px;">
+            <div class="average-rating" style="display: flex; align-items: center; gap: 10px;">
+                <span class="rating-stars" style="font-size: 20px;">
+                    {% set avaliacoes_count = avaliacoes|length %}
+                    {% if avaliacoes_count > 0 %}
+                        {% set total_notas = avaliacoes|map(attribute='nota')|sum %}
+                        {% set avg_rating = total_notas / avaliacoes_count %}
+                    {% else %}
+                        {% set avg_rating = 0 %}
+                    {% endif %}
+                    
+                    {% for i in range(1, 6) %}
+                        {% if i <= avg_rating|round %}
+                            ⭐
+                        {% elif i <= avg_rating %}
+                            ⭐
+                        {% else %}
+                            <span style="opacity: 0.3;">⭐</span>
+                        {% endif %}
+                    {% endfor %}
+                </span>
+                <span class="rating-number" style="font-size: 24px; font-weight: 700; color: var(--primary);">
+                    {{ "%.1f"|format(avg_rating) if avaliacoes_count > 0 else "0.0" }}
+                </span>
+            </div>
+            <span class="review-count" style="color: var(--text-light); font-size: 14px;">
+                {{ avaliacoes_count }} avaliação{{ 's' if avaliacoes_count != 1 else '' }}
             </span>
         </div>
-        <p style="color: var(--text); line-height: 1.6;">{{ avaliacao.comentario }}</p>
-        <small style="color: var(--text-light); font-size: 0.85rem;">{{ avaliacao.data_avaliacao.strftime('%d/%m/%Y') }}</small>
     </div>
-    {% endfor %}
-</div>
-{% endif %}
+
+    <!-- Botão para adicionar avaliação -->
+    {% if session.usuario_id or session.empresa_id %}
+        <div class="add-review-btn" style="margin-bottom: 30px;">
+            <a href="{{ url_for('avaliar_produto', id_produto=produto.id_produto) }}" 
+               class="btn btn-primary" 
+               style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; text-decoration: none; border-radius: 12px; font-weight: 600; transition: var(--transition);">
+                <span>➕</span>
+                <span>Avaliar Produto</span>
+            </a>
+        </div>
+    {% else %}
+        <div class="login-prompt" style="background: var(--secondary); padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 30px;">
+            <p style="margin: 0; color: var(--text-light);">
+                Faça <a href="{{ url_for('login') }}" style="color: var(--primary); text-decoration: none; font-weight: 600;">login</a> para avaliar este produto
+            </p>
+        </div>
+    {% endif %}
+
+    <!-- Lista de avaliações -->
+    <div class="reviews-list">
+        {% for avaliacao in avaliacoes %}
+            <div class="review-card" style="background: white; border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: var(--shadow); border: 1px solid var(--border);">
+                <div class="review-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                    <div class="reviewer-info">
+                        <div class="reviewer-name" style="font-weight: 700; color: var(--text); margin-bottom: 4px;">
+                            {{ avaliacao.cliente_nome }}
+                        </div>
+                        <div class="review-date" style="font-size: 14px; color: var(--text-light);">
+                            {{ avaliacao.data_avaliacao.strftime('%d/%m/%Y às %H:%M') }}
+                        </div>
+                    </div>
+                    <div class="review-rating" style="font-size: 18px;">
+                        {% for i in range(1, 6) %}
+                            {% if i <= avaliacao.nota %}
+                                ⭐
+                            {% else %}
+                                <span style="opacity: 0.3;">⭐</span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                {% if avaliacao.titulo %}
+                    <h4 class="review-title" style="font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 12px;">
+                        {{ avaliacao.titulo }}
+                    </h4>
+                {% endif %}
+                
+                <p class="review-comment" style="color: var(--text); line-height: 1.6; margin: 0;">
+                    {{ avaliacao.comentario }}
+                </p>
+            </div>
+        {% else %}
+            <div class="no-reviews" style="text-align: center; padding: 60px 20px; color: var(--text-light);">
+                <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
+                <h3 style="font-size: 20px; font-weight: 600; margin-bottom: 8px;">Este produto ainda não possui avaliações</h3>
+                <p style="margin: 0;">Seja o primeiro a compartilhar sua experiência!</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Estatísticas detalhadas (opcional) -->
+    {% if avaliacoes|length > 0 %}
+    <div class="rating-breakdown" style="margin-top: 40px; background: var(--secondary); padding: 24px; border-radius: 16px;">
+        <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 20px; color: var(--text);">Distribuição das Avaliações</h3>
+        <div class="rating-bars">
+            {% for star in range(5, 0, -1) %}
+                {% set star_count = avaliacoes|selectattr('nota', 'equalto', star)|list|length %}
+                {% set star_percentage = (star_count / avaliacoes|length * 100) if avaliacoes|length > 0 else 0 %}
+                <div class="rating-bar" style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                    <span class="star-label" style="font-size: 14px; color: var(--text); width: 80px;">
+                        {{ star }} estrela{{ 's' if star != 1 else '' }}
+                    </span>
+                    <div class="bar-container" style="flex: 1; background: var(--border); height: 8px; border-radius: 4px; overflow: hidden;">
+                        <div class="bar-fill" style="height: 100%; background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%); width: {{ star_percentage }}%; transition: width 0.5s ease;"></div>
+                    </div>
+                    <span class="star-count" style="font-size: 14px; color: var(--text-light); width: 60px; text-align: right;">
+                        {{ star_count }} ({{ "%.0f"|format(star_percentage) }}%)
+                    </span>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</section>
+
+<style>
+    .reviews-section {
+        animation: fadeInUp 0.6s ease;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .review-card {
+        transition: var(--transition);
+    }
+
+    .review-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .dark-theme .review-card {
+        background: var(--dark);
+    }
+
+    .dark-theme .login-prompt {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .dark-theme .rating-breakdown {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .section-header {
+            flex-direction: column;
+            gap: 16px;
+            text-align: center;
+        }
+
+        .rating-summary {
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .review-header {
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .review-rating {
+            align-self: flex-start;
+        }
+
+        .rating-bar {
+            flex-direction: column;
+            gap: 8px;
+            text-align: center;
+        }
+
+        .star-label,
+        .star-count {
+            width: auto !important;
+            text-align: center !important;
+        }
+
+        .bar-container {
+            width: 100%;
+        }
+    }
+
+    /* Animações para as barras de estatísticas */
+    .bar-fill {
+        animation: growBar 1s ease-out;
+    }
+
+    @keyframes growBar {
+        from {
+            width: 0%;
+        }
+        to {
+            width: var(--final-width);
+        }
+    }
+</style>
+
+<script>
+    // Animar as barras de estatísticas quando a seção entrar em vista
+    document.addEventListener('DOMContentLoaded', function() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const bars = entry.target.querySelectorAll('.bar-fill');
+                    bars.forEach(bar => {
+                        const finalWidth = bar.style.width;
+                        bar.style.width = '0%';
+                        setTimeout(() => {
+                            bar.style.width = finalWidth;
+                        }, 100);
+                    });
+                }
+            });
+        });
+
+        const ratingBreakdown = document.querySelector('.rating-breakdown');
+        if (ratingBreakdown) {
+            observer.observe(ratingBreakdown);
+        }
+    });
+
+    // Adicionar tooltip para as estrelas na distribuição
+    document.querySelectorAll('.rating-bar').forEach(bar => {
+        bar.addEventListener('mouseenter', function() {
+            const starCount = this.querySelector('.star-count').textContent;
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip';
+            tooltip.textContent = starCount + ' avaliações';
+            tooltip.style.cssText = `
+                position: absolute;
+                background: var(--dark);
+                color: white;
+                padding: 8px 12px;
+                border-radius: 6px;
+                font-size: 12px;
+                z-index: 1000;
+                transform: translateY(-100%);
+                margin-top: -8px;
+            `;
+            this.appendChild(tooltip);
+        });
+
+        bar.addEventListener('mouseleave', function() {
+            const tooltip = this.querySelector('.tooltip');
+            if (tooltip) {
+                tooltip.remove();
+            }
+        });
+    });
+</script>
 
 {% endblock %}

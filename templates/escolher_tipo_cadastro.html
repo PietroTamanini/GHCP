@@ -2,125 +2,142 @@
 
 {% block conteudo %}
 <div style="min-height: calc(100vh - 200px); display: flex; align-items: center; justify-content: center; padding: 40px 20px;">
-    <div style="max-width: 900px; width: 100%;">
-        <div style="text-align: center; margin-bottom: 50px;">
-            <h1 style="font-size: 3rem; font-weight: 900; background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 15px;">
-                Escolha seu tipo de cadastro
-            </h1>
-            <p style="font-size: 1.2rem; color: var(--text-light);">
-                Selecione a opção que melhor se adequa ao seu perfil
-            </p>
-        </div>
+    <div class="auth-container" style="max-width: 500px;">
+        <div class="auth-form active">
+            <div class="auth-header">
+                <div style="font-size: 60px; margin-bottom: 20px;">🎯</div>
+                <h1>Como você quer usar nossa plataforma?</h1>
+                <p>Escolha o tipo de cadastro que melhor se adequa a você</p>
+            </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
-            <!-- CPF - Pessoa Física -->
-            <a href="{{ url_for('login') }}" style="text-decoration: none;">
-                <div style="
-                    background: var(--glass);
-                    border: 2px solid var(--border);
-                    border-radius: 24px;
-                    padding: 50px 30px;
-                    text-align: center;
-                    transition: var(--transition);
-                    cursor: pointer;
-                    height: 100%;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                " onmouseover="this.style.borderColor='var(--primary)'; this.style.transform='translateY(-10px)'; this.style.boxShadow='var(--shadow-lg)'" onmouseout="this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                    <div style="font-size: 80px; margin-bottom: 25px;">👤</div>
-                    <h2 style="font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 15px;">
-                        Pessoa Física
-                    </h2>
-                    <p style="color: var(--text); font-size: 1.1rem; line-height: 1.6; margin-bottom: 25px;">
-                        Cadastro com <strong>CPF</strong> para compras pessoais
-                    </p>
-                    <ul style="list-style: none; padding: 0; text-align: left; margin-bottom: 30px;">
-                        <li style="padding: 8px 0; color: var(--text-light); display: flex; align-items: center; gap: 10px;">
-                            <span style="color: var(--success); font-size: 1.2rem;">✓</span>
-                            Compras para uso pessoal
-                        </li>
-                        <li style="padding: 8px 0; color: var(--text-light); display: flex; align-items: center; gap: 10px;">
-                            <span style="color: var(--success); font-size: 1.2rem;">✓</span>
-                            Cashback e ofertas exclusivas
-                        </li>
-                        <li style="padding: 8px 0; color: var(--text-light); display: flex; align-items: center; gap: 10px;">
-                            <span style="color: var(--success); font-size: 1.2rem;">✓</span>
-                            Histórico de pedidos
-                        </li>
-                        <li style="padding: 8px 0; color: var(--text-light); display: flex; align-items: center; gap: 10px;">
-                            <span style="color: var(--success); font-size: 1.2rem;">✓</span>
-                            Avalie produtos e empresas
-                        </li>
-                    </ul>
-                    <div style="background: var(--primary); color: white; padding: 15px 30px; border-radius: 12px; font-weight: 700; font-size: 1.1rem;">
-                        Cadastrar com CPF →
+            <div class="tipo-cadastro-options">
+                <a href="{{ url_for('login') }}?tipo=cliente" class="tipo-option">
+                    <div class="option-icon">👤</div>
+                    <div class="option-content">
+                        <h3>Pessoa Física (CPF)</h3>
+                        <p>Para comprar produtos como consumidor final</p>
+                        <ul class="option-benefits">
+                            <li>✓ Comprar produtos</li>
+                            <li>✓ Acompanhar pedidos</li>
+                            <li>✓ Avaliar produtos</li>
+                            <li>✓ Receber ofertas</li>
+                        </ul>
                     </div>
-                </div>
-            </a>
-
-            <!-- CNPJ - Pessoa Jurídica -->
-            <a href="{{ url_for('cadastro_empresa') }}" style="text-decoration: none;">
-                <div style="
-                    background: var(--glass);
-                    border: 2px solid var(--border);
-                    border-radius: 24px;
-                    padding: 50px 30px;
-                    text-align: center;
-                    transition: var(--transition);
-                    cursor: pointer;
-                    height: 100%;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                " onmouseover="this.style.borderColor='var(--accent)'; this.style.transform='translateY(-10px)'; this.style.boxShadow='var(--shadow-lg)'" onmouseout="this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                    <div style="font-size: 80px; margin-bottom: 25px;">🏢</div>
-                    <h2 style="font-size: 2rem; font-weight: 800; color: var(--accent); margin-bottom: 15px;">
-                        Pessoa Jurídica
-                    </h2>
-                    <p style="color: var(--text); font-size: 1.1rem; line-height: 1.6; margin-bottom: 25px;">
-                        Cadastro com <strong>CNPJ</strong> para empresas
-                    </p>
-                    <ul style="list-style: none; padding: 0; text-align: left; margin-bottom: 30px;">
-                        <li style="padding: 8px 0; color: var(--text-light); display: flex; align-items: center; gap: 10px;">
-                            <span style="color: var(--success); font-size: 1.2rem;">✓</span>
-                            Compras para revenda
-                        </li>
-                        <li style="padding: 8px 0; color: var(--text-light); display: flex; align-items: center; gap: 10px;">
-                            <span style="color: var(--success); font-size: 1.2rem;">✓</span>
-                            Venda seus produtos
-                        </li>
-                        <li style="padding: 8px 0; color: var(--text-light); display: flex; align-items: center; gap: 10px;">
-                            <span style="color: var(--success); font-size: 1.2rem;">✓</span>
-                            Nota fiscal e crédito empresarial
-                        </li>
-                        <li style="padding: 8px 0; color: var(--text-light); display: flex; align-items: center; gap: 10px;">
-                            <span style="color: var(--success); font-size: 1.2rem;">✓</span>
-                            Dashboard de vendas
-                        </li>
-                    </ul>
-                    <div style="background: var(--accent); color: white; padding: 15px 30px; border-radius: 12px; font-weight: 700; font-size: 1.1rem;">
-                        Cadastrar com CNPJ →
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        <div style="text-align: center; margin-top: 40px;">
-            <p style="color: var(--text-light); font-size: 1rem;">
-                Já tem uma conta? 
-                <a href="{{ url_for('login') }}" style="color: var(--primary); font-weight: 700; text-decoration: none;">
-                    Faça login aqui
+                    <div class="option-arrow">→</div>
                 </a>
-            </p>
+
+                <a href="{{ url_for('cadastro_empresa') }}" class="tipo-option">
+                    <div class="option-icon">🏢</div>
+                    <div class="option-content">
+                        <h3>Pessoa Jurídica (CNPJ)</h3>
+                        <p>Para empresas que querem comprar ou vender</p>
+                        <ul class="option-benefits">
+                            <li>✓ Comprar no atacado</li>
+                            <li>✓ Vender seus produtos</li>
+                            <li>✓ Gestão empresarial</li>
+                            <li>✓ Relatórios avançados</li>
+                        </ul>
+                    </div>
+                    <div class="option-arrow">→</div>
+                </a>
+            </div>
+
+            <div style="text-align: center; margin-top: 24px;">
+                <a href="{{ url_for('login') }}" class="link-secundario">
+                    ← Já tem uma conta? Faça login
+                </a>
+            </div>
         </div>
     </div>
 </div>
 
 <style>
-    @media (max-width: 768px) {
-        div[style*="grid-template-columns: 1fr 1fr"] {
-            grid-template-columns: 1fr !important;
+    .tipo-cadastro-options {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin: 32px 0;
+    }
+
+    .tipo-option {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 24px;
+        border: 2px solid var(--border);
+        border-radius: 16px;
+        text-decoration: none;
+        color: var(--text);
+        transition: var(--transition);
+        background: var(--secondary);
+    }
+
+    .tipo-option:hover {
+        border-color: var(--primary);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+        background: white;
+    }
+
+    .dark-theme .tipo-option:hover {
+        background: var(--dark);
+    }
+
+    .option-icon {
+        font-size: 40px;
+        flex-shrink: 0;
+    }
+
+    .option-content {
+        flex: 1;
+    }
+
+    .option-content h3 {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: var(--text);
+    }
+
+    .option-content p {
+        color: var(--text-light);
+        margin-bottom: 12px;
+        font-size: 14px;
+    }
+
+    .option-benefits {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .option-benefits li {
+        font-size: 13px;
+        color: var(--text-light);
+        margin-bottom: 4px;
+    }
+
+    .option-arrow {
+        font-size: 20px;
+        color: var(--primary);
+        opacity: 0;
+        transition: var(--transition);
+    }
+
+    .tipo-option:hover .option-arrow {
+        opacity: 1;
+        transform: translateX(5px);
+    }
+
+    @media (max-width: 640px) {
+        .tipo-option {
+            flex-direction: column;
+            text-align: center;
+            gap: 16px;
+        }
+
+        .option-content {
+            text-align: center;
         }
     }
 </style>

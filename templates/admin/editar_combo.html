@@ -1,0 +1,346 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Editar Combo{% endblock %}
+{% block page_title %}✏️ Editar Combo{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <form method="POST" enctype="multipart/form-data">
+        <div class="form-grid">
+            <div class="form-group full-width">
+                <h3 style="margin-bottom: 1rem; color: var(--primary);">📝 Informações do Combo</h3>
+            </div>
+
+            <!-- Linha 1: Nome e Preço -->
+            <div class="form-group">
+                <label for="nome">📛 Nome do Combo *</label>
+                <input type="text" id="nome" name="nome" class="form-control" 
+                       value="{{ combo.nome }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="preco">💰 Preço do Combo (R$) *</label>
+                <input type="number" id="preco" name="preco" class="form-control" step="0.01" min="0"
+                       value="{{ "%.2f"|format(combo.preco) }}" required>
+            </div>
+
+            <!-- Linha 2: Marca e Categoria -->
+            <div class="form-group">
+                <label for="marca">🏢 Marca</label>
+                <input type="text" id="marca" name="marca" class="form-control"
+                       value="{{ combo.marca or '' }}" placeholder="Ex: Loja XYZ">
+            </div>
+
+            <div class="form-group">
+                <label for="categoria">📂 Categoria</label>
+                <select id="categoria" name="categoria" class="form-control">
+                    <option value="">Selecione uma categoria</option>
+                    <option value="Combos" {{ 'selected' if combo.categoria == 'Combos' }}>Combos</option>
+                    <option value="Promoções" {{ 'selected' if combo.categoria == 'Promoções' }}>Promoções</option>
+                    <option value="Kits" {{ 'selected' if combo.categoria == 'Kits' }}>Kits</option>
+                    <option value="Ofertas Especiais" {{ 'selected' if combo.categoria == 'Ofertas Especiais' }}>Ofertas Especiais</option>
+                </select>
+            </div>
+
+            <!-- Linha 3: Estoque e Status -->
+            <div class="form-group">
+                <label for="estoque">📦 Estoque *</label>
+                <input type="number" id="estoque" name="estoque" class="form-control" 
+                       value="{{ combo.estoque or 0 }}" min="0" required>
+            </div>
+
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" name="ativo" {{ 'checked' if combo.ativo }}>
+                    ✅ Combo Ativo
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                    <input type="checkbox" name="destaque" value="1" {{ 'checked' if combo.destaque }}>
+                    ⭐ Destacar Combo
+                </label>
+            </div>
+
+            <!-- Linha 4: Imagem -->
+            <div class="form-group full-width">
+                <label for="imagem">🖼️ Imagem do Combo</label>
+                <input type="file" id="imagem" name="imagem" class="form-control" accept="image/*">
+                <small style="color: var(--text-light);">Formatos: JPG, PNG, GIF. Tamanho máximo: 5MB</small>
+                
+                <!-- Preview da imagem atual -->
+                {% if combo.imagem %}
+                <div class="image-preview">
+                    <div style="margin-top: 1rem;">
+                        <label>Imagem Atual:</label>
+                        <div class="preview-item" style="max-width: 200px;">
+                            <img src="{{ url_for('static', filename='uploads/combos/' + combo.imagem) }}" 
+                                 alt="{{ combo.nome }}" 
+                                 onerror="this.style.display='none'">
+                            <div style="margin-top: 0.5rem; text-align: center;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem; justify-content: center;">
+                                    <input type="checkbox" name="remover_imagem" value="1">
+                                    🗑️ Remover imagem
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Descrição -->
+            <div class="form-group full-width">
+                <label for="descricao">📄 Descrição do Combo</label>
+                <textarea id="descricao" name="descricao" class="form-control" 
+                          placeholder="Descreva o combo, benefícios, vantagens..."
+                          rows="4">{{ combo.descricao or '' }}</textarea>
+            </div>
+
+            <!-- Produtos do Combo -->
+            <div class="form-group full-width">
+                <h3 style="margin-bottom: 1rem; color: var(--primary);">🛍️ Produtos do Combo</h3>
+                
+                <div style="border: 2px solid var(--border); border-radius: 10px; padding: 20px; background: var(--secondary);">
+                    <div style="max-height: 400px; overflow-y: auto;">
+                        {% if produtos %}
+                            {% for produto in produtos %}
+                            <div style="display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid var(--border); transition: var(--transition);">
+                                <input type="checkbox" name="produtos" value="{{ produto.id_produto }}" 
+                                       id="produto{{ produto.id_produto }}" 
+                                       {% if produto.id_produto in produtos_combo %}checked{% endif %}
+                                       style="transform: scale(1.2);"
+                                       onchange="calcularPrecoTotal()"
+                                       {{ 'disabled' if produto.estoque <= 0 }}>
+                                <label for="produto{{ produto.id_produto }}" style="flex: 1; cursor: pointer; {{ 'opacity: 0.5;' if produto.estoque <= 0 }}">
+                                    <div style="font-weight: 600; color: var(--text);">{{ produto.nome }}</div>
+                                    <div style="font-size: 14px; color: var(--text-light);">
+                                        🏷️ {{ produto.marca }} • 📂 {{ produto.categoria }} • 💰 R$ {{ "%.2f"|format(produto.preco) }}
+                                    </div>
+                                    {% if produto.estoque <= 0 %}
+                                    <div style="font-size: 12px; color: var(--danger); margin-top: 4px;">
+                                        ⚠️ Sem estoque
+                                    </div>
+                                    {% elif produto.estoque <= 5 %}
+                                    <div style="font-size: 12px; color: var(--warning); margin-top: 4px;">
+                                        ⚠️ Estoque baixo: {{ produto.estoque }} un.
+                                    </div>
+                                    {% else %}
+                                    <div style="font-size: 12px; color: var(--success); margin-top: 4px;">
+                                        ✅ Estoque: {{ produto.estoque }} un.
+                                    </div>
+                                    {% endif %}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div style="text-align: center; padding: 40px 20px; color: var(--text-light);">
+                                <div style="font-size: 48px; margin-bottom: 16px;">📦</div>
+                                <h4 style="margin-bottom: 8px;">Nenhum produto disponível</h4>
+                                <p>Cadastre produtos antes de editar combos</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div style="margin-top: 16px; padding: 16px; background: var(--primary-light); border-radius: 8px; color: white;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong id="resumo-titulo">📊 Resumo do Combo</strong>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 12px; opacity: 0.9;">Preço Individual</div>
+                            <div id="preco-individual" style="font-size: 18px; font-weight: bold;">R$ 0,00</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 12px; opacity: 0.9;">Economia do Combo</div>
+                            <div id="economia" style="font-size: 18px; font-weight: bold; color: var(--success);">R$ 0,00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dicas -->
+            <div class="form-group full-width">
+                <h3 style="margin-bottom: 1rem; color: var(--primary);">💡 Dicas para Combos Atraentes</h3>
+                <div style="background: var(--secondary); padding: 16px; border-radius: 8px; border-left: 4px solid var(--primary);">
+                    <ul style="margin: 0; padding-left: 20px; color: var(--text-light);">
+                        <li>Combine produtos complementares (ex: Mouse + Teclado + Mousepad)</li>
+                        <li>Ofereça descontos progressivos para mais produtos</li>
+                        <li>Destaque a economia em relação à compra individual</li>
+                        <li>Use nomes criativos que mostrem o benefício do combo</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{{ url_for('admin_listar_combos') }}" class="btn btn-warning">
+                ↩️ Cancelar
+            </a>
+            <button type="submit" class="btn btn-primary" {% if not produtos %}disabled{% endif %}>
+                💾 Atualizar Combo
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    calcularPrecoTotal();
+});
+
+function calcularPrecoTotal() {
+    const checkboxes = document.querySelectorAll('input[name="produtos"]:checked');
+    const precoInput = document.getElementById('preco');
+    const precoIndividualElement = document.getElementById('preco-individual');
+    const economiaElement = document.getElementById('economia');
+    const resumoTitulo = document.getElementById('resumo-titulo');
+    
+    let precoIndividual = 0;
+    let produtosSelecionados = 0;
+    
+    checkboxes.forEach(checkbox => {
+        const label = checkbox.parentElement.querySelector('label');
+        const precoText = label.querySelector('div:nth-child(2)').textContent;
+        const precoMatch = precoText.match(/R\$\s?(\d+[.,]\d+)/);
+        
+        if (precoMatch) {
+            const preco = parseFloat(precoMatch[1].replace(',', '.'));
+            precoIndividual += preco;
+            produtosSelecionados++;
+        }
+    });
+    
+    // Calcular economia (20% de desconto no combo)
+    const precoCombo = parseFloat(precoInput.value) || precoIndividual * 0.8;
+    const economia = precoIndividual - precoCombo;
+    
+    // Atualizar valores na interface
+    precoIndividualElement.textContent = `R$ ${precoIndividual.toFixed(2).replace('.', ',')}`;
+    economiaElement.textContent = `R$ ${economia.toFixed(2).replace('.', ',')}`;
+    
+    // Atualizar preço do combo (se não foi editado manualmente)
+    if (!precoInput.dataset.manualEdit && produtosSelecionados > 0) {
+        precoInput.value = precoCombo.toFixed(2);
+    }
+    
+    // Atualizar contador de produtos selecionados
+    if (resumoTitulo) {
+        resumoTitulo.textContent = `📊 Resumo do Combo (${produtosSelecionados} produto${produtosSelecionados !== 1 ? 's' : ''} selecionado${produtosSelecionados !== 1 ? 's' : ''})`;
+    }
+}
+
+// Marcar quando o usuário editar manualmente o preço
+document.getElementById('preco').addEventListener('input', function() {
+    this.dataset.manualEdit = 'true';
+});
+
+// Recalcular quando produtos forem selecionados/deselecionados
+document.querySelectorAll('input[name="produtos"]').forEach(checkbox => {
+    checkbox.addEventListener('change', calcularPrecoTotal);
+});
+
+// Validação antes do envio
+document.querySelector('form').addEventListener('submit', function(e) {
+    const checkboxes = document.querySelectorAll('input[name="produtos"]:checked');
+    if (checkboxes.length === 0) {
+        e.preventDefault();
+        alert('❌ Selecione pelo menos um produto para o combo!');
+        return false;
+    }
+    
+    const preco = parseFloat(document.getElementById('preco').value);
+    if (preco <= 0) {
+        e.preventDefault();
+        alert('❌ O preço do combo deve ser maior que zero!');
+        return false;
+    }
+    
+    const estoque = parseInt(document.getElementById('estoque').value);
+    if (estoque < 0) {
+        e.preventDefault();
+        alert('❌ O estoque não pode ser negativo!');
+        return false;
+    }
+});
+
+// Preview da nova imagem
+document.getElementById('imagem').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            // Remove previews existentes
+            const existingPreviews = document.querySelectorAll('.new-image-preview');
+            existingPreviews.forEach(preview => preview.remove());
+            
+            // Cria novo preview
+            const previewContainer = document.createElement('div');
+            previewContainer.className = 'image-preview new-image-preview';
+            previewContainer.style.marginTop = '1rem';
+            
+            previewContainer.innerHTML = `
+                <label>Nova Imagem:</label>
+                <div class="preview-item" style="max-width: 200px;">
+                    <img src="${e.target.result}" alt="Preview" style="width: 100%; height: 150px; object-fit: cover;">
+                </div>
+            `;
+            
+            document.querySelector('.image-preview')?.insertAdjacentElement('afterend', previewContainer);
+        };
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+
+<style>
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.image-preview {
+    margin-top: 1.5rem;
+}
+
+.preview-item {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-top: 0.5rem;
+}
+
+.preview-item img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+}
+
+/* Estilo para produtos sem estoque */
+input[name="produtos"]:disabled + label {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Destaque para produtos selecionados */
+input[name="produtos"]:checked + label {
+    background: rgba(0, 102, 255, 0.05);
+    border-radius: 8px;
+    margin: -4px -8px;
+    padding: 4px 8px;
+}
+
+.form-actions {
+    margin-top: 2rem;
+    text-align: right;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+</style>
+{% endblock %}

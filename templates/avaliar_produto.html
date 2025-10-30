@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+
+{% block conteudo %}
+<div class="container" style="max-width: 800px; margin: 0 auto;">
+    <div class="page-header">
+        <h1>Avaliar Produto</h1>
+        <p>Compartilhe sua experiência com este produto</p>
+    </div>
+
+    <div class="product-card">
+        <div class="product-info">
+            {% if produto.imagens and produto.imagens|length > 0 %}
+                <img src="{{ url_for('static', filename='uploads/produtos/' + produto.imagens[0]) }}" 
+                     alt="{{ produto.nome }}" class="product-image">
+            {% else %}
+                <div class="product-image-placeholder">📷</div>
+            {% endif %}
+            <div class="product-details">
+                <h3>{{ produto.nome }}</h3>
+                <p class="product-marca">{{ produto.marca }}</p>
+                <p class="product-categoria">{{ produto.categoria }}</p>
+            </div>
+        </div>
+    </div>
+
+    <form method="POST" action="{{ url_for('avaliar_produto', id_produto=produto.id_produto) }}" class="review-form">
+        <div class="form-group">
+            <label>Sua Avaliação *</label>
+            <div class="rating-stars">
+                <input type="radio" id="star5" name="nota" value="5" required>
+                <label for="star5">⭐</label>
+                <input type="radio" id="star4" name="nota" value="4">
+                <label for="star4">⭐</label>
+                <input type="radio" id="star3" name="nota" value="3">
+                <label for="star3">⭐</label>
+                <input type="radio" id="star2" name="nota" value="2">
+                <label for="star2">⭐</label>
+                <input type="radio" id="star1" name="nota" value="1">
+                <label for="star1">⭐</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="titulo">Título da Avaliação</label>
+            <input type="text" id="titulo" name="titulo" class="form-control" 
+                   placeholder="Ex: Excelente produto, superou expectativas" maxlength="200">
+        </div>
+
+        <div class="form-group">
+            <label for="comentario">Comentário Detalhado *</label>
+            <textarea id="comentario" name="comentario" class="form-control" rows="6" 
+                      placeholder="Compartilhe sua experiência com este produto... O que você gostou? Algum ponto negativo?" 
+                      required maxlength="1000"></textarea>
+            <div class="char-count"><span id="charCount">0</span>/1000 caracteres</div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{{ url_for('detalhes_produto', id_produto=produto.id_produto) }}" class="btn btn-secondary">
+                Cancelar
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <span>Enviar Avaliação</span>
+                <span class="btn-arrow">→</span>
+            </button>
+        </div>
+    </form>
+</div>
+
+<style>
+    .page-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .page-header h1 {
+        font-size: 32px;
+        font-weight: 800;
+        margin-bottom: 8px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .product-card {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 32px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+    }
+
+    .dark-theme .product-card {
+        background: var(--dark);
+    }
+
+    .product-info {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .product-image {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 12px;
+        flex-shrink: 0;
+    }
+
+    .product-image-placeholder {
+        width: 80px;
+        height: 80px;
+        border-radius: 12px;
+        background: var(--secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        flex-shrink: 0;
+    }
+
+    .product-details h3 {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .product-marca {
+        color: var(--primary);
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .product-categoria {
+        color: var(--text-light);
+        font-size: 14px;
+    }
+
+    .review-form {
+        background: white;
+        border-radius: 16px;
+        padding: 32px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+    }
+
+    .dark-theme .review-form {
+        background: var(--dark);
+    }
+
+    .rating-stars {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        gap: 4px;
+    }
+
+    .rating-stars input {
+        display: none;
+    }
+
+    .rating-stars label {
+        font-size: 32px;
+        cursor: pointer;
+        transition: var(--transition);
+        opacity: 0.3;
+    }
+
+    .rating-stars input:checked ~ label,
+    .rating-stars label:hover,
+    .rating-stars label:hover ~ label {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+
+    .rating-stars input:checked + label {
+        opacity: 1;
+    }
+
+    .char-count {
+        text-align: right;
+        font-size: 12px;
+        color: var(--text-light);
+        margin-top: 4px;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 16px;
+        justify-content: flex-end;
+        margin-top: 32px;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: var(--transition);
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-secondary {
+        background: var(--secondary);
+        color: var(--text);
+        border: 2px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+        background: var(--border);
+        transform: translateY(-1px);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        box-shadow: var(--shadow);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    @media (max-width: 640px) {
+        .product-info {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            justify-content: center;
+        }
+    }
+</style>
+
+<script>
+    // Contador de caracteres
+    document.getElementById('comentario').addEventListener('input', function(e) {
+        document.getElementById('charCount').textContent = e.target.value.length;
+    });
+
+    // Feedback visual para as estrelas
+    document.querySelectorAll('.rating-stars input').forEach(star => {
+        star.addEventListener('change', function() {
+            const rating = this.value;
+            console.log('Avaliação selecionada:', rating + ' estrelas');
+        });
+    });
+</script>
+{% endblock %}

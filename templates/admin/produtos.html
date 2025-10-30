@@ -1,7 +1,7 @@
 {% extends "admin/base.html" %}
 
 {% block title %}Produtos{% endblock %}
-{% block page_title %}🛍️ Gerenciar Produtos e Combos{% endblock %}
+{% block page_title %}🛍️ Gerenciar produtos{% endblock %}
 
 {% block content %}
 <div class="data-table">
@@ -10,9 +10,6 @@
         <div class="table-actions">
             <a href="{{ url_for('admin_novo_produto') }}" class="btn btn-primary">
                 ➕ Novo Produto
-            </a>
-            <a href="{{ url_for('admin_novo_produto') }}" class="btn btn-primary">
-                🧩 Novo Combo
             </a>
         </div>
     </div>

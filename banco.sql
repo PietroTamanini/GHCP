@@ -2,6 +2,10 @@ CREATE DATABASE IF NOT EXISTS loja_informatica;
 USE loja_informatica;
 
 -- Remover tabelas existentes (em ordem correta para evitar problemas de FK)
+DROP TABLE IF EXISTS combo_produtos;
+DROP TABLE IF EXISTS combos;
+DROP TABLE IF EXISTS produtos_empresa;
+DROP TABLE IF EXISTS avaliacoes_empresas;
 DROP TABLE IF EXISTS itens_pedido;
 DROP TABLE IF EXISTS pedidos;
 DROP TABLE IF EXISTS avaliacoes;
@@ -15,9 +19,11 @@ DROP TABLE IF EXISTS diagnosticos;
 DROP TABLE IF EXISTS funcionarios;
 DROP TABLE IF EXISTS cupons;
 DROP TABLE IF EXISTS ofertas;
+DROP TABLE IF EXISTS pagamentos;
+DROP TABLE IF EXISTS empresas;
 DROP TABLE IF EXISTS produto;
-DROP TABLE IF EXISTS suporte;
 DROP TABLE IF EXISTS concorrentes;
+DROP TABLE IF EXISTS suporte;
 
 -- Tabela produto
 CREATE TABLE produto (
@@ -61,6 +67,23 @@ CREATE TABLE clientes (
     INDEX idx_email (email),
     INDEX idx_cpf (cpf),
     INDEX idx_data_cadastro (data_cadastro)
+);
+
+-- Tabela empresas/fornecedores
+CREATE TABLE empresas (
+    id_empresa INT PRIMARY KEY AUTO_INCREMENT,
+    razao_social VARCHAR(255) NOT NULL,
+    nome_fantasia VARCHAR(255),
+    cnpj VARCHAR(18) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    senha VARCHAR(255) NOT NULL,
+    telefone VARCHAR(20),
+    tipo_empresa ENUM('comprador', 'vendedor', 'ambos') DEFAULT 'comprador',
+    endereco TEXT,
+    data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ativo BOOLEAN DEFAULT TRUE,
+    INDEX idx_cnpj (cnpj),
+    INDEX idx_email (email)
 );
 
 -- Tabela concorrentes
@@ -153,15 +176,37 @@ CREATE TABLE avaliacoes (
     id_avaliacao INT PRIMARY KEY AUTO_INCREMENT,
     id_cliente INT NOT NULL,
     id_produto INT NOT NULL,
+    id_empresa INT NULL,
     nota INT CHECK (nota BETWEEN 1 AND 5),
     titulo VARCHAR(200),
     comentario TEXT,
     data_avaliacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     aprovado BOOLEAN DEFAULT TRUE,
+    tipo_avaliador ENUM('cliente', 'empresa') DEFAULT 'cliente',
     FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente) ON DELETE CASCADE,
     FOREIGN KEY (id_produto) REFERENCES produto(id_produto) ON DELETE CASCADE,
-    UNIQUE KEY unique_avaliacao (id_cliente, id_produto),
+    FOREIGN KEY (id_empresa) REFERENCES empresas(id_empresa) ON DELETE CASCADE,
+    UNIQUE KEY unique_avaliacao_cliente (id_cliente, id_produto),
+    UNIQUE KEY unique_avaliacao_empresa (id_empresa, id_produto),
     INDEX idx_produto (id_produto),
+    INDEX idx_nota (nota)
+);
+
+-- Tabela de avaliações de empresas
+CREATE TABLE avaliacoes_empresas (
+    id_avaliacao INT PRIMARY KEY AUTO_INCREMENT,
+    id_empresa_avaliada INT NOT NULL,
+    id_cliente INT NULL,
+    id_empresa_avaliadora INT NULL,
+    nota INT NOT NULL CHECK (nota BETWEEN 1 AND 5),
+    titulo VARCHAR(200),
+    comentario TEXT,
+    data_avaliacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    aprovado BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (id_empresa_avaliada) REFERENCES empresas(id_empresa) ON DELETE CASCADE,
+    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente) ON DELETE CASCADE,
+    FOREIGN KEY (id_empresa_avaliadora) REFERENCES empresas(id_empresa) ON DELETE CASCADE,
+    INDEX idx_empresa (id_empresa_avaliada),
     INDEX idx_nota (nota)
 );
 
@@ -282,6 +327,58 @@ CREATE TABLE suporte (
     observacoes TEXT,
     INDEX idx_email (email),
     INDEX idx_status (status)
+);
+
+-- Produtos de empresas vendedoras
+CREATE TABLE produtos_empresa (
+    id_produto_empresa INT PRIMARY KEY AUTO_INCREMENT,
+    id_empresa INT NOT NULL,
+    id_produto INT NOT NULL,
+    preco_empresa DECIMAL(10,2),
+    estoque_empresa INT DEFAULT 0,
+    ativo BOOLEAN DEFAULT TRUE,
+    data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_empresa) REFERENCES empresas(id_empresa) ON DELETE CASCADE,
+    FOREIGN KEY (id_produto) REFERENCES produto(id_produto) ON DELETE CASCADE,
+    UNIQUE KEY unique_produto_empresa (id_empresa, id_produto)
+);
+
+-- Tabela de Combos
+CREATE TABLE combos (
+    id_combo INT PRIMARY KEY AUTO_INCREMENT,
+    nome VARCHAR(255) NOT NULL,
+    descricao TEXT,
+    marca VARCHAR(100),
+    categoria VARCHAR(100),
+    estoque INT DEFAULT 0,
+    destaque BOOLEAN DEFAULT FALSE,
+    preco DECIMAL(10, 2) NOT NULL,
+    ativo BOOLEAN DEFAULT TRUE,
+    imagem VARCHAR(255),
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Tabela de relação entre Combos e Produtos (CORRIGIDA - nome correto)
+CREATE TABLE combo_produto (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    id_combo INT NOT NULL,
+    id_produto INT NOT NULL,
+    quantidade INT NOT NULL DEFAULT 1,
+    FOREIGN KEY (id_combo) REFERENCES combos(id_combo) ON DELETE CASCADE,
+    FOREIGN KEY (id_produto) REFERENCES produto(id_produto) ON DELETE CASCADE,
+    UNIQUE KEY unique_combo_produto (id_combo, id_produto)
+);
+
+-- PRO PIX FUNCIONAR
+CREATE TABLE pagamentos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100),
+    email VARCHAR(100),
+    endereco VARCHAR(255),
+    metodo VARCHAR(20),
+    valor DECIMAL(10,2),
+    data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- VIEWS
@@ -468,78 +565,17 @@ END//
 
 DELIMITER ;
 
--- PRO PIX FUNCIONAR
-CREATE TABLE pagamentos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(100),
-    email VARCHAR(100),
-    endereco VARCHAR(255),
-    metodo VARCHAR(20),
-    valor DECIMAL(10,2),
-    data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Tabela de empresas/fornecedores
-CREATE TABLE empresas (
-    id_empresa INT PRIMARY KEY AUTO_INCREMENT,
-    razao_social VARCHAR(255) NOT NULL,
-    nome_fantasia VARCHAR(255),
-    cnpj VARCHAR(18) NOT NULL UNIQUE,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    senha VARCHAR(255) NOT NULL,
-    telefone VARCHAR(20),
-    tipo_empresa ENUM('comprador', 'vendedor', 'ambos') DEFAULT 'comprador',
-    endereco TEXT,
-    data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    ativo BOOLEAN DEFAULT TRUE,
-    INDEX idx_cnpj (cnpj),
-    INDEX idx_email (email)
-);
-
--- Tabela de avaliações de produtos (já existe, mas vamos melhorar)
-ALTER TABLE avaliacoes ADD COLUMN tipo_avaliador ENUM('cliente', 'empresa') DEFAULT 'cliente';
-ALTER TABLE avaliacoes ADD COLUMN id_empresa INT NULL;
-ALTER TABLE avaliacoes ADD FOREIGN KEY (id_empresa) REFERENCES empresas(id_empresa) ON DELETE CASCADE;
-
--- Tabela de avaliações de empresas
-CREATE TABLE avaliacoes_empresas (
-    id_avaliacao INT PRIMARY KEY AUTO_INCREMENT,
-    id_empresa_avaliada INT NOT NULL,
-    id_cliente INT NULL,
-    id_empresa_avaliadora INT NULL,
-    nota INT NOT NULL CHECK (nota BETWEEN 1 AND 5),
-    titulo VARCHAR(200),
-    comentario TEXT,
-    data_avaliacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    aprovado BOOLEAN DEFAULT TRUE,
-    FOREIGN KEY (id_empresa_avaliada) REFERENCES empresas(id_empresa) ON DELETE CASCADE,
-    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente) ON DELETE CASCADE,
-    FOREIGN KEY (id_empresa_avaliadora) REFERENCES empresas(id_empresa) ON DELETE CASCADE,
-    INDEX idx_empresa (id_empresa_avaliada),
-    INDEX idx_nota (nota)
-);
-
--- Produtos de empresas vendedoras
-CREATE TABLE produtos_empresa (
-    id_produto_empresa INT PRIMARY KEY AUTO_INCREMENT,
-    id_empresa INT NOT NULL,
-    id_produto INT NOT NULL,
-    preco_empresa DECIMAL(10,2),
-    estoque_empresa INT DEFAULT 0,
-    ativo BOOLEAN DEFAULT TRUE,
-    data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_empresa) REFERENCES empresas(id_empresa) ON DELETE CASCADE,
-    FOREIGN KEY (id_produto) REFERENCES produto(id_produto) ON DELETE CASCADE
-);
-
-select * from pagamentos;
-
 -- ÍNDICES ADICIONAIS
 CREATE INDEX idx_produto_preco ON produto(preco);
 CREATE INDEX idx_produto_estoque ON produto(estoque);
 CREATE INDEX idx_pedidos_data_status ON pedidos(data_pedido, status);
 CREATE INDEX idx_clientes_data_cadastro ON clientes(data_cadastro);
 CREATE INDEX idx_itens_pedido_preco ON itens_pedido(preco_unitario);
+CREATE INDEX idx_combos_ativo ON combos(ativo);
+CREATE INDEX idx_produtos_empresa_empresa ON produtos_empresa(id_empresa);
+CREATE INDEX idx_produtos_empresa_produto ON produtos_empresa(id_produto);
+CREATE INDEX idx_combo_produto_combo ON combo_produto(id_combo);
+CREATE INDEX idx_combo_produto_produto ON combo_produto(id_produto);
 
 -- CONFIRMAÇÃO
 SELECT '✅ Banco de dados limpo criado com sucesso!' as Status;

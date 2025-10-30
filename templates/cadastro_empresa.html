@@ -1,0 +1,356 @@
+{% extends "base.html" %}
+
+{% block conteudo %}
+<div style="min-height: calc(100vh - 200px); display: flex; align-items: center; justify-content: center; padding: 40px 20px;">
+    <div class="auth-container" style="max-width: 800px;">
+        <form method="POST" action="{{ url_for('cadastro_empresa') }}" class="auth-form active">
+            <div class="auth-header">
+                <div style="font-size: 60px; margin-bottom: 20px;">🏢</div>
+                <h1>Cadastro de Empresa</h1>
+                <p>Junte-se à plataforma e comece a vender seus produtos</p>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="razao_social">
+                        <span class="label-icon">🏢</span>
+                        Razão Social *
+                    </label>
+                    <input type="text" id="razao_social" name="razao_social" class="form-control" 
+                           placeholder="Empresa LTDA" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="nome_fantasia">
+                        <span class="label-icon">✨</span>
+                        Nome Fantasia
+                    </label>
+                    <input type="text" id="nome_fantasia" name="nome_fantasia" class="form-control" 
+                           placeholder="Nome comercial">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="cnpj">
+                        <span class="label-icon">🆔</span>
+                        CNPJ *
+                    </label>
+                    <input type="text" id="cnpj" name="cnpj" class="form-control" 
+                           placeholder="00.000.000/0000-00" required maxlength="18">
+                </div>
+
+                <div class="form-group">
+                    <label for="telefone">
+                        <span class="label-icon">📞</span>
+                        Telefone
+                    </label>
+                    <input type="tel" id="telefone" name="telefone" class="form-control" 
+                           placeholder="(00) 00000-0000">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">
+                    <span class="label-icon">📧</span>
+                    E-mail *
+                </label>
+                <input type="email" id="email" name="email" class="form-control" 
+                       placeholder="empresa@email.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="tipo_empresa">
+                    <span class="label-icon">🎯</span>
+                    Tipo de Empresa *
+                </label>
+                <select id="tipo_empresa" name="tipo_empresa" class="form-control" required>
+                    <option value="">Selecione...</option>
+                    <option value="comprador">🛒 Apenas Comprador</option>
+                    <option value="vendedor">🏪 Apenas Vendedor</option>
+                    <option value="ambos">🔄 Comprador e Vendedor</option>
+                </select>
+                <small style="color: var(--text-light); margin-top: 8px; display: block;">
+                    Escolha como deseja atuar na plataforma
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label for="endereco">
+                    <span class="label-icon">📍</span>
+                    Endereço Completo
+                </label>
+                <textarea id="endereco" name="endereco" class="form-control" rows="2" 
+                          placeholder="Rua, número, bairro, cidade, estado"></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="senha">
+                        <span class="label-icon">🔒</span>
+                        Senha *
+                    </label>
+                    <div class="password-wrapper">
+                        <input type="password" id="senha" name="senha" class="form-control" 
+                               placeholder="Mínimo 6 caracteres" required minlength="6">
+                        <button type="button" class="toggle-password" data-target="senha">👁️</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmar_senha">
+                        <span class="label-icon">🔐</span>
+                        Confirmar Senha *
+                    </label>
+                    <div class="password-wrapper">
+                        <input type="password" id="confirmar_senha" name="confirmar_senha" class="form-control" 
+                               placeholder="Digite novamente" required>
+                        <button type="button" class="toggle-password" data-target="confirmar_senha">👁️</button>
+                    </div>
+                </div>
+            </div>
+
+            <label class="checkbox-label" style="margin-top: 20px;">
+                <input type="checkbox" name="aceitar_termos" required>
+                <span>Aceito os <a href="/termos" target="_blank" class="link-secundario">Termos de Uso</a> e a <a href="/privacidade" target="_blank" class="link-secundario">Política de Privacidade</a></span>
+            </label>
+
+            <button type="submit" class="btn btn-auth">
+                <span>Criar Conta Empresarial</span>
+                <span class="btn-arrow">→</span>
+            </button>
+
+            <div style="text-align: center; margin-top: 24px;">
+                <a href="{{ url_for('login') }}" class="link-secundario">
+                    ← Já tem uma conta? Faça login
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .auth-container {
+        width: 100%;
+        background: white;
+        border-radius: 24px;
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        border: 1px solid var(--border);
+        position: relative;
+    }
+
+    .dark-theme .auth-container {
+        background: var(--dark);
+    }
+
+    .auth-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 6px;
+        background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 50%, var(--success) 100%);
+    }
+
+    .auth-form {
+        padding: 50px 40px;
+        animation: fadeInUp 0.4s ease;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: 32px;
+    }
+
+    .auth-header h1 {
+        font-size: 28px;
+        font-weight: 800;
+        margin-bottom: 12px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .auth-header p {
+        color: var(--text-light);
+        font-size: 15px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .form-group label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: var(--text);
+        font-size: 14px;
+    }
+
+    .password-wrapper {
+        position: relative;
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 20px;
+        opacity: 0.6;
+        transition: var(--transition);
+    }
+
+    .toggle-password:hover {
+        opacity: 1;
+    }
+
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        color: var(--text);
+    }
+
+    .checkbox-label input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    .link-secundario {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+        transition: var(--transition);
+    }
+
+    .link-secundario:hover {
+        text-decoration: underline;
+    }
+
+    .btn-auth {
+        width: 100%;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 16px 28px;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        transition: var(--transition);
+        box-shadow: var(--shadow);
+        margin-bottom: 24px;
+    }
+
+    .btn-auth:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    @media (max-width: 640px) {
+        .auth-form {
+            padding: 40px 30px;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script>
+    // Máscara CNPJ
+    document.getElementById('cnpj').addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 14) value = value.substring(0, 14);
+        
+        if (value.length > 12) {
+            value = value.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+        } else if (value.length > 8) {
+            value = value.replace(/^(\d{2})(\d{3})(\d{3})(\d{0,4})/, '$1.$2.$3/$4');
+        } else if (value.length > 5) {
+            value = value.replace(/^(\d{2})(\d{3})(\d{0,3})/, '$1.$2.$3');
+        } else if (value.length > 2) {
+            value = value.replace(/^(\d{2})(\d{0,3})/, '$1.$2');
+        }
+        
+        e.target.value = value;
+    });
+
+    // Máscara Telefone
+    document.getElementById('telefone').addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 11) value = value.substring(0, 11);
+        
+        if (value.length > 10) {
+            value = value.replace(/^(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+        } else if (value.length > 6) {
+            value = value.replace(/^(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+        } else if (value.length > 2) {
+            value = value.replace(/^(\d{2})(\d{0,5})/, '($1) $2');
+        }
+        
+        e.target.value = value;
+    });
+
+    // Toggle password
+    document.querySelectorAll('.toggle-password').forEach(button => {
+        button.addEventListener('click', () => {
+            const targetId = button.dataset.target;
+            const input = document.getElementById(targetId);
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                button.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                button.textContent = '👁️';
+            }
+        });
+    });
+
+    // Validação de senha
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const senha = document.getElementById('senha').value;
+        const confirmarSenha = document.getElementById('confirmar_senha').value;
+        
+        if (senha !== confirmarSenha) {
+            e.preventDefault();
+            alert('❌ As senhas não coincidem!');
+        }
+    });
+</script>
+{% endblock %}
