@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block conteudo %}
+<div style="min-height: calc(100vh - 200px); display: flex; align-items: center; justify-content: center; padding: 40px 20px;">
+    <div style="max-width: 900px; width: 100%;">
+        <div style="text-align: center; margin-bottom: 50px;">
+            <h1 style="font-size: 3rem; font-weight: 900; background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 15px;">
+                Escolha seu tipo de cadastro
+            </h1>
+            <p style="font-size: 1.2rem; color: var(--text-light);">
+                Selecione a opção que melhor se adequa ao seu perfil
+            </p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+            <!-- CPF - Pessoa Física -->
+            <a href="{{ url_for('login') }}" style="text-decoration: none;">
+                <div style="
+                    background: var(--glass);
+                    border: 2px solid var(--border);
+                    border-radius: 24px;
+                    padding: 50px 30px;
+                    text-align: center;
+                    transition: var(--transition);
+                    cursor: pointer;
+                    height: 100%;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                " onmouseover="this.style.borderColor='var(--primary)'; this.style.transform='translateY(-10px)'; this.style.boxShadow='var(--shadow-lg)'" onmouseout="this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                    <div style="font-size: 80px; margin-bottom: 25px;">👤</div>
+                    <h2 style="font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 15px;">
+                        Pessoa Física
+                    </h2>
+                    <p style="color: var(--text); font-size: 1.1rem; line-height: 1.6; margin-bottom: 25px;">
+                        Cadastro com <strong>CPF</strong> para compras pessoais
+                    </p>
+                    <ul style="list-style: none; padding: 0; text-align: left; margin-bottom: 30px;">
+                        <li style="padding: 8px 0; color: var(--text-light); display: flex; align-items: center; gap: 10px;">
+                            <span style="color: var(--success); font-size: 1.2rem;">✓</span>
+                            Compras para uso pessoal
+                        </li>
+                        <li style="padding: 8px 0; color: var(--text-light); display: flex; align-items: center; gap: 10px;">
+                            <span style="color: var(--success); font-size: 1.2rem;">✓</span>
+                            Cashback e ofertas exclusivas
+                        </li>
+                        <li style="padding: 8px 0; color: var(--text-light); display: flex; align-items: center; gap: 10px;">
+                            <span style="color: var(--success); font-size: 1.2rem;">✓</span>
+                            Histórico de pedidos
+                        </li>
+                        <li style="padding: 8px 0; color: var(--text-light); display: flex; align-items: center; gap: 10px;">
+                            <span style="color: var(--success); font-size: 1.2rem;">✓</span>
+                            Avalie produtos e empresas
+                        </li>
+                    </ul>
+                    <div style="background: var(--primary); color: white; padding: 15px 30px; border-radius: 12px; font-weight: 700; font-size: 1.1rem;">
+                        Cadastrar com CPF →
+                    </div>
+                </div>
+            </a>
+
+            <!-- CNPJ - Pessoa Jurídica -->
+            <a href="{{ url_for('cadastro_empresa') }}" style="text-decoration: none;">
+                <div style="
+                    background: var(--glass);
+                    border: 2px solid var(--border);
+                    border-radius: 24px;
+                    padding: 50px 30px;
+                    text-align: center;
+                    transition: var(--transition);
+                    cursor: pointer;
+                    height: 100%;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                " onmouseover="this.style.borderColor='var(--accent)'; this.style.transform='translateY(-10px)'; this.style.boxShadow='var(--shadow-lg)'" onmouseout="this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                    <div style="font-size: 80px; margin-bottom: 25px;">🏢</div>
+                    <h2 style="font-size: 2rem; font-weight: 800; color: var(--accent); margin-bottom: 15px;">
+                        Pessoa Jurídica
+                    </h2>
+                    <p style="color: var(--text); font-size: 1.1rem; line-height: 1.6; margin-bottom: 25px;">
+                        Cadastro com <strong>CNPJ</strong> para empresas
+                    </p>
+                    <ul style="list-style: none; padding: 0; text-align: left; margin-bottom: 30px;">
+                        <li style="padding: 8px 0; color: var(--text-light); display: flex; align-items: center; gap: 10px;">
+                            <span style="color: var(--success); font-size: 1.2rem;">✓</span>
+                            Compras para revenda
+                        </li>
+                        <li style="padding: 8px 0; color: var(--text-light); display: flex; align-items: center; gap: 10px;">
+                            <span style="color: var(--success); font-size: 1.2rem;">✓</span>
+                            Venda seus produtos
+                        </li>
+                        <li style="padding: 8px 0; color: var(--text-light); display: flex; align-items: center; gap: 10px;">
+                            <span style="color: var(--success); font-size: 1.2rem;">✓</span>
+                            Nota fiscal e crédito empresarial
+                        </li>
+                        <li style="padding: 8px 0; color: var(--text-light); display: flex; align-items: center; gap: 10px;">
+                            <span style="color: var(--success); font-size: 1.2rem;">✓</span>
+                            Dashboard de vendas
+                        </li>
+                    </ul>
+                    <div style="background: var(--accent); color: white; padding: 15px 30px; border-radius: 12px; font-weight: 700; font-size: 1.1rem;">
+                        Cadastrar com CNPJ →
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px;">
+            <p style="color: var(--text-light); font-size: 1rem;">
+                Já tem uma conta? 
+                <a href="{{ url_for('login') }}" style="color: var(--primary); font-weight: 700; text-decoration: none;">
+                    Faça login aqui
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media (max-width: 768px) {
+        div[style*="grid-template-columns: 1fr 1fr"] {
+            grid-template-columns: 1fr !important;
+        }
+    }
+</style>
+{% endblock %}

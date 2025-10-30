@@ -14,8 +14,6 @@ import base64
 app = Flask(__name__)
 app.secret_key = 'GHCP-2o25'
 
-
-
 @app.template_filter('from_json')
 def from_json_filter(value):
     if value:
@@ -27,7 +25,7 @@ def from_json_filter(value):
 
 DB_CONFIG = {
     'host': 'localhost',
-    'port': '3307',
+    'port': '3306',
     'user': 'root',
     'password': '',
     'database': 'loja_informatica'
@@ -49,7 +47,7 @@ def get_db_connection():
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'usuario_id' not in session:
+        if 'usuario_id' not in session and 'empresa_id' not in session:
             flash('⚠️ Por favor, faça login para acessar esta página.', 'warning')
             return redirect(url_for('login', next=request.url))
         return f(*args, **kwargs)
@@ -78,6 +76,28 @@ def validar_cpf(cpf):
     digito2 = (soma * 10 % 11) % 10
     return digito2 == int(cpf[10])
 
+def validar_cnpj(cnpj):
+    cnpj = re.sub(r'\D', '', cnpj)
+    if len(cnpj) != 14:
+        return False
+    if cnpj == cnpj[0] * 14:
+        return False
+    
+    # Validação primeiro dígito
+    peso = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+    soma = sum(int(cnpj[i]) * peso[i] for i in range(12))
+    digito1 = 11 - (soma % 11)
+    digito1 = 0 if digito1 > 9 else digito1
+    if digito1 != int(cnpj[12]):
+        return False
+    
+    # Validação segundo dígito
+    peso = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+    soma = sum(int(cnpj[i]) * peso[i] for i in range(13))
+    digito2 = 11 - (soma % 11)
+    digito2 = 0 if digito2 > 9 else digito2
+    return digito2 == int(cnpj[13])
+
 def validar_email(email):
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return re.match(pattern, email) is not None
@@ -85,6 +105,10 @@ def validar_email(email):
 def formatar_cpf(cpf):
     cpf = re.sub(r'\D', '', cpf)
     return f"{cpf[:3]}.{cpf[3:6]}.{cpf[6:9]}-{cpf[9:]}"
+
+def formatar_cnpj(cnpj):
+    cnpj = re.sub(r'\D', '', cnpj)
+    return f"{cnpj[:2]}.{cnpj[2:5]}.{cnpj[5:8]}/{cnpj[8:12]}-{cnpj[12:]}"
 
 def formatar_telefone(telefone):
     telefone = re.sub(r'\D', '', telefone)
@@ -94,6 +118,7 @@ def formatar_telefone(telefone):
         return f"({telefone[:2]}) {telefone[2:6]}-{telefone[6:]}"
     return telefone
 
+# ROTAS ORIGINAIS (mantidas)
 @app.route('/')
 def inicio():
     try:
@@ -104,7 +129,6 @@ def inicio():
         
         cursor = conn.cursor(dictionary=True)
         
-        # Buscar produtos em destaque (ativos) - máximo 8 produtos
         cursor.execute("""
             SELECT p.* 
             FROM produto p 
@@ -114,7 +138,6 @@ def inicio():
         """)
         produtos_base = cursor.fetchall()
         
-        # Buscar ofertas ativas
         cursor.execute("""
             SELECT o.*, p.nome, p.descricao, p.categoria, p.marca, p.imagens
             FROM ofertas o
@@ -127,10 +150,8 @@ def inicio():
         """)
         ofertas = cursor.fetchall()
         
-        # Combinar produtos base com ofertas
         produtos_destaque = []
         
-        # Primeiro adicionar as ofertas
         for oferta in ofertas:
             produto_com_oferta = {
                 'id_produto': oferta['id_produto'],
@@ -146,7 +167,6 @@ def inicio():
             }
             produtos_destaque.append(produto_com_oferta)
         
-        # Adicionar produtos base (sem repetir)
         produtos_base_ids = [p['id_produto'] for p in produtos_destaque]
         for produto in produtos_base:
             if produto['id_produto'] not in produtos_base_ids and len(produtos_destaque) < 8:
@@ -174,49 +194,87 @@ def inicio():
             cursor.close()
             conn.close()
 
+# NOVA ROTA: Escolha tipo de cadastro (CPF ou CNPJ)
+@app.route('/escolher-tipo-cadastro')
+def escolher_tipo_cadastro():
+    return render_template('escolher_tipo_cadastro.html')
+
+# ROTA DE LOGIN ATUALIZADA
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if 'usuario_id' in session:
+    if 'usuario_id' in session or 'empresa_id' in session:
         return redirect(url_for('inicio'))
+    
     if request.method == 'POST':
         email = request.form.get('email', '').strip().lower()
         senha = request.form.get('senha', '')
+        tipo_login = request.form.get('tipo_login', 'cliente')  # cliente ou empresa
+        
         if not email or not senha:
             flash('❌ Por favor, preencha todos os campos.', 'error')
             return render_template('login.html')
+        
         if not validar_email(email):
             flash('❌ E-mail inválido.', 'error')
             return render_template('login.html')
+        
         try:
             conn = get_db_connection()
             if not conn:
                 flash('Erro ao conectar ao banco de dados.', 'error')
                 return render_template('login.html')
+            
             cursor = conn.cursor(dictionary=True)
-            cursor.execute("SELECT id_cliente, nome, email, senha, ativo FROM clientes WHERE email = %s", (email,))
-            usuario = cursor.fetchone()
-            if usuario and check_password_hash(usuario['senha'], senha):
-                if not usuario['ativo']:
-                    flash('⚠️ Sua conta está desativada. Entre em contato com o suporte.', 'warning')
-                    return render_template('login.html')
-                session['usuario_id'] = usuario['id_cliente']
-                session['usuario_nome'] = usuario['nome']
-                session['usuario_email'] = usuario['email']
-                flash(f'🎉 Bem-vindo de volta, {usuario["nome"]}!', 'success')
-                next_page = request.args.get('next')
-                if next_page:
-                    return redirect(next_page)
-                return redirect(url_for('inicio'))
+            
+            if tipo_login == 'empresa':
+                cursor.execute("SELECT id_empresa, razao_social, nome_fantasia, email, senha, ativo, tipo_empresa FROM empresas WHERE email = %s", (email,))
+                usuario = cursor.fetchone()
+                
+                if usuario and check_password_hash(usuario['senha'], senha):
+                    if not usuario['ativo']:
+                        flash('⚠️ Sua empresa está desativada. Entre em contato com o suporte.', 'warning')
+                        return render_template('login.html')
+                    
+                    session['empresa_id'] = usuario['id_empresa']
+                    session['empresa_nome'] = usuario['nome_fantasia'] or usuario['razao_social']
+                    session['empresa_email'] = usuario['email']
+                    session['empresa_tipo'] = usuario['tipo_empresa']
+                    
+                    flash(f'🎉 Bem-vindo, {session["empresa_nome"]}!', 'success')
+                    return redirect(url_for('painel_empresa'))
+                else:
+                    flash('❌ E-mail ou senha incorretos.', 'error')
             else:
-                flash('❌ E-mail ou senha incorretos.', 'error')
+                cursor.execute("SELECT id_cliente, nome, email, senha, ativo FROM clientes WHERE email = %s", (email,))
+                usuario = cursor.fetchone()
+                
+                if usuario and check_password_hash(usuario['senha'], senha):
+                    if not usuario['ativo']:
+                        flash('⚠️ Sua conta está desativada. Entre em contato com o suporte.', 'warning')
+                        return render_template('login.html')
+                    
+                    session['usuario_id'] = usuario['id_cliente']
+                    session['usuario_nome'] = usuario['nome']
+                    session['usuario_email'] = usuario['email']
+                    
+                    flash(f'🎉 Bem-vindo de volta, {usuario["nome"]}!', 'success')
+                    next_page = request.args.get('next')
+                    if next_page:
+                        return redirect(next_page)
+                    return redirect(url_for('inicio'))
+                else:
+                    flash('❌ E-mail ou senha incorretos.', 'error')
+        
         except mysql.connector.Error as err:
             flash(f'Erro ao fazer login: {err}', 'error')
         finally:
             if conn and conn.is_connected():
                 cursor.close()
                 conn.close()
+    
     return render_template('login.html')
 
+# ROTA CADASTRO CLIENTE (mantida)
 @app.route('/cadastro', methods=['POST'])
 def cadastro():
     nome = request.form.get('nome', '').strip()
@@ -228,53 +286,71 @@ def cadastro():
     senha = request.form.get('senha', '')
     confirmar_senha = request.form.get('confirmar_senha', '')
     aceitar_termos = request.form.get('aceitar_termos')
+    
     if not all([nome, email, cpf, senha, confirmar_senha]):
         flash('❌ Por favor, preencha todos os campos obrigatórios.', 'error')
         return redirect(url_for('login'))
+    
     if not aceitar_termos:
         flash('❌ Você precisa aceitar os Termos de Uso e Política de Privacidade.', 'error')
         return redirect(url_for('login'))
+    
     if senha != confirmar_senha:
         flash('❌ As senhas não coincidem.', 'error')
         return redirect(url_for('login'))
+    
     if len(senha) < 6:
         flash('❌ A senha deve ter no mínimo 6 caracteres.', 'error')
         return redirect(url_for('login'))
+    
     if not validar_email(email):
         flash('❌ E-mail inválido.', 'error')
         return redirect(url_for('login'))
+    
     if not validar_cpf(cpf):
         flash('❌ CPF inválido.', 'error')
         return redirect(url_for('login'))
+    
     cpf_formatado = formatar_cpf(cpf)
+    
     try:
         conn = get_db_connection()
         if not conn:
             flash('Erro ao conectar ao banco de dados.', 'error')
             return redirect(url_for('login'))
+        
         cursor = conn.cursor()
+        
         cursor.execute("SELECT id_cliente FROM clientes WHERE email = %s", (email,))
         if cursor.fetchone():
             flash('❌ Este e-mail já está cadastrado.', 'error')
             return redirect(url_for('login'))
+        
         cursor.execute("SELECT id_cliente FROM clientes WHERE cpf = %s", (cpf_formatado,))
         if cursor.fetchone():
             flash('❌ Este CPF já está cadastrado.', 'error')
             return redirect(url_for('login'))
+        
         senha_hash = generate_password_hash(senha)
+        
         cursor.execute("""
             INSERT INTO clientes (nome, email, senha, cpf, telefone, data_nascimento, genero)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
         """, (nome, email, senha_hash, cpf_formatado, telefone, data_nascimento if data_nascimento else None, genero if genero else None))
+        
         conn.commit()
         cliente_id = cursor.lastrowid
+        
         cursor.execute("INSERT INTO preferencias (id_cliente, email_notificacoes, ofertas_personalizadas) VALUES (%s, TRUE, TRUE)", (cliente_id,))
         conn.commit()
+        
         session['usuario_id'] = cliente_id
         session['usuario_nome'] = nome
         session['usuario_email'] = email
+        
         flash(f'🎉 Cadastro realizado com sucesso! Bem-vindo, {nome}!', 'success')
         return redirect(url_for('inicio'))
+    
     except mysql.connector.Error as err:
         flash(f'Erro ao cadastrar: {err}', 'error')
         return redirect(url_for('login'))
@@ -283,14 +359,301 @@ def cadastro():
             cursor.close()
             conn.close()
 
+# NOVA ROTA: Cadastro de Empresas
+@app.route('/cadastro-empresa', methods=['GET', 'POST'])
+def cadastro_empresa():
+    if request.method == 'POST':
+        razao_social = request.form.get('razao_social', '').strip()
+        nome_fantasia = request.form.get('nome_fantasia', '').strip()
+        cnpj = request.form.get('cnpj', '').strip()
+        email = request.form.get('email', '').strip().lower()
+        telefone = request.form.get('telefone', '').strip()
+        tipo_empresa = request.form.get('tipo_empresa', 'comprador')
+        endereco = request.form.get('endereco', '').strip()
+        senha = request.form.get('senha', '')
+        confirmar_senha = request.form.get('confirmar_senha', '')
+        aceitar_termos = request.form.get('aceitar_termos')
+        
+        if not all([razao_social, cnpj, email, senha, confirmar_senha, tipo_empresa]):
+            flash('❌ Por favor, preencha todos os campos obrigatórios.', 'error')
+            return render_template('cadastro_empresa.html')
+        
+        if not aceitar_termos:
+            flash('❌ Você precisa aceitar os Termos de Uso e Política de Privacidade.', 'error')
+            return render_template('cadastro_empresa.html')
+        
+        if senha != confirmar_senha:
+            flash('❌ As senhas não coincidem.', 'error')
+            return render_template('cadastro_empresa.html')
+        
+        if len(senha) < 6:
+            flash('❌ A senha deve ter no mínimo 6 caracteres.', 'error')
+            return render_template('cadastro_empresa.html')
+        
+        if not validar_email(email):
+            flash('❌ E-mail inválido.', 'error')
+            return render_template('cadastro_empresa.html')
+        
+        if not validar_cnpj(cnpj):
+            flash('❌ CNPJ inválido.', 'error')
+            return render_template('cadastro_empresa.html')
+        
+        cnpj_formatado = formatar_cnpj(cnpj)
+        
+        try:
+            conn = get_db_connection()
+            if not conn:
+                flash('Erro ao conectar ao banco de dados.', 'error')
+                return render_template('cadastro_empresa.html')
+            
+            cursor = conn.cursor()
+            
+            cursor.execute("SELECT id_empresa FROM empresas WHERE email = %s", (email,))
+            if cursor.fetchone():
+                flash('❌ Este e-mail já está cadastrado.', 'error')
+                return render_template('cadastro_empresa.html')
+            
+            cursor.execute("SELECT id_empresa FROM empresas WHERE cnpj = %s", (cnpj_formatado,))
+            if cursor.fetchone():
+                flash('❌ Este CNPJ já está cadastrado.', 'error')
+                return render_template('cadastro_empresa.html')
+            
+            senha_hash = generate_password_hash(senha)
+            
+            cursor.execute("""
+                INSERT INTO empresas (razao_social, nome_fantasia, cnpj, email, senha, telefone, tipo_empresa, endereco)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """, (razao_social, nome_fantasia, cnpj_formatado, email, senha_hash, telefone, tipo_empresa, endereco))
+            
+            conn.commit()
+            empresa_id = cursor.lastrowid
+            
+            session['empresa_id'] = empresa_id
+            session['empresa_nome'] = nome_fantasia or razao_social
+            session['empresa_email'] = email
+            session['empresa_tipo'] = tipo_empresa
+            
+            flash(f'🎉 Cadastro realizado com sucesso! Bem-vindo, {session["empresa_nome"]}!', 'success')
+            return redirect(url_for('painel_empresa'))
+        
+        except mysql.connector.Error as err:
+            flash(f'Erro ao cadastrar empresa: {err}', 'error')
+            return render_template('cadastro_empresa.html')
+        finally:
+            if conn and conn.is_connected():
+                cursor.close()
+                conn.close()
+    
+    return render_template('cadastro_empresa.html')
+
+# NOVA ROTA: Painel da Empresa
+@app.route('/painel-empresa')
+@login_required
+def painel_empresa():
+    if 'empresa_id' not in session:
+        flash('⚠️ Acesso restrito para empresas.', 'warning')
+        return redirect(url_for('login'))
+    
+    try:
+        conn = get_db_connection()
+        if not conn:
+            flash('Erro ao conectar ao banco de dados.', 'error')
+            return redirect(url_for('inicio'))
+        
+        cursor = conn.cursor(dictionary=True)
+        
+        # Buscar dados da empresa
+        cursor.execute("SELECT * FROM empresas WHERE id_empresa = %s", (session['empresa_id'],))
+        empresa = cursor.fetchone()
+        
+        if not empresa:
+            flash('Erro ao carregar dados da empresa.', 'error')
+            return redirect(url_for('inicio'))
+        
+        # Buscar estatísticas
+        cursor.execute("""
+            SELECT COUNT(*) as total_vendas, COALESCE(SUM(total), 0) as receita_total
+            FROM pedidos WHERE id_cliente IN (
+                SELECT id_cliente FROM clientes WHERE email = %s
+            )
+        """, (empresa['email'],))
+        stats = cursor.fetchone()
+        
+        # Buscar avaliações da empresa
+        cursor.execute("""
+            SELECT ae.*, COALESCE(c.nome, e.nome_fantasia, e.razao_social) as avaliador_nome
+            FROM avaliacoes_empresas ae
+            LEFT JOIN clientes c ON ae.id_cliente = c.id_cliente
+            LEFT JOIN empresas e ON ae.id_empresa_avaliadora = e.id_empresa
+            WHERE ae.id_empresa_avaliada = %s AND ae.aprovado = TRUE
+            ORDER BY ae.data_avaliacao DESC
+            LIMIT 10
+        """, (session['empresa_id'],))
+        avaliacoes = cursor.fetchall()
+        
+        # Calcular média de avaliações
+        cursor.execute("""
+            SELECT AVG(nota) as media_notas, COUNT(*) as total_avaliacoes
+            FROM avaliacoes_empresas
+            WHERE id_empresa_avaliada = %s AND aprovado = TRUE
+        """, (session['empresa_id'],))
+        media_avaliacoes = cursor.fetchone()
+        
+        return render_template('painel_empresa.html', 
+                             empresa=empresa,
+                             stats=stats,
+                             avaliacoes=avaliacoes,
+                             media_avaliacoes=media_avaliacoes)
+    
+    except mysql.connector.Error as err:
+        flash(f'Erro ao carregar painel: {err}', 'error')
+        return redirect(url_for('inicio'))
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+
+# NOVA ROTA: Avaliar Produto
+@app.route('/avaliar-produto/<int:id_produto>', methods=['POST'])
+@login_required
+def avaliar_produto(id_produto):
+    nota = request.form.get('nota', type=int)
+    titulo = request.form.get('titulo', '').strip()
+    comentario = request.form.get('comentario', '').strip()
+    
+    if not nota or nota < 1 or nota > 5:
+        flash('❌ Nota inválida. Deve ser entre 1 e 5.', 'error')
+        return redirect(url_for('detalhes_produto', id_produto=id_produto))
+    
+    if not comentario:
+        flash('❌ Por favor, escreva um comentário.', 'error')
+        return redirect(url_for('detalhes_produto', id_produto=id_produto))
+    
+    try:
+        conn = get_db_connection()
+        if not conn:
+            flash('Erro ao conectar ao banco de dados.', 'error')
+            return redirect(url_for('detalhes_produto', id_produto=id_produto))
+        
+        cursor = conn.cursor()
+        
+        if 'usuario_id' in session:
+            # Verificar se já avaliou
+            cursor.execute("SELECT id_avaliacao FROM avaliacoes WHERE id_cliente = %s AND id_produto = %s", 
+                         (session['usuario_id'], id_produto))
+            if cursor.fetchone():
+                flash('⚠️ Você já avaliou este produto.', 'warning')
+                return redirect(url_for('detalhes_produto', id_produto=id_produto))
+            
+            cursor.execute("""
+                INSERT INTO avaliacoes (id_cliente, id_produto, nota, titulo, comentario, tipo_avaliador)
+                VALUES (%s, %s, %s, %s, %s, 'cliente')
+            """, (session['usuario_id'], id_produto, nota, titulo, comentario))
+        
+        elif 'empresa_id' in session:
+            cursor.execute("SELECT id_avaliacao FROM avaliacoes WHERE id_empresa = %s AND id_produto = %s", 
+                         (session['empresa_id'], id_produto))
+            if cursor.fetchone():
+                flash('⚠️ Sua empresa já avaliou este produto.', 'warning')
+                return redirect(url_for('detalhes_produto', id_produto=id_produto))
+            
+            cursor.execute("""
+                INSERT INTO avaliacoes (id_empresa, id_produto, nota, titulo, comentario, tipo_avaliador)
+                VALUES (%s, %s, %s, %s, %s, 'empresa')
+            """, (session['empresa_id'], id_produto, nota, titulo, comentario))
+        
+        conn.commit()
+        flash('✅ Avaliação enviada com sucesso! Será analisada pela nossa equipe.', 'success')
+    
+    except mysql.connector.Error as err:
+        flash(f'Erro ao enviar avaliação: {err}', 'error')
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+    
+    return redirect(url_for('detalhes_produto', id_produto=id_produto))
+
+# NOVA ROTA: Avaliar Empresa
+@app.route('/avaliar-empresa/<int:id_empresa>', methods=['POST'])
+@login_required
+def avaliar_empresa(id_empresa):
+    nota = request.form.get('nota', type=int)
+    titulo = request.form.get('titulo', '').strip()
+    comentario = request.form.get('comentario', '').strip()
+    
+    if not nota or nota < 1 or nota > 5:
+        flash('❌ Nota inválida. Deve ser entre 1 e 5.', 'error')
+        return redirect(request.referrer or url_for('inicio'))
+    
+    if not comentario:
+        flash('❌ Por favor, escreva um comentário.', 'error')
+        return redirect(request.referrer or url_for('inicio'))
+    
+    try:
+        conn = get_db_connection()
+        if not conn:
+            flash('Erro ao conectar ao banco de dados.', 'error')
+            return redirect(request.referrer or url_for('inicio'))
+        
+        cursor = conn.cursor()
+        
+        if 'usuario_id' in session:
+            cursor.execute("""
+                SELECT id_avaliacao FROM avaliacoes_empresas 
+                WHERE id_cliente = %s AND id_empresa_avaliada = %s
+            """, (session['usuario_id'], id_empresa))
+            
+            if cursor.fetchone():
+                flash('⚠️ Você já avaliou esta empresa.', 'warning')
+                return redirect(request.referrer or url_for('inicio'))
+            
+            cursor.execute("""
+                INSERT INTO avaliacoes_empresas (id_empresa_avaliada, id_cliente, nota, titulo, comentario)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (id_empresa, session['usuario_id'], nota, titulo, comentario))
+        
+        elif 'empresa_id' in session:
+            if session['empresa_id'] == id_empresa:
+                flash('❌ Você não pode avaliar sua própria empresa.', 'error')
+                return redirect(request.referrer or url_for('inicio'))
+            
+            cursor.execute("""
+                SELECT id_avaliacao FROM avaliacoes_empresas 
+                WHERE id_empresa_avaliadora = %s AND id_empresa_avaliada = %s
+            """, (session['empresa_id'], id_empresa))
+            
+            if cursor.fetchone():
+                flash('⚠️ Sua empresa já avaliou esta empresa.', 'warning')
+                return redirect(request.referrer or url_for('inicio'))
+            
+            cursor.execute("""
+                INSERT INTO avaliacoes_empresas (id_empresa_avaliada, id_empresa_avaliadora, nota, titulo, comentario)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (id_empresa, session['empresa_id'], nota, titulo, comentario))
+        
+        conn.commit()
+        flash('✅ Avaliação enviada com sucesso!', 'success')
+    
+    except mysql.connector.Error as err:
+        flash(f'Erro ao enviar avaliação: {err}', 'error')
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+    
+    return redirect(request.referrer or url_for('inicio'))
+
+# ROTA DE LOGOUT ATUALIZADA
 @app.route('/logout')
 @login_required
 def logout():
-    nome = session.get('usuario_nome', 'Usuário')
+    nome = session.get('usuario_nome') or session.get('empresa_nome', 'Usuário')
     session.clear()
     flash(f'👋 Até logo, {nome}! Volte sempre.', 'info')
     return redirect(url_for('inicio'))
 
+# CONTINUA COM AS ROTAS ORIGINAIS...
 @app.route('/recuperar-senha', methods=['GET', 'POST'])
 def recuperar_senha():
     if request.method == 'POST':
@@ -1189,6 +1552,66 @@ def admin_novo_produto():
                 conn.close()
     
     return render_template('admin/produto_form.html')
+
+
+@app.route('/admin/combo/novo', methods=['GET', 'POST'])
+@admin_required
+def admin_novo_combo():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == 'POST':
+        nome = request.form.get('nome', '').strip()
+        preco = request.form.get('preco', '0').replace(',', '.')
+        descricao = request.form.get('descricao', '').strip()
+        produtos_ids = request.form.getlist('produtos')  # lista de produtos marcados
+
+        if not nome or not produtos_ids:
+            flash('❌ Informe o nome e selecione pelo menos um produto.', 'error')
+            cursor.close()
+            conn.close()
+            return render_template('admin/combo_form.html', produtos=[])
+
+        try:
+            # Inserir combo
+            cursor.execute("""
+                INSERT INTO combo (nome, preco, descricao)
+                VALUES (%s, %s, %s)
+            """, (nome, float(preco), descricao))
+            combo_id = cursor.lastrowid
+
+            # Associar produtos ao combo
+            for pid in produtos_ids:
+                cursor.execute("""
+                    INSERT INTO combo_produto (id_combo, id_produto)
+                    VALUES (%s, %s)
+                """, (combo_id, pid))
+
+            conn.commit()
+
+            # Log de ação
+            if session.get('admin_id'):
+                cursor.execute("""
+                    INSERT INTO logs_sistema (id_funcionario, acao, modulo, descricao)
+                    VALUES (%s, 'CADASTRO', 'COMBOS', %s)
+                """, (session['admin_id'], f'Combo criado: {nome}'))
+                conn.commit()
+
+            flash('✅ Combo criado com sucesso!', 'success')
+            return redirect(url_for('admin_produtos'))
+
+        except mysql.connector.Error as err:
+            flash(f'Erro ao cadastrar combo: {err}', 'error')
+        finally:
+            cursor.close()
+            conn.close()
+
+    # Se for GET: carrega produtos disponíveis para selecionar
+    cursor.execute("SELECT id_produto, nome, preco FROM produto WHERE ativo = 1 ORDER BY nome")
+    produtos = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return render_template('admin/combo_form.html', produtos=produtos)
 
 @app.route('/admin/produto/editar/<int:id_produto>', methods=['GET', 'POST'])
 @admin_required
@@ -2520,12 +2943,13 @@ def internal_server_error(e):
 
 if __name__ == '__main__':
     print("=" * 60)
-    print("🚀 Loja GHCP - Sistema de E-commerce + Admin")
+    print("🚀 Loja GHCP - Sistema de E-commerce + Admin + Empresas")
     print("=" * 60)
     criar_admin_padrao()
     print("✅ Servidor Flask iniciado com sucesso!")
     print(f"🌐 Site: http://localhost:5000")
     print(f"🛡️ Admin: http://localhost:5000/admin/login")
+    print(f"🏢 Empresas: http://localhost:5000/cadastro-empresa")
     print("=" * 60)
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     app.run(debug=True, host='0.0.0.0', port=5000)

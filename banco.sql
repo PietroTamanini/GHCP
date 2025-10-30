@@ -479,6 +479,58 @@ CREATE TABLE pagamentos (
     data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Tabela de empresas/fornecedores
+CREATE TABLE empresas (
+    id_empresa INT PRIMARY KEY AUTO_INCREMENT,
+    razao_social VARCHAR(255) NOT NULL,
+    nome_fantasia VARCHAR(255),
+    cnpj VARCHAR(18) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    senha VARCHAR(255) NOT NULL,
+    telefone VARCHAR(20),
+    tipo_empresa ENUM('comprador', 'vendedor', 'ambos') DEFAULT 'comprador',
+    endereco TEXT,
+    data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ativo BOOLEAN DEFAULT TRUE,
+    INDEX idx_cnpj (cnpj),
+    INDEX idx_email (email)
+);
+
+-- Tabela de avaliações de produtos (já existe, mas vamos melhorar)
+ALTER TABLE avaliacoes ADD COLUMN tipo_avaliador ENUM('cliente', 'empresa') DEFAULT 'cliente';
+ALTER TABLE avaliacoes ADD COLUMN id_empresa INT NULL;
+ALTER TABLE avaliacoes ADD FOREIGN KEY (id_empresa) REFERENCES empresas(id_empresa) ON DELETE CASCADE;
+
+-- Tabela de avaliações de empresas
+CREATE TABLE avaliacoes_empresas (
+    id_avaliacao INT PRIMARY KEY AUTO_INCREMENT,
+    id_empresa_avaliada INT NOT NULL,
+    id_cliente INT NULL,
+    id_empresa_avaliadora INT NULL,
+    nota INT NOT NULL CHECK (nota BETWEEN 1 AND 5),
+    titulo VARCHAR(200),
+    comentario TEXT,
+    data_avaliacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    aprovado BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (id_empresa_avaliada) REFERENCES empresas(id_empresa) ON DELETE CASCADE,
+    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente) ON DELETE CASCADE,
+    FOREIGN KEY (id_empresa_avaliadora) REFERENCES empresas(id_empresa) ON DELETE CASCADE,
+    INDEX idx_empresa (id_empresa_avaliada),
+    INDEX idx_nota (nota)
+);
+
+-- Produtos de empresas vendedoras
+CREATE TABLE produtos_empresa (
+    id_produto_empresa INT PRIMARY KEY AUTO_INCREMENT,
+    id_empresa INT NOT NULL,
+    id_produto INT NOT NULL,
+    preco_empresa DECIMAL(10,2),
+    estoque_empresa INT DEFAULT 0,
+    ativo BOOLEAN DEFAULT TRUE,
+    data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_empresa) REFERENCES empresas(id_empresa) ON DELETE CASCADE,
+    FOREIGN KEY (id_produto) REFERENCES produto(id_produto) ON DELETE CASCADE
+);
 
 select * from pagamentos;
 
