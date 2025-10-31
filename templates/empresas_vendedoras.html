@@ -1,0 +1,883 @@
+{% extends "base.html" %}
+
+{% block conteudo %}
+<div class="empresas-container">
+    <div class="page-header">
+        <h1>🏪 Lojas e Vendedores</h1>
+        <p>Encontre as melhores lojas especializadas em tecnologia</p>
+    </div>
+
+    <div class="filtros-empresas">
+        <div class="filtros-grid">
+            <div class="filtro-group">
+                <label for="categoria">Categoria</label>
+                <select id="categoria">
+                    <option value="">Todas as categorias</option>
+                    <option value="hardware">Hardware</option>
+                    <option value="perifericos">Periféricos</option>
+                    <option value="componentes">Componentes</option>
+                </select>
+            </div>
+            
+            <div class="filtro-group">
+                <label for="avaliacao">Avaliação Mínima</label>
+                <select id="avaliacao">
+                    <option value="0">Todas as avaliações</option>
+                    <option value="4">⭐ 4+ estrelas</option>
+                    <option value="3">⭐ 3+ estrelas</option>
+                    <option value="2">⭐ 2+ estrelas</option>
+                </select>
+            </div>
+            
+            <div class="filtro-group">
+                <label for="produtos">Produtos Mínimos</label>
+                <select id="produtos">
+                    <option value="0">Qualquer quantidade</option>
+                    <option value="5">5+ produtos</option>
+                    <option value="10">10+ produtos</option>
+                    <option value="20">20+ produtos</option>
+                </select>
+            </div>
+            
+            <div class="filtro-group">
+                <label for="busca">Buscar Loja</label>
+                <input type="text" id="busca" placeholder="Digite o nome da loja...">
+            </div>
+            
+            <button class="btn-filtrar" onclick="filtrarEmpresas()">🔍 Filtrar</button>
+        </div>
+    </div>
+
+    <div class="empresas-grid" id="empresasLista">
+        {% for empresa in empresas %}
+        <div class="empresa-card" onclick="abrirModal({{ empresa.id }})">
+            <div class="empresa-header">
+                <div class="empresa-logo">{{ empresa.logo }}</div>
+                <div class="empresa-info">
+                    <h3>{{ empresa.nome }}</h3>
+                    <span class="empresa-categoria">{{ empresa.categoria }}</span>
+                </div>
+            </div>
+            
+            <div class="empresa-stats">
+                <div class="stat-item">
+                    <span class="stat-value">{{ "%.1f"|format(empresa.avaliacao) }}</span>
+                    <span class="stat-label">Avaliação</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">{{ empresa.total_produtos }}</span>
+                    <span class="stat-label">Produtos</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">{{ empresa.total_vendas }}</span>
+                    <span class="stat-label">Vendas</span>
+                </div>
+            </div>
+            
+            <div class="empresa-avaliacao">
+                <div class="rating-stars">
+                    {% for i in range(5) %}
+                        {% if i < empresa.avaliacao|int %}
+                            ⭐
+                        {% else %}
+                            ⭐
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <span class="rating-value">{{ "%.1f"|format(empresa.avaliacao) }}</span>
+                <span class="rating-count">({{ empresa.total_avaliacoes }} avaliações)</span>
+            </div>
+            
+            <p class="empresa-descricao">{{ empresa.descricao }}</p>
+            
+            <div class="empresa-features">
+                {% for feature in empresa.features[:3] %}
+                <span class="feature-badge">{{ feature }}</span>
+                {% endfor %}
+                {% if empresa.features|length > 3 %}
+                <span class="feature-badge">+{{ empresa.features|length - 3 }}</span>
+                {% endif %}
+            </div>
+            
+            <button class="btn-visitar-loja" onclick="event.stopPropagation(); visitarLoja({{ empresa.id }})">
+                🛍️ Visitar Loja
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if not empresas %}
+    <div class="empty-state">
+        <i>🏪</i>
+        <h3>Nenhuma loja encontrada</h3>
+        <p>Ainda não há lojas cadastradas no sistema.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal de detalhes da empresa -->
+<div class="empresa-modal" id="empresaModal">
+    <div class="modal-content">
+        <button class="modal-close" onclick="fecharModal()">×</button>
+        
+        <div class="modal-header">
+            <div class="modal-empresa-info">
+                <div class="modal-logo" id="modalLogo">L</div>
+                <div class="modal-details">
+                    <h2 id="modalNome">Nome da Loja</h2>
+                    <p id="modalCategoria" class="empresa-categoria">Categoria</p>
+                    <div class="modal-stats">
+                        <div class="modal-stat">
+                            <span class="modal-stat-value" id="modalAvaliacao">0.0</span>
+                            <span class="modal-stat-label">Avaliação</span>
+                        </div>
+                        <div class="modal-stat">
+                            <span class="modal-stat-value" id="modalVendas">0</span>
+                            <span class="modal-stat-label">Vendas</span>
+                        </div>
+                        <div class="modal-stat">
+                            <span class="modal-stat-value" id="modalProdutos">0</span>
+                            <span class="modal-stat-label">Produtos</span>
+                        </div>
+                        <div class="modal-stat">
+                            <span class="modal-stat-value" id="modalTempo">0 anos</span>
+                            <span class="modal-stat-label">No mercado</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-body">
+            <div class="modal-section">
+                <h3>📝 Sobre a Loja</h3>
+                <p id="modalDescricao" class="empresa-descricao">Carregando...</p>
+                
+                <div class="empresa-features" id="modalFeatures">
+                    <!-- Features serão preenchidas via JS -->
+                </div>
+            </div>
+
+            <div class="modal-section">
+                <h3>⭐ Avaliações dos Clientes</h3>
+                <div class="avaliacoes-grid" id="modalAvaliacoes">
+                    <div style="text-align: center; padding: 40px; color: var(--text-light);">
+                        <i style="font-size: 3rem; display: block; margin-bottom: 15px;">⏳</i>
+                        <p>Carregando avaliações...</p>
+                    </div>
+                </div>
+                
+                <!-- Formulário de avaliação (apenas para clientes que compraram) -->
+                <div id="formAvaliacaoContainer" style="display: none;">
+                    <h4>Deixe sua avaliação</h4>
+                    <form id="formAvaliacao" onsubmit="enviarAvaliacao(event)">
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Sua nota:</label>
+                            <div class="rating-input">
+                                <input type="radio" id="star5" name="nota" value="5" required>
+                                <label for="star5">⭐</label>
+                                <input type="radio" id="star4" name="nota" value="4">
+                                <label for="star4">⭐</label>
+                                <input type="radio" id="star3" name="nota" value="3">
+                                <label for="star3">⭐</label>
+                                <input type="radio" id="star2" name="nota" value="2">
+                                <label for="star2">⭐</label>
+                                <input type="radio" id="star1" name="nota" value="1">
+                                <label for="star1">⭐</label>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Comentário:</label>
+                            <textarea name="comentario" rows="4" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px; background: var(--secondary); color: var(--text);" placeholder="Conte sua experiência com esta loja..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn-filtrar">📨 Enviar Avaliação</button>
+                    </form>
+                </div>
+                
+                <div id="avaliacaoInfo" style="display: none; background: var(--glass); padding: 20px; border-radius: 12px; margin-top: 20px; text-align: center;">
+                    <p>💡 <strong>Você precisa ter comprado desta loja para poder avaliá-la.</strong></p>
+                    <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 8px;">Faça uma compra e volte aqui para compartilhar sua experiência!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Todos os estilos CSS anteriores permanecem iguais */
+    .empresas-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px 40px;
+    }
+
+    .page-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .page-header h1 {
+        color: var(--text);
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        font-weight: 800;
+    }
+
+    .page-header p {
+        color: var(--text-light);
+        font-size: 1.1rem;
+    }
+
+    .filtros-empresas {
+        background: var(--glass);
+        padding: 24px;
+        border-radius: var(--radius);
+        margin-bottom: 30px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border);
+        backdrop-filter: blur(20px);
+    }
+
+    .filtros-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        align-items: end;
+    }
+
+    .filtro-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: var(--text);
+        font-size: 0.9rem;
+    }
+
+    .filtro-group select,
+    .filtro-group input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        background: var(--secondary);
+        color: var(--text);
+        font-size: 14px;
+        transition: var(--transition);
+    }
+
+    .filtro-group select:focus,
+    .filtro-group input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+        outline: none;
+    }
+
+    .btn-filtrar {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: var(--transition);
+        height: fit-content;
+    }
+
+    .btn-filtrar:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+    }
+
+    .empresas-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: 30px;
+        margin-bottom: 40px;
+    }
+
+    .empresa-card {
+        background: var(--glass);
+        border-radius: var(--radius);
+        padding: 25px;
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition);
+        border: 1px solid var(--border);
+        cursor: pointer;
+        backdrop-filter: blur(20px);
+    }
+
+    .empresa-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary-light);
+    }
+
+    .empresa-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .empresa-logo {
+        width: 70px;
+        height: 70px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: white;
+        font-size: 1.8rem;
+        box-shadow: var(--shadow);
+    }
+
+    .empresa-info h3 {
+        color: var(--text);
+        margin-bottom: 5px;
+        font-size: 1.3rem;
+        font-weight: 700;
+    }
+
+    .empresa-categoria {
+        color: var(--text-light);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .empresa-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+        padding: 20px;
+        background: var(--secondary);
+        border-radius: 12px;
+        border: 1px solid var(--border);
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: var(--primary);
+        display: block;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        color: var(--text-light);
+        font-weight: 500;
+    }
+
+    .empresa-avaliacao {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .rating-stars {
+        color: var(--warning);
+        font-size: 1.2rem;
+    }
+
+    .rating-value {
+        font-weight: 700;
+        color: var(--text);
+        font-size: 1.1rem;
+    }
+
+    .rating-count {
+        color: var(--text-light);
+        font-size: 0.9rem;
+    }
+
+    .empresa-descricao {
+        color: var(--text);
+        line-height: 1.6;
+        margin-bottom: 20px;
+        font-size: 0.95rem;
+    }
+
+    .empresa-features {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+
+    .feature-badge {
+        background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .btn-visitar-loja {
+        width: 100%;
+        background: linear-gradient(135deg, var(--success) 0%, #00b36e 100%);
+        color: white;
+        border: none;
+        padding: 14px;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        font-size: 1rem;
+    }
+
+    .btn-visitar-loja:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+    }
+
+    /* Modal de detalhes da empresa */
+    .empresa-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 2000;
+        overflow-y: auto;
+        backdrop-filter: blur(10px);
+    }
+
+    .modal-content {
+        background: var(--secondary);
+        margin: 50px auto;
+        max-width: 900px;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-lg);
+        position: relative;
+        border: 1px solid var(--border);
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: var(--danger);
+        color: white;
+        border: none;
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 1.5rem;
+        z-index: 10;
+        transition: var(--transition);
+    }
+
+    .modal-close:hover {
+        transform: rotate(90deg);
+        background: #ff0033;
+    }
+
+    .modal-header {
+        background: var(--glass);
+        padding: 40px;
+        border-radius: var(--radius) var(--radius) 0 0;
+        border-bottom: 1px solid var(--border);
+        backdrop-filter: blur(20px);
+    }
+
+    .modal-empresa-info {
+        display: flex;
+        align-items: center;
+        gap: 25px;
+    }
+
+    .modal-logo {
+        width: 100px;
+        height: 100px;
+        border-radius: 20px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: white;
+        font-size: 2.5rem;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .modal-details h2 {
+        color: var(--text);
+        margin-bottom: 8px;
+        font-size: 2.2rem;
+        font-weight: 800;
+    }
+
+    .modal-stats {
+        display: flex;
+        gap: 40px;
+        margin-top: 20px;
+    }
+
+    .modal-stat {
+        text-align: center;
+    }
+
+    .modal-stat-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--primary);
+        display: block;
+    }
+
+    .modal-stat-label {
+        font-size: 0.9rem;
+        color: var(--text-light);
+        font-weight: 500;
+    }
+
+    .modal-body {
+        padding: 40px;
+    }
+
+    .modal-section {
+        margin-bottom: 40px;
+    }
+
+    .modal-section h3 {
+        color: var(--text);
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+        font-weight: 700;
+        border-bottom: 3px solid var(--primary);
+        padding-bottom: 10px;
+    }
+
+    .avaliacoes-grid {
+        display: grid;
+        gap: 20px;
+    }
+
+    .avaliacao-item {
+        background: var(--glass);
+        padding: 25px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        backdrop-filter: blur(20px);
+    }
+
+    .avaliacao-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 15px;
+    }
+
+    .avaliador-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .avaliador-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+
+    .avaliacao-data {
+        color: var(--text-light);
+        font-size: 0.9rem;
+    }
+
+    .avaliacao-comentario {
+        color: var(--text);
+        line-height: 1.6;
+        font-size: 1rem;
+    }
+
+    .rating-input {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        gap: 5px;
+    }
+
+    .rating-input input {
+        display: none;
+    }
+
+    .rating-input label {
+        cursor: pointer;
+        font-size: 2rem;
+        transition: var(--transition);
+    }
+
+    .rating-input input:checked ~ label,
+    .rating-input label:hover,
+    .rating-input label:hover ~ label {
+        color: var(--warning);
+    }
+
+    @media (max-width: 968px) {
+        .empresas-container {
+            padding: 20px;
+        }
+        
+        .empresas-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .filtros-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .modal-content {
+            margin: 20px;
+            width: calc(100% - 40px);
+        }
+        
+        .modal-empresa-info {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .modal-stats {
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .empresa-stats {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        
+        .modal-stats {
+            gap: 15px;
+        }
+        
+        .modal-stat-value {
+            font-size: 1.4rem;
+        }
+    }
+</style>
+
+<script>
+    // Dados das empresas do backend
+    const empresasData = {{ empresas | tojson | safe }};
+    const usuarioComprouEmLojas = {{ usuario_comprou_em_lojas | tojson | safe }};
+    const usuarioLogado = {{ 'true' if session.get('usuario_id') else 'false' }};
+
+    let empresaSelecionada = null;
+
+    function abrirModal(empresaId) {
+        const empresa = empresasData.find(e => e.id === empresaId);
+        if (!empresa) return;
+        
+        empresaSelecionada = empresa;
+        
+        // Preencher dados do modal
+        document.getElementById('modalLogo').textContent = empresa.logo;
+        document.getElementById('modalNome').textContent = empresa.nome;
+        document.getElementById('modalCategoria').textContent = empresa.categoria;
+        document.getElementById('modalAvaliacao').textContent = empresa.avaliacao;
+        document.getElementById('modalVendas').textContent = empresa.total_vendas;
+        document.getElementById('modalProdutos').textContent = empresa.total_produtos;
+        document.getElementById('modalTempo').textContent = empresa.tempo_mercado;
+        document.getElementById('modalDescricao').textContent = empresa.descricao;
+        
+        // Preencher features
+        const featuresContainer = document.getElementById('modalFeatures');
+        featuresContainer.innerHTML = empresa.features.map(feature => 
+            `<span class="feature-badge">${feature}</span>`
+        ).join('');
+        
+        // Carregar avaliações via AJAX
+        carregarAvaliacoes(empresaId);
+        
+        // Configurar formulário de avaliação
+        configurarFormularioAvaliacao(empresaId);
+        
+        // Mostrar modal
+        document.getElementById('empresaModal').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function carregarAvaliacoes(empresaId) {
+        // Fazer requisição para buscar avaliações da empresa
+        fetch(`/api/avaliacoes-empresa/${empresaId}`)
+            .then(response => response.json())
+            .then(avaliacoes => {
+                const avaliacoesContainer = document.getElementById('modalAvaliacoes');
+                
+                if (avaliacoes.length === 0) {
+                    avaliacoesContainer.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: var(--text-light);">
+                            <i style="font-size: 3rem; display: block; margin-bottom: 15px;">⭐</i>
+                            <p>Esta loja ainda não possui avaliações.</p>
+                            <p style="font-size: 0.9rem;">Seja o primeiro a avaliar!</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                avaliacoesContainer.innerHTML = avaliacoes.map(avaliacao => `
+                    <div class="avaliacao-item">
+                        <div class="avaliacao-header">
+                            <div class="avaliador-info">
+                                <div class="avaliador-avatar">${avaliacao.avaliador_nome ? avaliacao.avaliador_nome.charAt(0).toUpperCase() : 'U'}</div>
+                                <div>
+                                    <strong>${avaliacao.avaliador_nome || 'Usuário'}</strong>
+                                    <div class="rating-stars">${'⭐'.repeat(avaliacao.nota)}</div>
+                                </div>
+                            </div>
+                            <span class="avaliacao-data">${new Date(avaliacao.data_avaliacao).toLocaleDateString('pt-BR')}</span>
+                        </div>
+                        <p class="avaliacao-comentario">${avaliacao.comentario}</p>
+                    </div>
+                `).join('');
+            })
+            .catch(error => {
+                console.error('Erro ao carregar avaliações:', error);
+                document.getElementById('modalAvaliacoes').innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: var(--text-light);">
+                        Erro ao carregar avaliações.
+                    </div>
+                `;
+            });
+    }
+
+    function configurarFormularioAvaliacao(empresaId) {
+        const formContainer = document.getElementById('formAvaliacaoContainer');
+        const infoContainer = document.getElementById('avaliacaoInfo');
+        
+        // Resetar visibilidade
+        formContainer.style.display = 'none';
+        infoContainer.style.display = 'none';
+        
+        if (!usuarioLogado) {
+            infoContainer.innerHTML = `
+                <p>🔐 <strong>Faça login para avaliar esta loja.</strong></p>
+                <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 8px;">Entre na sua conta para compartilhar sua experiência!</p>
+            `;
+            infoContainer.style.display = 'block';
+            return;
+        }
+        
+        const podeAvaliar = usuarioComprouEmLojas.includes(empresaId);
+        
+        if (podeAvaliar) {
+            formContainer.style.display = 'block';
+            // Resetar formulário
+            document.getElementById('formAvaliacao').reset();
+        } else {
+            infoContainer.innerHTML = `
+                <p>💡 <strong>Você precisa ter comprado desta loja para poder avaliá-la.</strong></p>
+                <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 8px;">Faça uma compra e volte aqui para compartilhar sua experiência!</p>
+            `;
+            infoContainer.style.display = 'block';
+        }
+    }
+
+    function enviarAvaliacao(event) {
+        event.preventDefault();
+        
+        if (!empresaSelecionada) return;
+        
+        const formData = new FormData(event.target);
+        const nota = formData.get('nota');
+        const comentario = formData.get('comentario');
+        
+        fetch(`/avaliar-empresa-modal/${empresaSelecionada.id}`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('✅ Avaliação enviada com sucesso!');
+                document.getElementById('formAvaliacao').reset();
+                carregarAvaliacoes(empresaSelecionada.id);
+                configurarFormularioAvaliacao(empresaSelecionada.id);
+            } else {
+                alert('❌ ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao enviar avaliação:', error);
+            alert('❌ Erro ao enviar avaliação. Tente novamente.');
+        });
+    }
+
+    function fecharModal() {
+        document.getElementById('empresaModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+        empresaSelecionada = null;
+    }
+
+    function visitarLoja(empresaId) {
+        window.location.href = `/empresa/${empresaId}`;
+    }
+
+    function filtrarEmpresas() {
+        const categoria = document.getElementById('categoria').value.toLowerCase();
+        const avaliacao = parseFloat(document.getElementById('avaliacao').value);
+        const produtos = parseInt(document.getElementById('produtos').value);
+        const busca = document.getElementById('busca').value.toLowerCase();
+        
+        const empresasFiltradas = empresasData.filter(empresa => {
+            const matchCategoria = !categoria || empresa.categoria.toLowerCase().includes(categoria);
+            const matchAvaliacao = empresa.avaliacao >= avaliacao;
+            const matchProdutos = empresa.total_produtos >= produtos;
+            const matchBusca = !busca || empresa.nome.toLowerCase().includes(busca) || 
+                              empresa.descricao.toLowerCase().includes(busca);
+            
+            return matchCategoria && matchAvaliacao && matchProdutos && matchBusca;
+        });
+        
+        // Atualizar a lista (em um sistema real, faria uma nova requisição)
+        const container = document.getElementById('empresasLista');
+        const emptyState = document.querySelector('.empty-state');
+        
+        if (empresasFiltradas.length === 0) {
+            container.innerHTML = '';
+            if (emptyState) emptyState.style.display = 'block';
+        } else {
+            if (emptyState) emptyState.style.display = 'none';
+            // Recarregar a lista com os dados filtrados
+            location.reload(); // Em produção, faria uma requisição AJAX
+        }
+    }
+
+    // Fechar modal ao clicar fora
+    document.getElementById('empresaModal').addEventListener('click', (e) => {
+        if (e.target.id === 'empresaModal') {
+            fecharModal();
+        }
+    });
+
+    // Fechar modal com ESC
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            fecharModal();
+        }
+    });
+</script>
+{% endblock %}
+[file content end]

@@ -1,0 +1,767 @@
+{% extends "base.html" %}
+
+{% block conteudo %}
+<style>
+    /* ==== HEADER MELHORADO ==== */
+    .dashboard-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        padding: 60px 48px;
+        border-radius: 24px;
+        color: white;
+        margin-bottom: 48px;
+        box-shadow: var(--shadow-lg);
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .dashboard-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -30%;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+
+    .dashboard-title {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 30px;
+    }
+
+    .dashboard-info h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 12px;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .dashboard-info p {
+        opacity: 0.9;
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+    }
+
+    .dashboard-badge {
+        display: inline-block;
+        background: rgba(255,255,255,0.2);
+        padding: 8px 16px;
+        border-radius: 12px;
+        font-weight: 600;
+        margin-top: 8px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    .dashboard-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .dashboard-actions a {
+        background: rgba(255,255,255,0.25);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: var(--transition);
+        border: 1px solid rgba(255,255,255,0.3);
+        backdrop-filter: blur(10px);
+    }
+
+    .dashboard-actions a:hover {
+        background: rgba(255,255,255,0.4);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    /* ==== CARDS MODERNOS ==== */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+        margin-bottom: 48px;
+    }
+
+    .stat-card {
+        background: var(--glass);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 32px;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+    }
+
+    .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .stat-card h3 {
+        font-size: 14px;
+        color: var(--text-light);
+        text-transform: uppercase;
+        margin-bottom: 12px;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .stat-card .value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 8px;
+        color: var(--text);
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .stat-card .desc {
+        color: var(--text-light);
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    /* ==== PANELS MELHORADOS ==== */
+    .panel {
+        background: var(--glass);
+        border-radius: 20px;
+        padding: 32px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+        margin-bottom: 40px;
+        backdrop-filter: blur(20px);
+        transition: var(--transition);
+    }
+
+    .panel:hover {
+        box-shadow: var(--shadow-lg);
+    }
+
+    .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid var(--border);
+        padding-bottom: 20px;
+        margin-bottom: 24px;
+    }
+
+    .panel-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--text);
+    }
+
+    .panel-title::before {
+        font-size: 1.8rem;
+    }
+
+    /* ==== TABELA MODERNA ==== */
+    .table-container {
+        overflow-x: auto;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--glass);
+    }
+
+    th, td {
+        padding: 16px 20px;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+    }
+
+    th {
+        background: var(--secondary);
+        color: var(--text);
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 12px;
+        letter-spacing: 0.5px;
+    }
+
+    tr:hover {
+        background: rgba(var(--primary-rgb), 0.03);
+    }
+
+    /* ==== BOTÕES MELHORADOS ==== */
+    .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        box-shadow: var(--shadow);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, var(--success) 0%, #00b36e 100%);
+        color: white;
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, var(--danger) 0%, #e62958 100%);
+        color: white;
+    }
+
+    .btn-sm {
+        padding: 8px 16px;
+        font-size: 12px;
+    }
+
+    /* ==== MODAL MODERNO ==== */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(8px);
+        z-index: 10000;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .modal-content {
+        background: var(--glass);
+        padding: 40px;
+        border-radius: 24px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: var(--shadow-lg);
+        position: relative;
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border);
+        animation: modalSlideIn 0.3s ease;
+    }
+
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-30px) scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 24px;
+        cursor: pointer;
+        background: none;
+        border: none;
+        color: var(--text);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+    }
+
+    .close-btn:hover {
+        background: var(--secondary);
+        transform: rotate(90deg);
+    }
+
+    /* ==== FORMULÁRIOS ==== */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    label {
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 8px;
+        display: block;
+        font-size: 14px;
+    }
+
+    input, select, textarea {
+        width: 100%;
+        padding: 14px 16px;
+        border-radius: 12px;
+        border: 2px solid var(--border);
+        background: var(--secondary);
+        color: var(--text);
+        font-size: 14px;
+        transition: var(--transition);
+    }
+
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+    }
+
+    /* ==== ESTADO VAZIO ==== */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-light);
+    }
+
+    .empty-state-icon {
+        font-size: 80px;
+        opacity: 0.3;
+        margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+        font-size: 1.5rem;
+        margin-bottom: 12px;
+        color: var(--text);
+    }
+
+    .empty-state p {
+        font-size: 1rem;
+        margin-bottom: 24px;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* ==== CARDS DE PRODUTO ==== */
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 24px;
+        margin-top: 24px;
+    }
+
+    .product-card {
+        background: var(--glass);
+        border-radius: 16px;
+        padding: 24px;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+        backdrop-filter: blur(10px);
+    }
+
+    .product-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .product-header {
+        display: flex;
+        justify-content: between;
+        align-items: start;
+        margin-bottom: 16px;
+    }
+
+    .product-name {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--text);
+        margin-bottom: 4px;
+    }
+
+    .product-meta {
+        color: var(--text-light);
+        font-size: 0.9rem;
+    }
+
+    .product-price {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--primary);
+        margin: 12px 0;
+    }
+
+    .product-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 16px;
+    }
+
+    /* ==== TEMA ESCURO ==== */
+    .dark-theme .stat-card,
+    .dark-theme .panel,
+    .dark-theme .modal-content,
+    .dark-theme .product-card {
+        background: var(--dark);
+        border-color: rgba(255,255,255,0.1);
+    }
+
+    .dark-theme input,
+    .dark-theme select,
+    .dark-theme textarea {
+        background: rgba(255,255,255,0.05);
+        border-color: rgba(255,255,255,0.1);
+        color: var(--text);
+    }
+
+    /* ==== RESPONSIVO ==== */
+    @media (max-width: 768px) {
+        .dashboard-header {
+            padding: 40px 24px;
+            text-align: center;
+        }
+        
+        .dashboard-title {
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .panel {
+            padding: 24px;
+        }
+        
+        .panel-header {
+            flex-direction: column;
+            gap: 16px;
+            align-items: stretch;
+        }
+        
+        .product-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<!-- Header -->
+<div class="dashboard-header">
+    <div class="dashboard-title">
+        <div class="dashboard-info">
+            <h1>🏢 {{ empresa.nome_fantasia or empresa.razao_social }}</h1>
+            <p>📧 {{ empresa.email }} • 📞 {{ empresa.telefone or 'Não informado' }}</p>
+            <div class="dashboard-badge">
+                {% if empresa.tipo_empresa == 'comprador' %} 🛒 Empresa Compradora
+                {% elif empresa.tipo_empresa == 'vendedor' %} 🏪 Empresa Vendedora
+                {% else %} 🔄 Compradora e Vendedora {% endif %}
+            </div>
+        </div>
+        <div class="dashboard-actions">
+            <a href="{{ url_for('listar_empresas') }}" target="_blank">👁️ Ver Perfil Público</a>
+            <a href="{{ url_for('logout') }}">🚪 Sair</a>
+        </div>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <h3>📊 Vendas Totais</h3>
+        <div class="value">{{ stats.total_vendas or 0 }}</div>
+        <div class="desc">Receita: R$ {{ "%.2f"|format(stats.receita_total or 0) }}</div>
+    </div>
+    <div class="stat-card">
+        <h3>⭐ Avaliação Média</h3>
+        <div class="value">
+            {% if media_avaliacoes.media_notas %}
+                {{ "%.1f"|format(media_avaliacoes.media_notas) }}/5.0
+            {% else %}-{% endif %}
+        </div>
+        <div class="desc">{{ media_avaliacoes.total_avaliacoes or 0 }} avaliações</div>
+    </div>
+    <div class="stat-card">
+        <h3>📦 Produtos na Loja</h3>
+        <div class="value">{{ produtos_empresa|length }}</div>
+        <div class="desc">{% if produtos_empresa|length == 1 %}produto ativo{% else %}produtos ativos{% endif %}</div>
+    </div>
+    <div class="stat-card">
+        <h3>🏢 CNPJ</h3>
+        <div class="value" style="font-size: 1.2rem;">{{ empresa.cnpj }}</div>
+        <div class="desc">Desde {{ empresa.data_cadastro.strftime('%d/%m/%Y') if empresa.data_cadastro }}</div>
+    </div>
+</div>
+
+<!-- Painel Produtos -->
+<div class="panel">
+    <div class="panel-header">
+        <h2 class="panel-title">📦 Produtos da Minha Loja</h2>
+        <button onclick="abrirModal('modalNovoProduto')" class="btn btn-primary">
+            ➕ Adicionar Produto
+        </button>
+    </div>
+
+    {% if produtos_empresa %}
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Produto</th>
+                    <th>Preço</th>
+                    <th>Estoque</th>
+                    <th>Status</th>
+                    <th style="text-align: center;">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for prod in produtos_empresa %}
+                <tr>
+                    <td>
+                        <div style="font-weight: 600;">{{ prod.nome }}</div>
+                        <div style="font-size: 0.9rem; color: var(--text-light);">{{ prod.marca }} • {{ prod.categoria }}</div>
+                    </td>
+                    <td style="font-weight: 700; color: var(--primary);">
+                        R$ {{ "%.2f"|format(prod.preco_empresa) }}
+                    </td>
+                    <td>
+                        <span style="font-weight: 600;">{{ prod.estoque_empresa }}</span> un.
+                    </td>
+                    <td>
+                        {% if prod.ativo %}
+                            <span style="color: var(--success); font-weight: 600;">● Ativo</span>
+                        {% else %}
+                            <span style="color: var(--danger); font-weight: 600;">● Inativo</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: center;">
+                        <div style="display: flex; gap: 8px; justify-content: center;">
+                            <button class="btn btn-primary btn-sm" 
+                                    onclick="editarProduto({{ prod.id_produto_empresa }}, '{{ prod.nome }}', {{ prod.preco_empresa }}, {{ prod.estoque_empresa }}, {{ 'true' if prod.ativo else 'false' }})">
+                                ✏️ Editar
+                            </button>
+                            <form method="POST" action="{{ url_for('remover_produto_empresa', id_produto_empresa=prod.id_produto_empresa) }}" 
+                                  style="display: inline;" onsubmit="return confirm('Tem certeza que deseja remover este produto da sua loja?')">
+                                <button type="submit" class="btn btn-danger btn-sm">🗑️ Remover</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">📦</div>
+            <h3>Nenhum produto cadastrado</h3>
+            <p>Adicione produtos da plataforma à sua loja para começar a vender.</p>
+            <button class="btn btn-primary" onclick="abrirModal('modalNovoProduto')">
+                ➕ Adicionar Primeiro Produto
+            </button>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Modal Novo Produto -->
+<div id="modalNovoProduto" class="modal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="fecharModal('modalNovoProduto')">✕</button>
+        <h2 style="margin-bottom: 24px; color: var(--text);">➕ Adicionar Produto à Loja</h2>
+        
+        <form method="POST" action="{{ url_for('adicionar_produto_empresa') }}">
+            <div class="form-group">
+                <label for="id_produto">Selecione o Produto *</label>
+                <select name="id_produto" id="id_produto" required>
+                    <option value="">-- Selecione um produto --</option>
+                    {% for produto in produtos_disponiveis %}
+                        <option value="{{ produto.id_produto }}">
+                            {{ produto.nome }} - {{ produto.marca }} - R$ {{ "%.2f"|format(produto.preco) }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="preco_empresa">Seu Preço de Venda (R$) *</label>
+                <input type="number" name="preco_empresa" step="0.01" min="0.01" required 
+                       placeholder="Ex: 299.90">
+            </div>
+
+            <div class="form-group">
+                <label for="estoque_empresa">Estoque Disponível *</label>
+                <input type="number" name="estoque_empresa" min="0" required 
+                       placeholder="Quantidade em estoque">
+            </div>
+
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" name="ativo" checked style="width: auto;">
+                    <span>Produto ativo para venda</span>
+                </label>
+            </div>
+
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">
+                    💾 Salvar Produto
+                </button>
+                <button type="button" onclick="fecharModal('modalNovoProduto')" 
+                        class="btn" style="flex: 1; background: var(--secondary); color: var(--text);">
+                    ❌ Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Editar Produto -->
+<div id="modalEditarProduto" class="modal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="fecharModal('modalEditarProduto')">✕</button>
+        <h2 style="margin-bottom: 24px; color: var(--text);">✏️ Editar Produto</h2>
+        
+        <form id="formEditarProduto">
+            <input type="hidden" id="edit_id_produto_empresa">
+            
+            <div class="form-group">
+                <label for="edit_nome">Produto</label>
+                <input type="text" id="edit_nome" readonly style="background: var(--secondary);">
+            </div>
+
+            <div class="form-group">
+                <label for="edit_preco_empresa">Preço de Venda (R$) *</label>
+                <input type="number" id="edit_preco_empresa" step="0.01" min="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label for="edit_estoque_empresa">Estoque Disponível *</label>
+                <input type="number" id="edit_estoque_empresa" min="0" required>
+            </div>
+
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" id="edit_ativo" style="width: auto;">
+                    <span>Produto ativo para venda</span>
+                </label>
+            </div>
+
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">
+                    💾 Atualizar Produto
+                </button>
+                <button type="button" onclick="fecharModal('modalEditarProduto')" 
+                        class="btn" style="flex: 1; background: var(--secondary); color: var(--text);">
+                    ❌ Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Funções do Modal
+function abrirModal(id) { 
+    document.getElementById(id).style.display = 'flex'; 
+}
+
+function fecharModal(id) { 
+    document.getElementById(id).style.display = 'none'; 
+}
+
+// Fechar modal ao clicar fora
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.style.display = 'none';
+    }
+}
+
+// Editar produto
+function editarProduto(id, nome, preco, estoque, ativo) {
+    document.getElementById('edit_id_produto_empresa').value = id;
+    document.getElementById('edit_nome').value = nome;
+    document.getElementById('edit_preco_empresa').value = preco;
+    document.getElementById('edit_estoque_empresa').value = estoque;
+    document.getElementById('edit_ativo').checked = ativo === 'true';
+    
+    abrirModal('modalEditarProduto');
+}
+
+// Submit do formulário de edição
+document.getElementById('formEditarProduto').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const id = document.getElementById('edit_id_produto_empresa').value;
+    const preco = document.getElementById('edit_preco_empresa').value;
+    const estoque = document.getElementById('edit_estoque_empresa').value;
+    const ativo = document.getElementById('edit_ativo').checked;
+    
+    fetch(`/empresa/atualizar-produto/${id}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            preco_empresa: parseFloat(preco),
+            estoque_empresa: parseInt(estoque),
+            ativo: ativo
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ ' + data.message);
+            location.reload();
+        } else {
+            alert('❌ ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('❌ Erro ao atualizar produto');
+    });
+});
+
+// Auto-fechar mensagens flash
+setTimeout(() => {
+    document.querySelectorAll('.flashes li').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateX(30px)';
+        setTimeout(() => el.remove(), 300);
+    });
+}, 5000);
+</script>
+{% endblock %}

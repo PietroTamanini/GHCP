@@ -61,7 +61,10 @@
                     <input type="checkbox" name="lembrar">
                     <span>Lembrar de mim</span>
                 </label>
-                <a href="{{ url_for('recuperar_senha') }}" class="link-secundario">Esqueceu a senha?</a>
+                <div style="display: flex; gap: 15px;">
+                    <a href="{{ url_for('recuperar_senha') }}" class="link-secundario">Esqueceu a senha?</a>
+                    <a href="{{ url_for('login_empresa') }}" class="link-secundario">Conta Comercial</a>
+                </div>
             </div>
 
             <button type="submit" class="btn btn-auth">
@@ -601,6 +604,17 @@
 
         .auth-tab {
             padding: 16px;
+        }
+
+        .form-extras {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .form-extras > div {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
     }
 </style>

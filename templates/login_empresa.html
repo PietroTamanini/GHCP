@@ -1,0 +1,610 @@
+{% extends "base.html" %}
+
+{% block conteudo %}
+<div style="min-height: calc(100vh - 200px); display: flex; align-items: center; justify-content: center; padding: 40px 20px;">
+    <div class="auth-container">
+        <div class="auth-tabs">
+            <button class="auth-tab {% if form_type != 'cadastro' %}active{% endif %}" data-tab="login-empresa">
+                <span class="tab-icon">🔐</span>
+                <span class="tab-text">Login Empresa</span>
+            </button>
+            <button class="auth-tab {% if form_type == 'cadastro' %}active{% endif %}" data-tab="cadastro-empresa">
+                <span class="tab-icon">✨</span>
+                <span class="tab-text">Cadastrar Empresa</span>
+            </button>
+        </div>
+
+        <!-- Formulário de Login Empresa -->
+        <form method="POST" action="{{ url_for('login_empresa') }}" class="auth-form {% if form_type != 'cadastro' %}active{% endif %}" id="login-empresa-form">
+            <div class="auth-header">
+                <h1>🏢 Login Empresarial</h1>
+                <p>Acesse sua conta empresarial</p>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        {% if category in ['error', 'warning', 'success', 'info'] %}
+                            <div class="alert alert-{{ category }}" style="margin-bottom: 20px;">
+                                {{ message }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="form-group">
+                <label for="login-email-empresa">
+                    <span class="label-icon">📧</span>
+                    E-mail
+                </label>
+                <input 
+                    type="email" 
+                    id="login-email-empresa" 
+                    name="email" 
+                    class="form-control" 
+                    placeholder="empresa@email.com" 
+                    required
+                    autocomplete="email"
+                    value="{{ request.form.email if request.method == 'POST' and form_type != 'cadastro' }}"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="login-senha-empresa">
+                    <span class="label-icon">🔒</span>
+                    Senha
+                </label>
+                <div class="password-wrapper">
+                    <input 
+                        type="password" 
+                        id="login-senha-empresa" 
+                        name="senha" 
+                        class="form-control" 
+                        placeholder="Digite sua senha" 
+                        required
+                        autocomplete="current-password"
+                    >
+                    <button type="button" class="toggle-password" data-target="login-senha-empresa">
+                        👁️
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-auth">
+                <span>Entrar como Empresa</span>
+                <span class="btn-arrow">→</span>
+            </button>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="{{ url_for('login') }}" class="link-secundario">← Voltar para login de cliente</a>
+            </div>
+        </form>
+
+        <!-- Formulário de Cadastro Empresa -->
+        <form method="POST" action="{{ url_for('cadastro_empresa') }}" class="auth-form {% if form_type == 'cadastro' %}active{% endif %}" id="cadastro-empresa-form">
+            <div class="auth-header">
+                <h1>🚀 Cadastrar Empresa</h1>
+                <p>Preencha os dados da sua empresa</p>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        {% if category in ['error', 'warning', 'success', 'info'] %}
+                            <div class="alert alert-{{ category }}" style="margin-bottom: 20px;">
+                                {{ message }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="form-group">
+                <label for="razao-social">
+                    <span class="label-icon">🏢</span>
+                    Razão Social *
+                </label>
+                <input 
+                    type="text" 
+                    id="razao-social" 
+                    name="razao_social" 
+                    class="form-control" 
+                    placeholder="Nome legal da empresa" 
+                    required
+                    value="{{ request.form.razao_social if request.method == 'POST' and form_type == 'cadastro' }}"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="nome-fantasia">
+                    <span class="label-icon">🏷️</span>
+                    Nome Fantasia
+                </label>
+                <input 
+                    type="text" 
+                    id="nome-fantasia" 
+                    name="nome_fantasia" 
+                    class="form-control" 
+                    placeholder="Nome comercial (opcional)"
+                    value="{{ request.form.nome_fantasia if request.method == 'POST' and form_type == 'cadastro' }}"
+                >
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="cnpj">
+                        <span class="label-icon">🆔</span>
+                        CNPJ *
+                    </label>
+                    <input 
+                        type="text" 
+                        id="cnpj" 
+                        name="cnpj" 
+                        class="form-control cnpj-mask" 
+                        placeholder="00.000.000/0000-00" 
+                        required
+                        maxlength="18"
+                        value="{{ request.form.cnpj if request.method == 'POST' and form_type == 'cadastro' }}"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="email-empresa">
+                        <span class="label-icon">📧</span>
+                        E-mail *
+                    </label>
+                    <input 
+                        type="email" 
+                        id="email-empresa" 
+                        name="email" 
+                        class="form-control" 
+                        placeholder="empresa@email.com" 
+                        required
+                        value="{{ request.form.email if request.method == 'POST' and form_type == 'cadastro' }}"
+                    >
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="telefone-empresa">
+                        <span class="label-icon">📱</span>
+                        Telefone
+                    </label>
+                    <input 
+                        type="text" 
+                        id="telefone-empresa" 
+                        name="telefone" 
+                        class="form-control phone-mask" 
+                        placeholder="(00) 00000-0000"
+                        value="{{ request.form.telefone if request.method == 'POST' and form_type == 'cadastro' }}"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="tipo-empresa">
+                        <span class="label-icon">🎯</span>
+                        Tipo de Empresa *
+                    </label>
+                    <select id="tipo-empresa" name="tipo_empresa" class="form-control" required>
+                        <option value="">Selecione...</option>
+                        <option value="comprador" {% if request.method == 'POST' and form_type == 'cadastro' and request.form.tipo_empresa == 'comprador' %}selected{% endif %}>Apenas Comprador</option>
+                        <option value="vendedor" {% if request.method == 'POST' and form_type == 'cadastro' and request.form.tipo_empresa == 'vendedor' %}selected{% endif %}>Apenas Vendedor</option>
+                        <option value="ambos" {% if request.method == 'POST' and form_type == 'cadastro' and request.form.tipo_empresa == 'ambos' %}selected{% endif %}>Comprador e Vendedor</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="endereco-empresa">
+                    <span class="label-icon">📍</span>
+                    Endereço
+                </label>
+                <input 
+                    type="text" 
+                    id="endereco-empresa" 
+                    name="endereco" 
+                    class="form-control" 
+                    placeholder="Endereço completo da empresa"
+                    value="{{ request.form.endereco if request.method == 'POST' and form_type == 'cadastro' }}"
+                >
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="senha-empresa">
+                        <span class="label-icon">🔒</span>
+                        Senha *
+                    </label>
+                    <div class="password-wrapper">
+                        <input 
+                            type="password" 
+                            id="senha-empresa" 
+                            name="senha" 
+                            class="form-control" 
+                            placeholder="Mínimo 6 caracteres" 
+                            required
+                            minlength="6"
+                        >
+                        <button type="button" class="toggle-password" data-target="senha-empresa">
+                            👁️
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmar-senha-empresa">
+                        <span class="label-icon">🔐</span>
+                        Confirmar Senha *
+                    </label>
+                    <div class="password-wrapper">
+                        <input 
+                            type="password" 
+                            id="confirmar-senha-empresa" 
+                            name="confirmar_senha" 
+                            class="form-control" 
+                            placeholder="Digite novamente" 
+                            required
+                        >
+                        <button type="button" class="toggle-password" data-target="confirmar-senha-empresa">
+                            👁️
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <label class="checkbox-label" style="margin-top: 20px;">
+                <input type="checkbox" name="aceitar_termos" required {% if request.method == 'POST' and form_type == 'cadastro' and request.form.aceitar_termos %}checked{% endif %}>
+                <span>Aceito os <a href="/termos" target="_blank" class="link-secundario">Termos de Uso</a> e a <a href="/privacidade" target="_blank" class="link-secundario">Política de Privacidade</a></span>
+            </label>
+
+            <button type="submit" class="btn btn-auth">
+                <span>Cadastrar Empresa</span>
+                <span class="btn-arrow">→</span>
+            </button>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="{{ url_for('login') }}" class="link-secundario">← Voltar para login de cliente</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .auth-container {
+        width: 100%;
+        max-width: 600px;
+        background: white;
+        border-radius: 24px;
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        border: 1px solid var(--border);
+        position: relative;
+    }
+
+    .dark-theme .auth-container {
+        background: var(--dark);
+    }
+
+    .auth-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 6px;
+        background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 50%, var(--success) 100%);
+    }
+
+    .auth-tabs {
+        display: flex;
+        background: var(--secondary);
+        border-bottom: 2px solid var(--border);
+    }
+
+    .dark-theme .auth-tabs {
+        background: rgba(0, 0, 0, 0.2);
+    }
+
+    .auth-tab {
+        flex: 1;
+        padding: 20px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-light);
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        position: relative;
+    }
+
+    .auth-tab::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: var(--primary);
+        transform: scaleX(0);
+        transition: var(--transition);
+    }
+
+    .auth-tab.active {
+        color: var(--primary);
+        background: white;
+    }
+
+    .dark-theme .auth-tab.active {
+        background: var(--dark);
+    }
+
+    .auth-tab.active::after {
+        transform: scaleX(1);
+    }
+
+    .tab-icon {
+        font-size: 20px;
+    }
+
+    .auth-form {
+        padding: 40px;
+        display: none;
+        animation: fadeInUp 0.4s ease;
+    }
+
+    .auth-form.active {
+        display: block;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: 32px;
+    }
+
+    .auth-header h1 {
+        font-size: 28px;
+        font-weight: 800;
+        margin-bottom: 8px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .auth-header p {
+        color: var(--text-light);
+        font-size: 15px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .form-group label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: var(--text);
+        font-size: 14px;
+    }
+
+    .label-icon {
+        font-size: 16px;
+    }
+
+    .password-wrapper {
+        position: relative;
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 20px;
+        opacity: 0.6;
+        transition: var(--transition);
+        padding: 4px;
+    }
+
+    .toggle-password:hover {
+        opacity: 1;
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        color: var(--text);
+    }
+
+    .checkbox-label input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: var(--primary);
+    }
+
+    .link-secundario {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        transition: var(--transition);
+    }
+
+    .link-secundario:hover {
+        color: var(--primary-dark);
+        text-decoration: underline;
+    }
+
+    .btn-auth {
+        width: 100%;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 16px 28px;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        transition: var(--transition);
+        box-shadow: var(--shadow);
+        margin-bottom: 24px;
+    }
+
+    .btn-auth:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .btn-arrow {
+        font-size: 20px;
+        transition: var(--transition);
+    }
+
+    .btn-auth:hover .btn-arrow {
+        transform: translateX(4px);
+    }
+
+    @media (max-width: 640px) {
+        .auth-container {
+            border-radius: 0;
+            max-width: 100%;
+        }
+
+        .auth-form {
+            padding: 30px 20px;
+        }
+
+        .auth-header h1 {
+            font-size: 24px;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .tab-text {
+            display: none;
+        }
+
+        .auth-tab {
+            padding: 16px;
+        }
+    }
+</style>
+
+<script>
+    // Sistema de abas
+    const tabs = document.querySelectorAll('.auth-tab');
+    const forms = document.querySelectorAll('.auth-form');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const targetTab = tab.dataset.tab;
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            forms.forEach(f => f.classList.remove('active'));
+            
+            tab.classList.add('active');
+            document.getElementById(`${targetTab}-form`).classList.add('active');
+        });
+    });
+
+    // Mostrar/ocultar senha
+    document.querySelectorAll('.toggle-password').forEach(button => {
+        button.addEventListener('click', () => {
+            const targetId = button.dataset.target;
+            const input = document.getElementById(targetId);
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                button.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                button.textContent = '👁️';
+            }
+        });
+    });
+
+    // Máscara para CNPJ
+    const cnpjInput = document.getElementById('cnpj');
+    if (cnpjInput) {
+        cnpjInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.replace(/^(\d{2})(\d)/, '$1.$2');
+            value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+            value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
+            value = value.replace(/(\d{4})(\d)/, '$1-$2');
+            e.target.value = value.substring(0, 18);
+        });
+    }
+
+    // Máscara para telefone
+    const phoneInput = document.getElementById('telefone-empresa');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 10) {
+                value = value.replace(/(\d{2})(\d)/, '($1) $2');
+                value = value.replace(/(\d{4})(\d)/, '$1-$2');
+            } else {
+                value = value.replace(/(\d{2})(\d)/, '($1) $2');
+                value = value.replace(/(\d{5})(\d)/, '$1-$2');
+            }
+            e.target.value = value;
+        });
+    }
+
+    // Validação de senha no cadastro
+    const cadastroForm = document.getElementById('cadastro-empresa-form');
+    if (cadastroForm) {
+        cadastroForm.addEventListener('submit', (e) => {
+            const senha = document.getElementById('senha-empresa').value;
+            const confirmarSenha = document.getElementById('confirmar-senha-empresa').value;
+
+            if (senha !== confirmarSenha) {
+                e.preventDefault();
+                alert('⚠️ As senhas não coincidem! Por favor, verifique.');
+                return false;
+            }
+        });
+    }
+</script>
+{% endblock %}
