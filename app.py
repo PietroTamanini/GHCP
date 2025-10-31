@@ -35,6 +35,10 @@ DB_CONFIG = {
 
 UPLOAD_FOLDER = 'static/uploads/produtos'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hora
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -204,9 +208,6 @@ def escolher_tipo_cadastro():
 # ROTA DE LOGIN ATUALIZADA
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if 'usuario_id' in session or 'empresa_id' in session:
-        return redirect(url_for('inicio'))
-    
     tipo = request.args.get('tipo', 'cliente')
     
     if request.method == 'POST':
@@ -363,8 +364,90 @@ def cadastro():
             cursor.close()
             conn.close()
 
-# NOVA ROTA: Cadastro de Empresas
-@app.route('/cadastro-empresa', methods=['GET', 'POST'])
+# Rota específica para login de empresas
+@app.route('/login_empresa', methods=['GET', 'POST'])
+def login_empresa():
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip().lower()
+        senha = request.form.get('senha', '')
+        
+        if not email or not senha:
+            flash('❌ Por favor, preencha todos os campos.', 'error')
+            return render_template('login_empresa.html', form_type='login')
+        
+        if not validar_email(email):
+            flash('❌ E-mail inválido.', 'error')
+            return render_template('login_empresa.html', form_type='login')
+        
+        try:
+            conn = get_db_connection()
+            if not conn:
+                flash('Erro ao conectar ao banco de dados.', 'error')
+                return render_template('login_empresa.html', form_type='login')
+            
+            cursor = conn.cursor(dictionary=True)
+            
+            cursor.execute("SELECT id_empresa, razao_social, nome_fantasia, email, senha, ativo, tipo_empresa FROM empresas WHERE email = %s", (email,))
+            usuario = cursor.fetchone()
+            
+            if usuario and check_password_hash(usuario['senha'], senha):
+                if not usuario['ativo']:
+                    flash('⚠️ Sua empresa está desativada. Entre em contato com o suporte.', 'warning')
+                    return render_template('login_empresa.html', form_type='login')
+                
+                session['empresa_id'] = usuario['id_empresa']
+                session['empresa_nome'] = usuario['nome_fantasia'] or usuario['razao_social']
+                session['empresa_email'] = usuario['email']
+                session['empresa_tipo'] = usuario['tipo_empresa']
+                
+                flash(f'🎉 Bem-vindo, {session["empresa_nome"]}!', 'success')
+                return redirect(url_for('painel_empresa'))
+            else:
+                flash('❌ E-mail ou senha incorretos.', 'error')
+        
+        except mysql.connector.Error as err:
+            flash(f'Erro ao fazer login: {err}', 'error')
+        finally:
+            if conn and conn.is_connected():
+                cursor.close()
+                conn.close()
+    
+    return render_template('login_empresa.html', form_type='login')
+
+# ROTA: Buscar avaliações da empresa (AJAX)
+@app.route('/api/avaliacoes-empresa/<int:id_empresa>')
+def api_avaliacoes_empresa(id_empresa):
+    try:
+        conn = get_db_connection()
+        if not conn:
+            return jsonify([])
+        
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute("""
+            SELECT ae.*, 
+                   COALESCE(c.nome, e.nome_fantasia, e.razao_social) as avaliador_nome
+            FROM avaliacoes_empresas ae
+            LEFT JOIN clientes c ON ae.id_cliente = c.id_cliente
+            LEFT JOIN empresas e ON ae.id_empresa_avaliadora = e.id_empresa
+            WHERE ae.id_empresa_avaliada = %s AND ae.aprovado = TRUE
+            ORDER BY ae.data_avaliacao DESC
+            LIMIT 10
+        """, (id_empresa,))
+        
+        avaliacoes = cursor.fetchall()
+        
+        return jsonify(avaliacoes)
+    
+    except mysql.connector.Error:
+        return jsonify([])
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+
+# Rota específica para cadastro de empresas
+@app.route('/cadastro_empresa', methods=['GET', 'POST'])
 def cadastro_empresa():
     if request.method == 'POST':
         razao_social = request.form.get('razao_social', '').strip()
@@ -380,27 +463,27 @@ def cadastro_empresa():
         
         if not all([razao_social, cnpj, email, senha, confirmar_senha, tipo_empresa]):
             flash('❌ Por favor, preencha todos os campos obrigatórios.', 'error')
-            return render_template('cadastro_empresa.html')
+            return render_template('login_empresa.html', form_type='cadastro')
         
         if not aceitar_termos:
             flash('❌ Você precisa aceitar os Termos de Uso e Política de Privacidade.', 'error')
-            return render_template('cadastro_empresa.html')
+            return render_template('login_empresa.html', form_type='cadastro')
         
         if senha != confirmar_senha:
             flash('❌ As senhas não coincidem.', 'error')
-            return render_template('cadastro_empresa.html')
+            return render_template('login_empresa.html', form_type='cadastro')
         
         if len(senha) < 6:
             flash('❌ A senha deve ter no mínimo 6 caracteres.', 'error')
-            return render_template('cadastro_empresa.html')
+            return render_template('login_empresa.html', form_type='cadastro')
         
         if not validar_email(email):
             flash('❌ E-mail inválido.', 'error')
-            return render_template('cadastro_empresa.html')
+            return render_template('login_empresa.html', form_type='cadastro')
         
         if not validar_cnpj(cnpj):
             flash('❌ CNPJ inválido.', 'error')
-            return render_template('cadastro_empresa.html')
+            return render_template('login_empresa.html', form_type='cadastro')
         
         cnpj_formatado = formatar_cnpj(cnpj)
         
@@ -408,19 +491,19 @@ def cadastro_empresa():
             conn = get_db_connection()
             if not conn:
                 flash('Erro ao conectar ao banco de dados.', 'error')
-                return render_template('cadastro_empresa.html')
+                return render_template('login_empresa.html', form_type='cadastro')
             
             cursor = conn.cursor()
             
             cursor.execute("SELECT id_empresa FROM empresas WHERE email = %s", (email,))
             if cursor.fetchone():
                 flash('❌ Este e-mail já está cadastrado.', 'error')
-                return render_template('cadastro_empresa.html')
+                return render_template('login_empresa.html', form_type='cadastro')
             
             cursor.execute("SELECT id_empresa FROM empresas WHERE cnpj = %s", (cnpj_formatado,))
             if cursor.fetchone():
                 flash('❌ Este CNPJ já está cadastrado.', 'error')
-                return render_template('cadastro_empresa.html')
+                return render_template('login_empresa.html', form_type='cadastro')
             
             senha_hash = generate_password_hash(senha)
             
@@ -442,15 +525,114 @@ def cadastro_empresa():
         
         except mysql.connector.Error as err:
             flash(f'Erro ao cadastrar empresa: {err}', 'error')
-            return render_template('cadastro_empresa.html')
+            return render_template('login_empresa.html', form_type='cadastro')
         finally:
             if conn and conn.is_connected():
                 cursor.close()
                 conn.close()
     
-    return render_template('cadastro_empresa.html')
+    return render_template('login_empresa.html', form_type='cadastro')
 
-# NOVA ROTA: Painel da Empresa
+@app.route('/empresas-vendedoras')
+def empresas_vendedoras():
+    try:
+        conn = get_db_connection()
+        if not conn:
+            flash('Erro ao conectar ao banco de dados.', 'error')
+            return render_template('empresas_vendedoras.html', empresas=[])
+        
+        cursor = conn.cursor(dictionary=True)
+        
+        # Verificar se o usuário já comprou em alguma loja
+        usuario_comprou_em_lojas = []
+        if 'usuario_id' in session:
+            cursor.execute("""
+                SELECT DISTINCT e.id_empresa
+                FROM pedidos p
+                JOIN itens_pedido ip ON p.id_pedido = ip.id_pedido
+                JOIN produtos_empresa pe ON ip.id_produto = pe.id_produto
+                JOIN empresas e ON pe.id_empresa = e.id_empresa
+                WHERE p.id_cliente = %s AND p.status = 'concluido'
+            """, (session['usuario_id'],))
+            usuario_comprou_em_lojas = [row['id_empresa'] for row in cursor.fetchall()]
+        
+        # Buscar empresas vendedoras com estatísticas
+        cursor.execute("""
+            SELECT 
+                e.id_empresa,
+                e.nome_fantasia,
+                e.razao_social,
+                e.cnpj,
+                e.email,
+                e.telefone,
+                e.tipo_empresa,
+                e.endereco,
+                e.data_cadastro,
+                COUNT(DISTINCT pe.id_produto) as total_produtos,
+                COALESCE(AVG(ae.nota), 0) as media_avaliacoes,
+                COUNT(DISTINCT ae.id_avaliacao) as total_avaliacoes,
+                COUNT(DISTINCT p.id_pedido) as total_vendas
+            FROM empresas e
+            LEFT JOIN produtos_empresa pe ON e.id_empresa = pe.id_empresa AND pe.ativo = TRUE
+            LEFT JOIN avaliacoes_empresas ae ON e.id_empresa = ae.id_empresa_avaliada AND ae.aprovado = TRUE
+            LEFT JOIN (
+                SELECT DISTINCT pe2.id_empresa, p2.id_pedido
+                FROM pedidos p2
+                JOIN itens_pedido ip ON p2.id_pedido = ip.id_pedido
+                JOIN produtos_empresa pe2 ON ip.id_produto = pe2.id_produto
+                WHERE p2.status = 'concluido'
+            ) p ON e.id_empresa = p.id_empresa
+            WHERE e.tipo_empresa IN ('vendedor', 'ambos') AND e.ativo = TRUE
+            GROUP BY e.id_empresa
+            ORDER BY media_avaliacoes DESC, total_produtos DESC
+        """)
+        
+        empresas_db = cursor.fetchall()
+        
+        # Processar dados das empresas corretamente
+        empresas_processadas = []
+        for empresa in empresas_db:
+            nome_exibicao = empresa['nome_fantasia'] or empresa['razao_social']
+            
+            # Calcular tempo no mercado
+            tempo_mercado = 0
+            if empresa['data_cadastro']:
+                from datetime import datetime
+                tempo_mercado = (datetime.now() - empresa['data_cadastro']).days // 365
+            
+            # Garantir que os valores não sejam None
+            media_avaliacoes = empresa['media_avaliacoes'] or 0
+            total_produtos = empresa['total_produtos'] or 0
+            total_vendas = empresa['total_vendas'] or 0
+            total_avaliacoes = empresa['total_avaliacoes'] or 0
+            
+            empresas_processadas.append({
+                'id': empresa['id_empresa'],
+                'nome': nome_exibicao,
+                'categoria': 'Tecnologia',
+                'descricao': f"CNPJ: {empresa['cnpj']} | Telefone: {empresa['telefone'] or 'Não informado'}",
+                'logo': nome_exibicao[0].upper() if nome_exibicao else 'E',
+                'avaliacao': round(float(media_avaliacoes), 1),
+                'total_avaliacoes': total_avaliacoes,
+                'total_produtos': total_produtos,
+                'total_vendas': total_vendas,
+                'tempo_mercado': f"{tempo_mercado} ano(s)" if tempo_mercado > 0 else "Menos de 1 ano",
+                'features': ["🚚 Entrega Rápida", "💳 Parcelamento", "🛡️ Garantia"],
+                'pode_avaliar': empresa['id_empresa'] in usuario_comprou_em_lojas if 'usuario_id' in session else False
+            })
+        
+        return render_template('empresas_vendedoras.html', 
+                             empresas=empresas_processadas,
+                             usuario_comprou_em_lojas=usuario_comprou_em_lojas)
+    
+    except mysql.connector.Error as err:
+        flash(f'Erro ao carregar empresas: {err}', 'error')
+        return render_template('empresas_vendedoras.html', empresas=[])
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+
 @app.route('/painel-empresa')
 @login_required
 def painel_empresa():
@@ -473,6 +655,38 @@ def painel_empresa():
         if not empresa:
             flash('Erro ao carregar dados da empresa.', 'error')
             return redirect(url_for('inicio'))
+        
+        # Buscar produtos da empresa
+        cursor.execute("""
+            SELECT pe.*, p.nome, p.marca, p.categoria, p.imagens
+            FROM produtos_empresa pe
+            JOIN produto p ON pe.id_produto = p.id_produto
+            WHERE pe.id_empresa = %s
+            ORDER BY pe.data_cadastro DESC
+        """, (session['empresa_id'],))
+        produtos_empresa = cursor.fetchall()
+        
+        # Processar imagens
+        for produto in produtos_empresa:
+            if produto.get('imagens'):
+                try:
+                    produto['imagens'] = json.loads(produto['imagens'])
+                except:
+                    produto['imagens'] = []
+        
+        # Buscar produtos disponíveis para adicionar
+        cursor.execute("""
+            SELECT p.id_produto, p.nome, p.marca, p.preco, p.categoria
+            FROM produto p 
+            WHERE p.ativo = TRUE 
+            AND p.id_produto NOT IN (
+                SELECT pe.id_produto FROM produtos_empresa pe 
+                WHERE pe.id_empresa = %s AND pe.ativo = TRUE
+            )
+            ORDER BY p.nome
+            LIMIT 50
+        """, (session['empresa_id'],))
+        produtos_disponiveis = cursor.fetchall()
         
         # Buscar estatísticas
         cursor.execute("""
@@ -505,6 +719,8 @@ def painel_empresa():
         
         return render_template('painel_empresa.html', 
                              empresa=empresa,
+                             produtos_empresa=produtos_empresa,
+                             produtos_disponiveis=produtos_disponiveis,
                              stats=stats,
                              avaliacoes=avaliacoes,
                              media_avaliacoes=media_avaliacoes)
@@ -516,6 +732,187 @@ def painel_empresa():
         if conn and conn.is_connected():
             cursor.close()
             conn.close()
+            
+# ROTA: Buscar produtos disponíveis para empresa
+@app.route('/api/produtos-disponiveis')
+@login_required
+def api_produtos_disponiveis():
+    if 'empresa_id' not in session:
+        return jsonify({'error': 'Acesso não autorizado'}), 403
+    
+    try:
+        conn = get_db_connection()
+        if not conn:
+            return jsonify({'error': 'Erro de conexão'}), 500
+        
+        cursor = conn.cursor(dictionary=True)
+        
+        # Buscar produtos que ainda não foram adicionados pela empresa
+        cursor.execute("""
+            SELECT p.id_produto, p.nome, p.marca, p.preco, p.estoque, p.categoria, p.imagens
+            FROM produto p 
+            WHERE p.ativo = TRUE 
+            AND p.id_produto NOT IN (
+                SELECT pe.id_produto FROM produtos_empresa pe 
+                WHERE pe.id_empresa = %s AND pe.ativo = TRUE
+            )
+            ORDER BY p.nome
+        """, (session['empresa_id'],))
+        
+        produtos = cursor.fetchall()
+        
+        # Processar imagens
+        for produto in produtos:
+            if produto.get('imagens'):
+                try:
+                    produto['imagens'] = json.loads(produto['imagens'])
+                except:
+                    produto['imagens'] = []
+        
+        return jsonify(produtos)
+    
+    except mysql.connector.Error as err:
+        return jsonify({'error': str(err)}), 500
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+
+# ROTA: Adicionar produto à empresa
+@app.route('/empresa/adicionar-produto', methods=['POST'])
+@login_required
+def adicionar_produto_empresa():
+    if 'empresa_id' not in session:
+        flash('❌ Acesso não autorizado.', 'error')
+        return redirect(url_for('painel_empresa'))
+    
+    try:
+        id_produto = request.form.get('id_produto', type=int)
+        preco_empresa = request.form.get('preco_empresa', type=float)
+        estoque_empresa = request.form.get('estoque_empresa', type=int)
+        ativo = request.form.get('ativo') == 'on'
+        
+        if not all([id_produto, preco_empresa is not None, estoque_empresa is not None]):
+            flash('❌ Preencha todos os campos obrigatórios.', 'error')
+            return redirect(url_for('painel_empresa'))
+        
+        conn = get_db_connection()
+        if not conn:
+            flash('❌ Erro ao conectar ao banco de dados.', 'error')
+            return redirect(url_for('painel_empresa'))
+        
+        cursor = conn.cursor()
+        
+        # Verificar se produto já foi adicionado
+        cursor.execute("""
+            SELECT id_produto_empresa FROM produtos_empresa 
+            WHERE id_empresa = %s AND id_produto = %s
+        """, (session['empresa_id'], id_produto))
+        
+        if cursor.fetchone():
+            flash('⚠️ Este produto já foi adicionado à sua loja.', 'warning')
+            return redirect(url_for('painel_empresa'))
+        
+        # Inserir produto na loja da empresa
+        cursor.execute("""
+            INSERT INTO produtos_empresa (id_empresa, id_produto, preco_empresa, estoque_empresa, ativo)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (session['empresa_id'], id_produto, preco_empresa, estoque_empresa, ativo))
+        
+        conn.commit()
+        
+        flash('✅ Produto adicionado à sua loja com sucesso!', 'success')
+        return redirect(url_for('painel_empresa'))
+    
+    except mysql.connector.Error as err:
+        flash(f'❌ Erro ao adicionar produto: {err}', 'error')
+        return redirect(url_for('painel_empresa'))
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+
+# ROTA: Remover produto da empresa
+@app.route('/empresa/remover-produto/<int:id_produto_empresa>', methods=['POST'])
+@login_required
+def remover_produto_empresa(id_produto_empresa):
+    if 'empresa_id' not in session:
+        flash('❌ Acesso não autorizado.', 'error')
+        return redirect(url_for('painel_empresa'))
+    
+    try:
+        conn = get_db_connection()
+        if not conn:
+            flash('❌ Erro ao conectar ao banco de dados.', 'error')
+            return redirect(url_for('painel_empresa'))
+        
+        cursor = conn.cursor()
+        
+        # Verificar se o produto pertence à empresa
+        cursor.execute("""
+            SELECT id_produto_empresa FROM produtos_empresa 
+            WHERE id_produto_empresa = %s AND id_empresa = %s
+        """, (id_produto_empresa, session['empresa_id']))
+        
+        if not cursor.fetchone():
+            flash('❌ Produto não encontrado.', 'error')
+            return redirect(url_for('painel_empresa'))
+        
+        # Remover produto
+        cursor.execute("""
+            DELETE FROM produtos_empresa 
+            WHERE id_produto_empresa = %s AND id_empresa = %s
+        """, (id_produto_empresa, session['empresa_id']))
+        
+        conn.commit()
+        
+        flash('🗑️ Produto removido da sua loja com sucesso!', 'success')
+        return redirect(url_for('painel_empresa'))
+    
+    except mysql.connector.Error as err:
+        flash(f'❌ Erro ao remover produto: {err}', 'error')
+        return redirect(url_for('painel_empresa'))
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+
+# ROTA: Atualizar produto da empresa
+@app.route('/empresa/atualizar-produto/<int:id_produto_empresa>', methods=['POST'])
+@login_required
+def atualizar_produto_empresa(id_produto_empresa):
+    if 'empresa_id' not in session:
+        return jsonify({'success': False, 'error': 'Acesso não autorizado'}), 403
+    
+    try:
+        data = request.get_json()
+        preco_empresa = data.get('preco_empresa')
+        estoque_empresa = data.get('estoque_empresa')
+        ativo = data.get('ativo')
+        
+        conn = get_db_connection()
+        if not conn:
+            return jsonify({'success': False, 'error': 'Erro de conexão'}), 500
+        
+        cursor = conn.cursor()
+        
+        # Atualizar produto
+        cursor.execute("""
+            UPDATE produtos_empresa 
+            SET preco_empresa = %s, estoque_empresa = %s, ativo = %s
+            WHERE id_produto_empresa = %s AND id_empresa = %s
+        """, (preco_empresa, estoque_empresa, ativo, id_produto_empresa, session['empresa_id']))
+        
+        conn.commit()
+        
+        return jsonify({'success': True, 'message': 'Produto atualizado com sucesso!'})
+    
+    except mysql.connector.Error as err:
+        return jsonify({'success': False, 'error': str(err)}), 500
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()    
 
 # NOVA ROTA: Avaliar Produto
 @app.route('/avaliar-produto/<int:id_produto>', methods=['POST'])
@@ -3072,33 +3469,39 @@ def listar_empresas():
             cursor.close()
             conn.close()
 
-# NOVA ROTA: Página Pública da Empresa
 @app.route('/empresa/<int:id_empresa>')
 def detalhes_empresa_publica(id_empresa):
     try:
         conn = get_db_connection()
         if not conn:
             flash('Erro ao conectar ao banco de dados.', 'error')
-            return redirect(url_for('listar_empresas'))
+            return redirect(url_for('empresas_vendedoras'))
         
         cursor = conn.cursor(dictionary=True)
         
-        cursor.execute("""
-            SELECT e.*,
-                   AVG(ae.nota) as media_avaliacoes,
-                   COUNT(DISTINCT ae.id_avaliacao) as total_avaliacoes
-            FROM empresas e
-            LEFT JOIN avaliacoes_empresas ae ON e.id_empresa = ae.id_empresa_avaliada AND ae.aprovado = TRUE
-            WHERE e.id_empresa = %s AND e.ativo = TRUE
-            GROUP BY e.id_empresa
-        """, (id_empresa,))
+        # Buscar dados da empresa
+        cursor.execute("SELECT * FROM empresas WHERE id_empresa = %s AND ativo = TRUE", (id_empresa,))
         empresa = cursor.fetchone()
         
         if not empresa:
             flash('❌ Empresa não encontrada.', 'error')
-            return redirect(url_for('listar_empresas'))
+            return redirect(url_for('empresas_vendedoras'))
         
-        # Produtos da empresa
+        # Calcular tempo no mercado
+        tempo_mercado = "Novo"
+        if empresa['data_cadastro']:
+            from datetime import datetime
+            dias = (datetime.now() - empresa['data_cadastro']).days
+            if dias >= 365:
+                tempo_mercado = f"{dias // 365} ano(s)"
+            elif dias >= 30:
+                tempo_mercado = f"{dias // 30} mês(es)"
+            else:
+                tempo_mercado = f"{dias} dia(s)"
+        
+        empresa['tempo_mercado'] = tempo_mercado
+        
+        # Buscar produtos da empresa
         cursor.execute("""
             SELECT p.*, pe.preco_empresa, pe.estoque_empresa
             FROM produtos_empresa pe
@@ -3116,14 +3519,10 @@ def detalhes_empresa_publica(id_empresa):
                 except:
                     produto['imagens'] = []
         
-        # Avaliações
+        # Buscar avaliações
         cursor.execute("""
             SELECT ae.*, 
-                   COALESCE(c.nome, e.nome_fantasia, e.razao_social) as avaliador_nome,
-                   CASE 
-                       WHEN ae.id_cliente IS NOT NULL THEN 'cliente'
-                       ELSE 'empresa'
-                   END as tipo_avaliador
+                   COALESCE(c.nome, e.nome_fantasia, e.razao_social) as avaliador_nome
             FROM avaliacoes_empresas ae
             LEFT JOIN clientes c ON ae.id_cliente = c.id_cliente
             LEFT JOIN empresas e ON ae.id_empresa_avaliadora = e.id_empresa
@@ -3133,14 +3532,36 @@ def detalhes_empresa_publica(id_empresa):
         """, (id_empresa,))
         avaliacoes = cursor.fetchall()
         
+        # Calcular média de avaliações
+        cursor.execute("""
+            SELECT AVG(nota) as media_notas, COUNT(*) as total_avaliacoes
+            FROM avaliacoes_empresas
+            WHERE id_empresa_avaliada = %s AND aprovado = TRUE
+        """, (id_empresa,))
+        media_avaliacoes = cursor.fetchone()
+        
+        # Verificar se usuário pode avaliar (se comprou da empresa)
+        pode_avaliar = False
+        if 'usuario_id' in session:
+            cursor.execute("""
+                SELECT DISTINCT p.id_pedido
+                FROM pedidos p
+                JOIN itens_pedido ip ON p.id_pedido = ip.id_pedido
+                JOIN produtos_empresa pe ON ip.id_produto = pe.id_produto
+                WHERE p.id_cliente = %s AND pe.id_empresa = %s AND p.status = 'concluido'
+            """, (session['usuario_id'], id_empresa))
+            pode_avaliar = cursor.fetchone() is not None
+        
         return render_template('empresa_detalhes_publica.html', 
-                             empresa=empresa, 
+                             empresa=empresa,
                              produtos=produtos,
-                             avaliacoes=avaliacoes)
+                             avaliacoes=avaliacoes,
+                             media_avaliacoes=media_avaliacoes,
+                             pode_avaliar=pode_avaliar)
     
     except mysql.connector.Error as err:
         flash(f'Erro ao carregar empresa: {err}', 'error')
-        return redirect(url_for('listar_empresas'))
+        return redirect(url_for('empresas_vendedoras'))
     finally:
         if conn and conn.is_connected():
             cursor.close()
@@ -3317,15 +3738,77 @@ def page_not_found(e):
 def internal_server_error(e):
     return render_template('500.html'), 500
 
+def criar_tabelas_necessarias():
+    """Cria tabelas que podem estar faltando no banco de dados"""
+    try:
+        conn = get_db_connection()
+        if not conn:
+            print("❌ Erro ao conectar ao banco para criar tabelas")
+            return
+        
+        cursor = conn.cursor()
+        
+        # Tabela de empresas (se não existir)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS empresas (
+                id_empresa INT AUTO_INCREMENT PRIMARY KEY,
+                razao_social VARCHAR(255) NOT NULL,
+                nome_fantasia VARCHAR(255),
+                cnpj VARCHAR(18) UNIQUE NOT NULL,
+                email VARCHAR(255) UNIQUE NOT NULL,
+                senha VARCHAR(255) NOT NULL,
+                telefone VARCHAR(20),
+                tipo_empresa ENUM('comprador', 'vendedor', 'ambos') DEFAULT 'comprador',
+                endereco TEXT,
+                ativo BOOLEAN DEFAULT TRUE,
+                data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        # Tabela de produtos_empresa (se não existir)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS produtos_empresa (
+                id_produto_empresa INT AUTO_INCREMENT PRIMARY KEY,
+                id_empresa INT NOT NULL,
+                id_produto INT NOT NULL,
+                preco_empresa DECIMAL(10,2) NOT NULL,
+                estoque_empresa INT DEFAULT 0,
+                ativo BOOLEAN DEFAULT TRUE,
+                data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (id_empresa) REFERENCES empresas(id_empresa) ON DELETE CASCADE,
+                FOREIGN KEY (id_produto) REFERENCES produto(id_produto) ON DELETE CASCADE,
+                UNIQUE KEY unique_empresa_produto (id_empresa, id_produto)
+            )
+        """)
+        
+        conn.commit()
+        print("✅ Tabelas verificadas/criadas com sucesso!")
+        
+    except mysql.connector.Error as err:
+        print(f"❌ Erro ao criar tabelas: {err}")
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+
 if __name__ == '__main__':
     print("=" * 60)
     print("🚀 Loja GHCP - Sistema de E-commerce + Admin + Empresas")
     print("=" * 60)
+    
+    # Verificar e criar tabelas necessárias
+    criar_tabelas_necessarias()
+    
+    # Criar admin padrão
     criar_admin_padrao()
+    
     print("✅ Servidor Flask iniciado com sucesso!")
     print(f"🌐 Site: http://localhost:5000")
     print(f"🛡️ Admin: http://localhost:5000/admin/login")
     print(f"🏢 Empresas: http://localhost:5000/cadastro-empresa")
     print("=" * 60)
+    
+    # Garantir que a pasta de uploads existe
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    
     app.run(debug=True, host='0.0.0.0', port=5000)

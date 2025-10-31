@@ -435,19 +435,32 @@
                     <li><a href="{{ url_for('inicio') }}" class="nav-link">Início</a></li>
                     <li><a href="{{ url_for('listar_produtos') }}" class="nav-link">Produtos</a></li>
                     <li><a href="{{ url_for('diagnostico') }}" class="nav-link">Diagnóstico</a></li>
+                    <li><a href="{{ url_for('empresas_vendedoras') }}" class="nav-link">Lojas Parceiras</a></li>
                 {% endblock %}
             </ul>
 
-            <div class="icons">
-                <button class="theme-toggle" id="themeToggle" aria-label="Alternar tema">🌙</button>
+<div class="icons">
+    <button class="theme-toggle" id="themeToggle" aria-label="Alternar tema">🌙</button>
 
-                {% if session.get('usuario_id') %}
-                    <a href="{{ url_for('minha_conta') }}" class="icon"><span>👤</span><span>{{ session['usuario_nome'] }}</span></a>
+    {% if session.get('usuario_id') or session.get('empresa_id') %}
+        {% if session.get('empresa_id') %}
+            <!-- Se for empresa, mostra link para Painel da Empresa -->
+            <a href="{{ url_for('painel_empresa') }}" class="icon">
+                <span>🏢</span>
+                <span>{{ session['empresa_nome'] }}</span>
+            </a>
+        {% else %}
+            <!-- Se for cliente normal, mostra Minha Conta -->
+            <a href="{{ url_for('minha_conta') }}" class="icon">
+                <span>👤</span>
+                <span>{{ session['usuario_nome'] }}</span>
+            </a>
+                {% endif %}
                     <a href="{{ url_for('logout') }}" class="icon"><span>🚪</span><span>Sair</span></a>
                 {% else %}
                     <a href="{{ url_for('login') }}" class="icon"><span>👤</span><span>Entrar</span></a>
                 {% endif %}
-                
+    
                 <a href="{{ url_for('carrinho') }}" class="icon"><span>🛒</span><span>Carrinho</span></a>
             </div>
         </div>
@@ -535,13 +548,29 @@
             navLinks.classList.toggle('active');
         });
 
-        const currentPath = window.location.pathname;
-        document.querySelectorAll('.nav-link').forEach(link=>{
-            const linkHref = link.getAttribute('href');
-            link.classList.remove('active');
-            if(currentPath === linkHref || (currentPath === '/' && linkHref === '{{ url_for("inicio") }}')){
-                link.classList.add('active');
-            }
+        // ADICIONE ESTE CÓDIGO CORRIGIDO:
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.nav-link').forEach(link => {
+                const linkHref = link.getAttribute('href');
+                if (linkHref) {
+                    // Remove a classe active de todos os links
+                    link.classList.remove('active');
+            
+                    // Verifica se o link atual corresponde à página
+                    if (currentPath === linkHref) {
+                        link.classList.add('active');
+                    }
+                    // Caso especial para a página inicial
+                    else if (currentPath === '/' && linkHref === '{{ url_for("inicio") }}') {
+                        link.classList.add('active');
+                    }
+                    // Para o login, verifica se estamos na página de login
+                    else if (linkHref.includes('/login') && currentPath.includes('/login')) {
+                        link.classList.add('active');
+                    }
+                }
+            });
         });
 
         setTimeout(()=>{ document.querySelectorAll('.flashes li').forEach(el=>el.remove()); }, 5000);
