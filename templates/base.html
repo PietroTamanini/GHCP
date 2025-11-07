@@ -434,7 +434,6 @@
                 {% block menu %}
                     <li><a href="{{ url_for('inicio') }}" class="nav-link">Início</a></li>
                     <li><a href="{{ url_for('listar_produtos') }}" class="nav-link">Produtos</a></li>
-                    <li><a href="{{ url_for('diagnostico') }}" class="nav-link">Diagnóstico</a></li>
                     <li><a href="{{ url_for('empresas_vendedoras') }}" class="nav-link">Lojas Parceiras</a></li>
                 {% endblock %}
             </ul>
@@ -444,7 +443,7 @@
 
     {% if session.get('usuario_id') or session.get('empresa_id') %}
         {% if session.get('empresa_id') %}
-            <!-- Se for empresa, mostra link para Painel da Empresa -->
+
             <a href="{{ url_for('painel_empresa') }}" class="icon">
                 <span>🏢</span>
                 <span>{{ session['empresa_nome'] }}</span>
