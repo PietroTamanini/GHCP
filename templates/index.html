@@ -4,16 +4,10 @@
 
 {% block conteudo %}
 
-<section class="hero-section" style="
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-    color: white;
-    padding: 60px 40px;
-    border-radius: var(--radius);
-    margin-bottom: 40px;
-    text-align: center;
-    box-shadow: var(--shadow-lg);
-    animation: fadeIn 0.8s ease;
-">
+<section class="hero">
+    <img src="{{ url_for('static', filename='img/card-games.jpg') }}" alt="Card Games" class="hero-image">
+</section>
+
     <h1 style="font-size: 3.5rem; margin-bottom: 10px; font-weight: 900; letter-spacing: -1px;">
         OFERTA EXCLUSIVA GHCP!
     </h1>
