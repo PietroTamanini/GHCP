@@ -9,9 +9,9 @@
     </div>
     
     <div class="hero-content">
-        <h1>OFERTA EXCLUSIVA GHCP!</h1>
+        <h1>OFERTA EXCLUSIVA GAME CHIP!</h1>
         <h2>Toda a linha de Periféricos com até 35% de Desconto!</h2>
-        <p>Mouse, Teclado, Headset e Câmeras: Upgrade garantido para seu setup!</p>
+        <p>Jogos, Gift Cards, Contas Premium e Extras!</p>
         <a href="{{ url_for('listar_produtos') }}" class="btn hero-btn">
             🔥 Ver Periféricos em Oferta
         </a>
@@ -285,7 +285,7 @@
 
 <h2 class="card-header" style="border: none; margin-bottom: 20px;">
     <span>🚀</span>
-    Por que comprar na GHCP?
+    Por que comprar na GAME CHIP?
 </h2>
 
 <div class="highlight-grid">
@@ -299,7 +299,7 @@
     <div class="highlight-card">
         <span class="highlight-icon" style="color: var(--primary);">⭐</span>
         <h3>Marcas de Confiança</h3>
-        <p>Apenas as melhores marcas e com garantia de 1 ano GHCP.</p>
+        <p>Apenas as melhores marcas e com garantia de 1 ano GAME SHIP.</p>
         <a href="{{ url_for('marcas') }}" class="btn btn-outline btn-sm">Nossas Marcas</a>
     </div>
     
@@ -309,87 +309,6 @@
         <p>Parcele em até 12x sem juros ou pague com Pix com 10% de desconto.</p>
         <a href="{{ url_for('condicoes') }}" class="btn btn-outline btn-sm">Ver Condições</a>
     </div>
-</div>
-
-<h2 class="card-header">
-    <span>💰</span>
-    Ofertas do Dia
-</h2>
-
-<div class="product-grid">
-    {% for produto in produtos_destaque %}
-    <div class="product-card">
-        {% if produto.tem_oferta and produto.desconto > 0 %}
-            <div class="ofertas-badge">{{ produto.desconto|round|int }}% OFF</div>
-        {% else %}
-            <div class="novo-badge">NOVO</div>
-        {% endif %}
-        
-        <div class="product-image">
-            {% set usar_placeholder = true %}
-            
-            {% if produto.imagens %}
-                {% set imagens = produto.imagens|from_json %}
-                
-                {% if imagens and imagens|length > 0 %}
-                    <img src="{{ url_for('static', filename='uploads/produtos/' ~ imagens[0]) }}" 
-                         alt="{{ produto.nome }}" 
-                         style="width: 100%; height: 100%; object-fit: cover;">
-                    {% set usar_placeholder = false %}
-                {% endif %}
-            {% endif %}
-            
-            {% if usar_placeholder %}
-                <img src="{{ url_for('static', filename='img/produto-sem-imagem.jpg') }}" 
-                     alt="Produto sem imagem" 
-                     style="width: 100%; height: 100%; object-fit: contain;">
-            {% endif %}
-        </div>
-        
-        <div class="product-info">
-            <h4>{{ produto.nome }}</h4>
-            
-            <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 10px;">
-                {{ produto.marca }} • {{ produto.categoria }}
-            </p>
-            
-            <div class="prices">
-                {% if produto.tem_oferta and produto.desconto > 0 %}
-                    <span class="price-old">R$ {{ "%.2f"|format(produto.preco) }}</span>
-                    <span class="price-new">R$ {{ "%.2f"|format(produto.preco_com_desconto) }}</span>
-                {% else %}
-                    <span class="price-normal">R$ {{ "%.2f"|format(produto.preco) }}</span>
-                {% endif %}
-            </div>
-            
-            <div class="product-actions">
-                <a href="{{ url_for('detalhes_produto', id_produto=produto.id_produto) }}" class="btn-detalhes">
-                    Ver Detalhes
-                </a>
-                
-                <form method="POST" action="{{ url_for('adicionar_carrinho', id_produto=produto.id_produto) }}" style="flex: 1;">
-                    <button type="submit" class="btn-carrinho">
-                        + Carrinho
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-    {% else %}
-    <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-        <h3 style="color: var(--text-light); margin-bottom: 20px;">
-            📭 Nenhuma oferta disponível no momento
-        </h3>
-        
-        <p style="color: var(--text-light); margin-bottom: 30px;">
-            Confira nosso catálogo completo de produtos!
-        </p>
-        
-        <a href="{{ url_for('listar_produtos') }}" class="btn btn-primary">
-            Ver Todos os Produtos
-        </a>
-    </div>
-    {% endfor %}
 </div>
 
 <div style="text-align: center; margin-top: 50px;">
