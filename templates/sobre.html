@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 
-{% set titulo = "Sobre a GHCP - Nossa História, Missão e Compromisso" %}
+{% set titulo = "Sobre a Gamechip - Nossa História e Legado Gamer" %}
 
 {% block conteudo %}
 <style>
-    /* Estilos específicos para a página Sobre */
+    /* Estilos Específicos para a Página Sobre */
     .sobre-container {
         max-width: 1200px;
         margin: 0 auto;
@@ -19,6 +19,7 @@
         overflow: hidden;
     }
 
+    /* Ajuste para Fundo com Tema Gamer: AGORA USA VARIÁVEIS! */
     .sobre-hero::before {
         content: '';
         position: absolute;
@@ -26,9 +27,11 @@
         left: 0;
         right: 0;
         bottom: 0;
+        /* Usando cores do tema com baixa opacidade */
         background: 
-            radial-gradient(circle at 20% 80%, rgba(0,102,255,0.08) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, rgba(255,107,53,0.08) 0%, transparent 50%);
+            radial-gradient(circle at 20% 80%, var(--accent) 0%, transparent 50%), 
+            radial-gradient(circle at 80% 20%, var(--primary) 0%, transparent 50%); 
+        opacity: 0.1; /* Opacidade aplicada a todo o fundo de gradiente */
         z-index: -1;
     }
 
@@ -47,9 +50,10 @@
         color: var(--text-light);
         margin-bottom: 50px;
         font-weight: 500;
-        max-width: 600px;
+        max-width: 700px;
         margin-left: auto;
         margin-right: auto;
+        line-height: 1.6;
     }
 
     .hero-stats {
@@ -67,7 +71,7 @@
         display: block;
         font-size: 2.8rem;
         font-weight: 800;
-        color: var(--primary);
+        color: var(--accent); 
         line-height: 1;
         margin-bottom: 8px;
     }
@@ -85,6 +89,59 @@
         margin: 100px 0;
         position: relative;
     }
+    
+    /* --- Estilo: Seção de História (Storytelling) --- */
+    .historia-storytelling {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 50px;
+        border-radius: 24px;
+        background: var(--glass); /* Usa var(--glass) para adaptação */
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border); /* Usa var(--border) para adaptação */
+        box-shadow: var(--shadow-lg);
+        position: relative;
+        overflow: hidden;
+        font-size: 1.15rem;
+        line-height: 2.0;
+        color: var(--text);
+        font-weight: 400;
+    }
+
+    .historia-storytelling p strong {
+        color: var(--primary);
+        font-weight: 700;
+    }
+
+    .historia-storytelling blockquote {
+        border-left: 5px solid var(--accent);
+        padding-left: 25px;
+        margin: 30px 0;
+        font-style: italic;
+        color: var(--text-light);
+        font-size: 1.25rem;
+        line-height: 1.6;
+    }
+
+    .historia-storytelling h3 {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--primary);
+        margin-top: 40px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .historia-storytelling .legado-final {
+        text-align: center;
+        margin-top: 40px;
+        font-weight: 600;
+        font-size: 1.4rem;
+        color: var(--accent);
+        border-top: 2px dashed var(--border);
+        padding-top: 30px;
+    }
+    /* --- FIM Estilo História --- */
 
     .section-header {
         text-align: center;
@@ -108,6 +165,7 @@
         transform: translateX(-50%);
         width: 100px;
         height: 4px;
+        /* Usa var() para o gradiente de linha */
         background: linear-gradient(90deg, var(--primary), var(--accent));
         border-radius: 2px;
     }
@@ -120,67 +178,7 @@
         line-height: 1.6;
     }
 
-    /* Grid da História */
-    .historia-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 50px;
-        margin-top: 50px;
-    }
-
-    .historia-card {
-        padding: 50px 40px;
-        border-radius: 24px;
-        background: var(--glass);
-        backdrop-filter: blur(20px);
-        border: 1px solid var(--border);
-        box-shadow: var(--shadow-sm);
-        transition: var(--transition);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .historia-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 5px;
-        background: linear-gradient(90deg, var(--primary), var(--accent));
-    }
-
-    .historia-card:hover {
-        transform: translateY(-8px);
-        box-shadow: var(--shadow-lg);
-    }
-
-    .card-icon {
-        font-size: 3.5rem;
-        margin-bottom: 25px;
-        display: inline-block;
-        padding: 20px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-        box-shadow: var(--shadow);
-    }
-
-    .historia-card h3 {
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: var(--text);
-        margin-bottom: 25px;
-        line-height: 1.3;
-    }
-
-    .historia-card p {
-        color: var(--text);
-        line-height: 1.8;
-        margin-bottom: 20px;
-        font-size: 1.05rem;
-    }
-
-    /* Diferenciais */
+    /* Diferenciais Gamer */
     .diferenciais-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -206,12 +204,9 @@
         left: -100%;
         width: 100%;
         height: 100%;
+        /* A cor branca do brilho foi substituída por rgba(var(--text), 0.1) ou mantida transparente */
         background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
         transition: var(--transition);
-    }
-
-    .diferencial-card:hover::before {
-        left: 100%;
     }
 
     .diferencial-card:hover {
@@ -232,24 +227,11 @@
     }
 
     .diferencial-card:hover .diferencial-icon {
-        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
         color: white;
         transform: scale(1.1);
     }
-
-    .diferencial-card h4 {
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: var(--text);
-        margin-bottom: 20px;
-    }
-
-    .diferencial-card p {
-        color: var(--text-light);
-        line-height: 1.7;
-        font-size: 1rem;
-    }
-
+    
     /* Pilares */
     .pilares-grid {
         display: grid;
@@ -266,15 +248,9 @@
         transition: var(--transition);
         position: relative;
         text-align: center;
-    }
-
-    .pilar-card:hover {
-        transform: translateY(-8px);
-        box-shadow: var(--shadow-lg);
-    }
-
-    .pilar-header {
-        margin-bottom: 30px;
+        display: flex; 
+        flex-direction: column; 
+        align-items: center;
     }
 
     .pilar-icon {
@@ -289,7 +265,7 @@
     }
 
     .pilar-card:hover .pilar-icon {
-        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
         color: white;
         transform: rotate(5deg);
     }
@@ -300,18 +276,17 @@
         color: var(--text);
         margin: 0;
     }
-
+    
     .pilar-card p {
-        color: var(--text);
-        line-height: 1.8;
-        margin-bottom: 25px;
-        font-size: 1.05rem;
+        flex-grow: 1; 
+        line-height: 1.6;
     }
 
     .valores-list {
         list-style: none;
         padding: 0;
         text-align: left;
+        width: 100%;
     }
 
     .valores-list li {
@@ -323,10 +298,6 @@
         font-weight: 500;
         font-size: 1rem;
         border-bottom: 1px solid var(--border);
-    }
-
-    .valores-list li:last-child {
-        border-bottom: none;
     }
 
     .valores-list li::before {
@@ -344,112 +315,55 @@
         flex-shrink: 0;
     }
 
-    /* Equipe - ESTILOS ATUALIZADOS PARA FOTOS LOCAIS */
+    /* Estilo Equipe Grid */
     .equipe-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 35px;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 30px;
         margin-top: 50px;
     }
 
     .membro-card {
-        padding: 40px 30px;
         text-align: center;
-        border-radius: 24px;
+        padding: 30px;
+        border-radius: 20px;
         background: var(--glass);
         border: 1px solid var(--border);
+        box-shadow: var(--shadow);
         transition: var(--transition);
-        position: relative;
-        overflow: hidden;
     }
 
-    .membro-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 5px;
-        background: linear-gradient(90deg, var(--primary), var(--accent));
-    }
-
-    .membro-card:hover {
-        transform: translateY(-8px);
-        box-shadow: var(--shadow-lg);
-    }
-
-    /* ESTILOS PARA AS FOTOS LOCAIS */
-    .membro-avatar {
-        width: 120px;
-        height: 120px;
+    .membro-foto {
+        width: 150px;
+        height: 150px;
         border-radius: 50%;
-        margin: 0 auto 25px;
-        border: 4px solid var(--border);
-        overflow: hidden;
-        position: relative;
-        background: var(--secondary);
-        transition: var(--transition);
-    }
-
-    .membro-avatar img {
-        width: 100%;
-        height: 100%;
         object-fit: cover;
+        margin-bottom: 20px;
+        border: 4px solid var(--accent);
+        /* Usando cores do tema para o box-shadow */
+        box-shadow: 0 0 0 6px var(--accent); 
         transition: var(--transition);
     }
-
-    .membro-card:hover .membro-avatar {
+    
+    .membro-card:hover .membro-foto {
         border-color: var(--primary);
-        transform: scale(1.05);
-    }
-
-    .membro-card:hover .membro-avatar img {
-        transform: scale(1.1);
+        box-shadow: 0 0 0 6px var(--primary);
     }
 
     .membro-card h4 {
-        font-size: 1.4rem;
+        font-size: 1.5rem;
         font-weight: 700;
         color: var(--text);
-        margin-bottom: 8px;
+        margin-bottom: 5px;
     }
 
-    .membro-cargo {
+    .membro-card span {
+        display: block;
+        font-weight: 600;
         color: var(--primary);
-        font-weight: 600;
-        margin-bottom: 20px;
-        font-size: 0.95rem;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .membro-desc {
-        color: var(--text-light);
-        line-height: 1.7;
-        margin-bottom: 25px;
-        font-size: 1rem;
-    }
-
-    .github-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        padding: 12px 24px;
-        background: var(--dark);
-        color: white;
-        text-decoration: none;
-        border-radius: 10px;
-        font-weight: 600;
-        transition: var(--transition);
-        border: 2px solid var(--dark);
-        font-size: 0.95rem;
-    }
-
-    .github-btn:hover {
-        background: transparent;
-        color: var(--dark);
-        transform: translateY(-2px);
-        box-shadow: var(--shadow);
+        font-size: 0.8rem;
+        letter-spacing: 1px;
     }
 
     /* Contato */
@@ -471,6 +385,7 @@
         left: 0;
         width: 100%;
         height: 5px;
+        /* Usa var() para o gradiente de topo */
         background: linear-gradient(90deg, var(--primary), var(--accent), var(--success));
     }
 
@@ -479,22 +394,6 @@
         font-weight: 700;
         color: var(--text);
         margin-bottom: 20px;
-    }
-
-    .contato-section p {
-        color: var(--text-light);
-        margin-bottom: 40px;
-        font-size: 1.2rem;
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .contato-buttons {
-        display: flex;
-        justify-content: center;
-        gap: 25px;
-        flex-wrap: wrap;
     }
 
     .contato-btn {
@@ -530,160 +429,102 @@
         color: white;
     }
 
-    /* Responsividade */
+    /* Responsividade (mantido) */
     @media (max-width: 968px) {
-        .historia-grid {
-            grid-template-columns: 1fr;
-            gap: 30px;
-        }
-        
         .hero-stats {
             gap: 40px;
         }
-        
-        .hero-content h1 {
-            font-size: 2.8rem;
-        }
-        
-        .section-header h2 {
-            font-size: 2.2rem;
-        }
-        
-        .sobre-section {
-            margin: 70px 0;
-        }
     }
-
     @media (max-width: 768px) {
-        .sobre-container {
-            padding: 20px 15px;
-        }
-        
-        .sobre-hero {
-            padding: 60px 0 40px;
-        }
-        
         .hero-stats {
             flex-direction: column;
             gap: 30px;
-        }
-        
-        .contato-buttons {
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .contato-btn {
-            width: 100%;
-            max-width: 300px;
-            justify-content: center;
-        }
-        
-        .hero-content h1 {
-            font-size: 2.3rem;
-        }
-        
-        .section-header h2 {
-            font-size: 1.8rem;
-        }
-        
-        .historia-card,
-        .pilar-card,
-        .membro-card {
-            padding: 30px 25px;
         }
     }
 </style>
 
 <div class="sobre-container">
-    <!-- Hero Section -->
     <section class="sobre-hero">
         <div class="hero-content">
-            <h1>Sobre a GHCP</h1>
-            <p class="hero-subtitle">Unindo inovação, performance e atendimento premium desde 2025</p>
+            <h1>Sobre a Gamechip</h1>
+            <p class="hero-subtitle">Um legado de família, transformando o sonho do fliperama em uma ponte digital para o universo gamer.</p>
             <div class="hero-stats">
                 <div class="stat">
-                    <span class="stat-number">1000+</span>
-                    <span class="stat-label">Clientes Satisfeitos</span>
+                    <span class="stat-number">10K+</span>
+                    <span class="stat-label">Gamers Conectados</span>
                 </div>
                 <div class="stat">
-                    <span class="stat-number">50+</span>
-                    <span class="stat-label">Marcas Premium</span>
+                    <span class="stat-number">20+</span>
+                    <span class="stat-label">Plataformas Suportadas</span>
                 </div>
                 <div class="stat">
-                    <span class="stat-number">24h</span>
-                    <span class="stat-label">Suporte Técnico</span>
+                    <span class="stat-number">3 Min</span>
+                    <span class="stat-label">Tempo Médio de Entrega</span>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- História e Propósito -->
     <section class="sobre-section">
         <div class="section-header">
-            <h2>Nossa Jornada</h2>
-            <p>Do sonho à realidade: conheça nossa trajetória</p>
+            <h2>Nossa História: Um Sonho que Virou Legado</h2>
+            <p>Cada clique e cada compra carrega a paixão de uma família pelo universo dos jogos.</p>
         </div>
         
-        <div class="historia-grid">
-            <div class="historia-card">
-                <div class="card-icon">🚀</div>
-                <h3>Nossa História</h3>
-                <p>A GHCP nasceu em <strong>2025</strong>, fruto da paixão de quatro amigos especialistas em tecnologia: Guilherme Silveira, Henrique Nau, Caetano Petry e Pietro Tamanini.</p>
-                <p>Começamos com a missão clara de preencher uma lacuna no mercado: unir produtos de alta performance com um atendimento verdadeiramente humanizado.</p>
-                <p>Nossa trajetória é marcada pela busca constante pela excelência e pela confiança de nossos clientes.</p>
-            </div>
+        <div class="historia-storytelling">
+            <p>Desde pequeno, eu sempre via meu pai com um brilho nos olhos quando o assunto era jogos. Ele sempre dizia que um dia teria sua própria lan house, um lugar onde qualquer pessoa pudesse se divertir com seus jogos favoritos e mergulhar nesse universo.</p>
             
-            <div class="historia-card">
-                <div class="card-icon">🎯</div>
-                <h3>Nosso Propósito</h3>
-                <p>Democratizar o acesso à tecnologia de ponta, oferecendo produtos de alta performance e suporte técnico especializado.</p>
-                <p>Buscamos ser a principal referência nacional em e-commerce de tecnologia, destacando-nos pela excelência operacional e compromisso com a satisfação do cliente.</p>
-                <p>Acreditamos que tecnologia de qualidade deve ser acessível a todos.</p>
-            </div>
+            <blockquote>"A paixão do meu pai pelo fliperama acabou virando uma inspiração para mim. O tempo passou, a vida seguiu, e aquele sonho acabou ficando guardado em uma prateleira da memória. Mas eu nunca esqueci."</blockquote>
+            
+            <p>Foi então que decidi tirar o sonho dele do papel e transformá-lo em realidade. Assim nasceu a **Gamechip**, um site online moderno e dedicado. Aqui, vendemos **Game Pass, gift cards, contas premium, recargas de jogos mobile** e tudo o que move o mundo gamer.</p>
+
+            <h3>Mais que um Site, uma Continuação de História</h3>
+
+            <p>A Gamechip é mais do que um site de e-commerce; é um **legado familiar**. É a prova de que sonhos não morrem, que eles se realizam no momento certo. Cada produto vendido, cada jogador satisfeito é um pedacinho desse sonho que continua vivo.</p>
+
+            <p>Hoje, quando vejo o site no ar, sinto que não é só um projeto, é a continuação de uma história, facilitando a compra e servindo de ponte entre a empresa e o público, graças a uma plataforma interativa e intuitiva.</p>
+
+            <p class="legado-final">Porque aqui, na Gamechip, a gente não vende só jogos…<br>A gente vende **sonhos, diversão e conexões**.</p>
         </div>
     </section>
 
-    <!-- Diferenciais -->
     <section class="sobre-section">
         <div class="section-header">
-            <h2>Por Que Escolher a GHCP</h2>
-            <p>Excelência em cada detalhe do seu atendimento</p>
+            <h2>Nossos Diferenciais Gamers</h2>
+            <p>Vantagens exclusivas para levar seu jogo ao próximo nível</p>
         </div>
         
         <div class="diferenciais-grid">
             <div class="diferencial-card">
-                <div class="diferencial-icon">🔍</div>
-                <h4>Curadoria Especializada</h4>
-                <p>Selecionamos apenas as melhores marcas do mercado após rigorosos testes de qualidade e desempenho.</p>
-            </div>
-            
-            <div class="diferencial-card">
-                <div class="diferencial-icon">🚚</div>
-                <h4>Entrega Rápida</h4>
-                <p>Entregamos em todo o Brasil com rastreamento em tempo real e embalagem reforçada para máxima segurança.</p>
+                <div class="diferencial-icon">⚡</div>
+                <h4>Entrega Imediata (24/7)</h4>
+                <p>Receba seu Game Pass, Gift Card ou Recarga instantaneamente, a qualquer hora do dia ou da noite.</p>
             </div>
             
             <div class="diferencial-card">
                 <div class="diferencial-icon">🛡️</div>
-                <h4>Garantia Estendida</h4>
-                <p>1 ano de garantia em todos os produtos e suporte técnico especializado incluso no pós-venda.</p>
+                <h4>Segurança e Confiança</h4>
+                <p>Todas as chaves e códigos são 100% autênticos e verificados, garantindo a sua tranquilidade.</p>
             </div>
             
             <div class="diferencial-card">
-                <div class="diferencial-icon">💎</div>
-                <h4>Atendimento Premium</h4>
-                <p>Consultores especializados para orientar sua compra e solucionar dúvidas técnicas com agilidade.</p>
+                <div class="diferencial-icon">🎮</div>
+                <h4>Variedade de Jogos</h4>
+                <p>Temos produtos para PC, consoles (Xbox, PlayStation) e os principais jogos mobile do mercado.</p>
+            </div>
+            
+            <div class="diferencial-card">
+                <div class="diferencial-icon">💬</div>
+                <h4>Suporte Especializado</h4>
+                <p>Equipe de suporte feita por gamers, para gamers, pronta para te ajudar rapidamente.</p>
             </div>
         </div>
     </section>
 
-    <!-- Missão, Visão e Valores -->
     <section class="sobre-section">
         <div class="section-header">
             <h2>Nossos Pilares</h2>
-            <p>Os valores que guiam cada decisão que tomamos</p>
+            <p>O compromisso que transforma um sonho em realidade para a comunidade gamer</p>
         </div>
         
         <div class="pilares-grid">
@@ -692,7 +533,7 @@
                     <div class="pilar-icon">🎯</div>
                     <h3>Missão</h3>
                 </div>
-                <p>Democratizar o acesso à tecnologia de ponta, oferecendo produtos de alta performance e suporte técnico especializado para que nossos clientes alcancem todo o seu potencial.</p>
+                <p>Ser a ponte mais rápida, segura e intuitiva entre o jogador e a diversão, garantindo acesso facilitado aos melhores conteúdos e créditos do universo gamer.</p>
             </div>
             
             <div class="pilar-card">
@@ -700,7 +541,7 @@
                     <div class="pilar-icon">👁️</div>
                     <h3>Visão</h3>
                 </div>
-                <p>Ser reconhecida como a principal referência nacional em e-commerce de tecnologia, destacando-se pela excelência operacional e compromisso inabalável com a satisfação do cliente.</p>
+                <p>Transformar a Gamechip na plataforma de recargas e gift cards preferida dos gamers brasileiros, consolidando nosso legado de confiança, agilidade e paixão pelos jogos.</p>
             </div>
             
             <div class="pilar-card">
@@ -709,76 +550,62 @@
                     <h3>Valores</h3>
                 </div>
                 <ul class="valores-list">
-                    <li>Qualidade e Inovação em primeiro lugar</li>
-                    <li>Atendimento personalizado e humanizado</li>
-                    <li>Transparência e confiança em todas as relações</li>
-                    <li>Compromisso com a satisfação do cliente</li>
-                    <li>Ética e responsabilidade em cada ação</li>
+                    <li>Paixão por Jogos (Game DNA)</li>
+                    <li>Agilidade e Entrega Imediata</li>
+                    <li>Transparência e Confiança</li>
+                    <li>Legado e Atendimento Humanizado</li>
+                    <li>Inovação Digital</li>
                 </ul>
             </div>
         </div>
     </section>
-
-    <!-- Equipe COM FOTOS LOCAIS -->
+    
     <section class="sobre-section">
         <div class="section-header">
-            <h2>Nossa Equipe</h2>
-            <p>Os especialistas por trás da excelência GHCP</p>
+            <h2>Conheça a Equipe</h2>
+            <p>Pessoas apaixonadas que tornaram o sonho do fliperama uma realidade digital.</p>
         </div>
         
         <div class="equipe-grid">
             <div class="membro-card">
-                <div class="membro-avatar">
-                    <img src="{{ url_for('static', filename='equipe/guilherme.png') }}" alt="Guilherme Silveira" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiByeD0iNjAiIGZpbGw9IiMwMDY2ZmYiLz4KPHRleHQgeD0iNjAiIHk9IjY4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0MCIgZm9udC13ZWlnaHQ9ImJvbGQiPkc8L3RleHQ+Cjwvc3ZnPgo='">
-                </div>
-                <h4>Guilherme Silveira</h4>
-                <div class="membro-cargo">CEO & Estratégia</div>
-                <p class="membro-desc">Com vasta experiência em desenvolvimento e gestão, lidera a visão estratégica e inovação da GHCP.</p>
-                <a href="https://github.com/guiarthur09" class="github-btn">👤 GitHub</a>
+                <img src="/static/equipe/guilherme.png" alt="Foto de Guilherme Costa" class="membro-foto" onerror="this.onerror=null; this.src='https://via.placeholder.com/150/0066ff/FFFFFF?text=GC'">
+                <span>Fundador & CEO</span>
+                <h4>Guilherme Costa</h4>
+                <p>O visionário por trás do legado, transformando a inspiração familiar em um negócio digital.</p>
             </div>
             
             <div class="membro-card">
-                <div class="membro-avatar">
-                    <img src="{{ url_for('static', filename='equipe/henrique.png') }}" alt="Henrique Nau" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiByeD0iNjAiIGZpbGw9IiMwMDY2ZmYiLz4KPHRleHQgeD0iNjAiIHk9IjY4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0MCIgZm9udC13ZWlnaHQ9ImJvbGQiPkg8L3RleHQ+Cjwvc3ZnPgo='">
-                </div>
-                <h4>Henrique Nau</h4>
-                <div class="membro-cargo">CMO & Marketing</div>
-                <p class="membro-desc">Especialista em e-commerce e comunicação, conecta a GHCP com o mercado e garante as melhores ofertas.</p>
-                <a href="https://github.com/henriquenau13" class="github-btn">👤 GitHub</a>
+                <img src="/static/equipe/henrique.png" alt="Foto de Henrique Silva" class="membro-foto" onerror="this.onerror=null; this.src='https://via.placeholder.com/150/ff6b35/FFFFFF?text=HS'">
+                <span>CTO & Tech Lead</span>
+                <h4>Henrique Silva</h4>
+                <p>Garante que nossa plataforma seja rápida, segura e intuitiva para todos os gamers.</p>
             </div>
             
             <div class="membro-card">
-                <div class="membro-avatar">
-                    <img src="{{ url_for('static', filename='equipe/caetano.png ') }}" alt="Caetano Petry" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiByeD0iNjAiIGZpbGw9IiMwMDY2ZmYiLz4KPHRleHQgeD0iNjAiIHk9IjY4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0MCIgZm9udC13ZWlnaHQ9ImJvbGQiPkM8L3RleHQ+Cjwvc3ZnPgo='">
-                </div>
-                <h4>Caetano Petry</h4>
-                <div class="membro-cargo">CPO & Produtos</div>
-                <p class="membro-desc">Com olhar técnico apurado, é o curador do catálogo, garantindo apenas hardware de alta qualidade.</p>
-                <a href="https://github.com/caetanopetry" class="github-btn">👤 GitHub</a>
+                <img src="/static/equipe/caetano.png" alt="Foto de Caetano Lopes" class="membro-foto" onerror="this.onerror=null; this.src='https://via.placeholder.com/150/0066ff/FFFFFF?text=CL'">
+                <span>Head de Marketing</span>
+                <h4>Caetano Lopes</h4>
+                <p>Responsável por conectar a Gamechip com a comunidade gamer brasileira.</p>
             </div>
             
             <div class="membro-card">
-                <div class="membro-avatar">
-                    <img src="{{ url_for('static', filename='equipe/pietro.png') }}" alt="Pietro Tamanini"> 
-                </div>
+                <img src="/static/equipe/pietro.png" alt="Foto de Pietro Tamanini" class="membro-foto" onerror="this.onerror=null; this.src='https://via.placeholder.com/150/ff6b35/FFFFFF?text=PT'">
+                <span>Gerente de Suporte</span>
                 <h4>Pietro Tamanini</h4>
-                <div class="membro-cargo">CTO & Infraestrutura</div>
-                <p class="membro-desc">Responsável pela excelência técnica da plataforma, garantindo experiência segura e sem problemas.</p>
-                <a href="https://github.com/pietrotamanini" class="github-btn">👤 GitHub</a>
+                <p>Lidera a equipe de suporte, garantindo um atendimento humanizado e rápido.</p>
             </div>
         </div>
     </section>
 
-    <!-- Contato -->
     <section class="contato-section">
-        <h3>📧 Fale Conosco</h3>
-        <p>Pronto para levar sua experiência tecnológica para o próximo nível?</p>
+        <h3>📧 Pronto para Jogar?</h3>
+        <p>Entre em contato com nossa equipe de suporte gamer!</p>
         <div class="contato-buttons">
-            <a href="mailto:contato@ghcp.com.br" class="contato-btn">
-                📩 E-mail: contato@ghcp.com.br
+            <a href="mailto:contato@gamechip.com.br" class="contato-btn">
+                📩 E-mail: contatogamechip@ghcp.com.br
             </a>
-            <a href="tel:+5511999999999" class="contato-btn secondary">
-                📞 Telefone: (11) 99999-9999
+            <a href="https://wa.me/47992913723" class="contato-btn secondary">
+                💬 WhatsApp: (47) 99291-3723
             </a>
         </div>
     </section>
