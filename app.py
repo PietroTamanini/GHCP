@@ -15,7 +15,7 @@ import base64
 
 app = Flask(__name__)
 app.secret_key = 'GHCP-2o25'
-aaaaaaaaaaaaa = jj
+
 @app.template_filter('from_json')
 def from_json_filter(value):
     if value:
