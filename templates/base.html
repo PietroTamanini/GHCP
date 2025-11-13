@@ -101,42 +101,42 @@
             align-items: center; 
             gap: 40px;
         }
-        .logo { 
-            display: flex; 
-            align-items: center; 
-            flex-shrink: 0; 
-        }
-        /* O CONTAINER DO LINK DEVE SER FLEX PARA EMPILHAR OS ELEMENTOS */
+        .logo {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
         .logo-link-container {
-            display: flex; 
-            flex-direction: column; /* Empilha a imagem e o subtítulo verticalmente */
-            align-items: flex-start; /* Alinha o conteúdo à esquerda */
-            line-height: 1; /* Para controle fino do espaçamento */
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centraliza verticalmente a logo e o subtítulo */
             text-decoration: none;
-            color: var(--text); 
-            padding: 2px 0;
+            color: var(--text);
+            padding: 4px 0;
+            line-height: 1;
         }
-    
-        /* ESTILO DA IMAGEM */
+
+        /* AUMENTA A LOGO E MANTÉM PROPORÇÃO */
         .logo-navbar-img {
-            height: 45px; /* Altura da logo principal */
-            width: auto; 
-            display: block; 
-            margin-bottom: 2px; /* Espaço entre a imagem e o subtítulo */
+            height: 70px; /* 🔥 aumente aqui o tamanho (antes era 45px) */
+            width: auto;
+            display: block;
+            margin-bottom: 4px;
             transition: transform 0.3s ease;
         }
+
         .logo-link-container:hover .logo-navbar-img {
-            transform: scale(1.02); 
+            transform: scale(1.05);
         }
-    
-        /* ESTILO DO SUBTÍTULO (SLOGAN) */
+
+        /* SLOGAN AJUSTADO ABAIXO DA LOGO */
         .logo-subtitle {
-            font-size: 10px;
-            color: var(--text-light); 
-            font-weight: 500;
+            font-size: 12px; /* leve aumento pra acompanhar a nova logo */
+            color: var(--text-light);
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 2px !important;
-            line-height: 1.2;
+            letter-spacing: 2px;
         }
         /* FIM DOS AJUSTES DO LOGO */
     
