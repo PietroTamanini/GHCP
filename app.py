@@ -27,7 +27,7 @@ def from_json_filter(value):
 
 DB_CONFIG = {
     'host': 'localhost',
-    'port': '3406',
+    'port': '3306',
     'user': 'root',
     'password': '',
     'database': 'loja_informatica'
