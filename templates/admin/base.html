@@ -690,9 +690,6 @@
                 <li><a href="{{ url_for('admin_produtos') }}" class="{% if request.endpoint == 'admin_produtos' %}active{% endif %}">
                     🛍️ Produtos
                 </a></li>
-                <li><a href="{{ url_for('admin_listar_combos') }}" class="{% if request.endpoint == 'admin_clientes' %}active{% endif %}">
-                    🛒 Combos
-                </a></li>
                 <li><a href="{{ url_for('admin_clientes') }}" class="{% if request.endpoint == 'admin_clientes' %}active{% endif %}">
                     👥 Clientes
                 </a></li>
@@ -702,9 +699,7 @@
                 <li><a href="{{ url_for('admin_relatorios') }}" class="{% if request.endpoint == 'admin_relatorios' %}active{% endif %}">
                     📈 Relatórios
                 </a></li>
-                <li><a href="{{ url_for('admin_ofertas') }}" class="{% if request.endpoint == 'admin_ofertas' %}active{% endif %}">
-                    💸 Ofertas do Dia
-                </a></li>
+
                 <li><a href="{{ url_for('admin_concorrentes') }}" class="{% if request.endpoint == 'admin_concorrentes' %}active{% endif %}">
                     🤝 inscrições para Vagas
                 </a></li>

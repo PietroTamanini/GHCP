@@ -15,7 +15,7 @@ import base64
 
 app = Flask(__name__)
 app.secret_key = 'GHCP-2o25'
-
+aaaaaaaaaaaaa = jj
 @app.template_filter('from_json')
 def from_json_filter(value):
     if value:
@@ -27,7 +27,11 @@ def from_json_filter(value):
 
 DB_CONFIG = {
     'host': 'localhost',
+<<<<<<< HEAD
     'port': '3306',
+=======
+    'port': '3307',
+>>>>>>> bc1396353a1c0c20d62e0295ccfd7aa56992d024
     'user': 'root',
     'password': '',
     'database': 'loja_informatica'

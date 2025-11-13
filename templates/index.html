@@ -3,43 +3,103 @@
 {% set titulo = "Loja GHCP - Ofertas Imperdíveis de Tecnologia" %}
 
 {% block conteudo %}
+<section class="hero">
+    <div class="hero-background">
+        <img src="{{ url_for('static', filename='img/card-games.png') }}" alt="Card Games" class="hero-image">
+    </div>
+    
+    <div class="hero-content">
+        <h1>OFERTA EXCLUSIVA GAME CHIP!</h1>
+        <h2>Toda a linha de Periféricos com até 35% de Desconto!</h2>
+        <p>Jogos, Gift Cards, Contas Premium e Extras!</p>
+        <a href="{{ url_for('listar_produtos') }}" class="btn hero-btn">
+            🔥 Ver Periféricos em Oferta
+        </a>
+    </div>
+</section>
 
-<section class="hero-section" style="
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-    color: white;
-    padding: 60px 40px;
-    border-radius: var(--radius);
-    margin-bottom: 40px;
-    text-align: center;
-    box-shadow: var(--shadow-lg);
-    animation: fadeIn 0.8s ease;
-">
-    <h1 style="font-size: 3.5rem; margin-bottom: 10px; font-weight: 900; letter-spacing: -1px;">
-        OFERTA EXCLUSIVA GHCP!
-    </h1>
-    <h2 style="font-size: 1.8rem; margin-bottom: 25px; font-weight: 500;">
-        Toda a linha de Periféricos com até 35% de Desconto!
-    </h2>
-    <p style="font-size: 1.1rem; margin-bottom: 40px; opacity: 0.8;">
-        Mouse, Teclado, Headset e Câmeras: Upgrade garantido para seu setup!
-    </p>
-    <a href="{{ url_for('listar_produtos') }}" class="btn" style="
+<style>
+    .hero {
+        position: relative;
+        height: 70vh;
+        min-height: 500px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        overflow: hidden;
+        margin-bottom: 60px;
+    }
+    
+    .hero-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+    }
+    
+    .hero-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        color: white;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+        max-width: 800px;
+        padding: 0 20px;
+    }
+    
+    .hero-content h1 {
+        font-size: 3.5rem;
+        margin-bottom: 10px;
+        font-weight: 900;
+        letter-spacing: -1px;
+    }
+    
+    .hero-content h2 {
+        font-size: 1.8rem;
+        margin-bottom: 25px;
+        font-weight: 500;
+    }
+    
+    .hero-content p {
+        font-size: 1.1rem;
+        margin-bottom: 40px;
+        opacity: 0.9;
+    }
+    
+    .hero-btn {
         padding: 15px 40px;
         font-size: 1.1rem;
         background: linear-gradient(135deg, var(--accent) 0%, #ff4b1f 100%);
         box-shadow: 0 4px 15px rgba(255, 107, 53, 0.5);
-    ">
-        🔥 Ver Periféricos em Oferta
-    </a>
-</section>
+        border: none;
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .hero-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 107, 53, 0.7);
+        color: white;
+    }
 
-<style>
     .highlight-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 30px;
         margin-bottom: 60px;
     }
+    
     .highlight-card {
         background: var(--glass);
         border: 1px solid var(--border);
@@ -50,20 +110,24 @@
         box-shadow: var(--shadow-sm);
         backdrop-filter: blur(10px);
     }
+    
     .highlight-card:hover {
         transform: translateY(-8px) scale(1.01);
         box-shadow: var(--shadow);
     }
+    
     .highlight-card h3 {
         font-size: 1.5rem;
         margin-bottom: 10px;
         color: var(--primary-dark);
         font-weight: 800;
     }
+    
     .highlight-card p {
         color: var(--text-light);
         margin-bottom: 20px;
     }
+    
     .highlight-icon {
         font-size: 3rem;
         margin-bottom: 15px;
@@ -74,6 +138,7 @@
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         gap: 30px;
     }
+    
     .product-card {
         border: 1px solid var(--border);
         border-radius: var(--radius);
@@ -83,16 +148,18 @@
         background: white;
         position: relative;
     }
+    
     .dark-theme .product-card {
         background: var(--dark);
     }
+    
     .product-card:hover {
         transform: translateY(-5px);
         box-shadow: var(--shadow);
     }
+    
     .product-image {
         height: 200px;
-        /* Corrigindo a cor de fundo para a imagem de placeholder */
         background-color: #e0e0e0; 
         display: flex;
         align-items: center;
@@ -105,35 +172,41 @@
         padding: 10px;
         position: relative;
     }
+    
     .product-image img {
-        /* Garante que a imagem de placeholder se ajuste corretamente */
         object-fit: contain; 
     }
+    
     .product-info {
         padding: 20px;
     }
+    
     .product-info h4 {
         font-size: 1.2rem;
         font-weight: 700;
         margin-bottom: 8px;
         color: var(--text);
     }
+    
     .price-old {
         color: var(--text-light);
         text-decoration: line-through;
         font-size: 0.9rem;
         margin-right: 10px;
     }
+    
     .price-new {
         color: var(--danger);
         font-size: 1.5rem;
         font-weight: 800;
     }
+    
     .price-normal {
         color: var(--primary-dark);
         font-size: 1.5rem;
         font-weight: 800;
     }
+    
     .product-actions {
         margin-top: 15px;
         display: flex;
@@ -141,6 +214,7 @@
         align-items: center;
         gap: 10px;
     }
+    
     .ofertas-badge {
         position: absolute;
         top: 10px;
@@ -154,6 +228,7 @@
         z-index: 2;
         box-shadow: var(--shadow-sm);
     }
+    
     .novo-badge {
         position: absolute;
         top: 10px;
@@ -167,6 +242,7 @@
         z-index: 2;
         box-shadow: var(--shadow-sm);
     }
+    
     .btn-carrinho {
         background: linear-gradient(135deg, var(--success) 0%, #00b36e 100%);
         color: white;
@@ -178,10 +254,12 @@
         transition: var(--transition);
         flex: 1;
     }
+    
     .btn-carrinho:hover {
         transform: translateY(-2px);
         box-shadow: var(--shadow);
     }
+    
     .btn-detalhes {
         background: var(--primary);
         color: white;
@@ -196,6 +274,7 @@
         text-align: center;
         display: inline-block;
     }
+    
     .btn-detalhes:hover {
         background: var(--primary-dark);
         transform: translateY(-2px);
@@ -206,8 +285,9 @@
 
 <h2 class="card-header" style="border: none; margin-bottom: 20px;">
     <span>🚀</span>
-    Por que comprar na GHCP?
+    Por que comprar na GAME CHIP?
 </h2>
+
 <div class="highlight-grid">
     <div class="highlight-card">
         <span class="highlight-icon" style="color: var(--success);">📦</span>
@@ -219,7 +299,7 @@
     <div class="highlight-card">
         <span class="highlight-icon" style="color: var(--primary);">⭐</span>
         <h3>Marcas de Confiança</h3>
-        <p>Apenas as melhores marcas e com garantia de 1 ano GHCP.</p>
+        <p>Apenas as melhores marcas e com garantia de 1 ano GAME SHIP.</p>
         <a href="{{ url_for('marcas') }}" class="btn btn-outline btn-sm">Nossas Marcas</a>
     </div>
     
@@ -231,80 +311,6 @@
     </div>
 </div>
 
-<h2 class="card-header">
-    <span>💰</span>
-    Ofertas do Dia
-</h2 >
-
-<div class="product-grid">
-    {% for produto in produtos_destaque %}
-    <div class="product-card">
-        {% if produto.tem_oferta and produto.desconto > 0 %}
-            <div class="ofertas-badge">{{ produto.desconto|round|int }}% OFF</div>
-        {% else %}
-            <div class="novo-badge">NOVO</div>
-        {% endif %}
-        
-        <div class="product-image">
-            {% set usar_placeholder = true %}
-            {% if produto.imagens %}
-                {% set imagens = produto.imagens|from_json %}
-                {% if imagens and imagens|length > 0 %}
-                    <img src="{{ url_for('static', filename='uploads/produtos/' ~ imagens[0]) }}" 
-                         alt="{{ produto.nome }}" 
-                         style="width: 100%; height: 100%; object-fit: cover;">
-                    {% set usar_placeholder = false %}
-                {% endif %}
-            {% endif %}
-            
-            {% if usar_placeholder %}
-                <img src="{{ url_for('static', filename='img/produto-sem-imagem.jpg') }}" 
-                     alt="Produto sem imagem" 
-                     style="width: 100%; height: 100%; object-fit: contain;">
-            {% endif %}
-        </div>
-        
-        <div class="product-info">
-            <h4>{{ produto.nome }}</h4>
-            <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 10px;">
-                {{ produto.marca }} • {{ produto.categoria }}
-            </p>
-            
-            <div class="prices">
-                {% if produto.tem_oferta and produto.desconto > 0 %}
-                    <span class="price-old">R$ {{ "%.2f"|format(produto.preco) }}</span>
-                    <span class="price-new">R$ {{ "%.2f"|format(produto.preco_com_desconto) }}</span>
-                {% else %}
-                    <span class="price-normal">R$ {{ "%.2f"|format(produto.preco) }}</span>
-                {% endif %}
-            </div>
-            
-            <div class="product-actions">
-                <a href="{{ url_for('detalhes_produto', id_produto=produto.id_produto) }}" class="btn-detalhes">
-                    Ver Detalhes
-                </a>
-                
-                <form method="POST" action="{{ url_for('adicionar_carrinho', id_produto=produto.id_produto) }}" style="flex: 1;">
-                    <button type="submit" class="btn-carrinho">
-                        + Carrinho
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-    {% else %}
-    <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-        <h3 style="color: var(--text-light); margin-bottom: 20px;">📭 Nenhuma oferta disponível no momento</h3>
-        <p style="color: var(--text-light); margin-bottom: 30px;">
-            Confira nosso catálogo completo de produtos!
-        </p>
-        <a href="{{ url_for('listar_produtos') }}" class="btn btn-primary">
-            Ver Todos os Produtos
-        </a>
-    </div>
-    {% endfor %}
-</div>
-
 <div style="text-align: center; margin-top: 50px;">
     <a href="{{ url_for('listar_produtos') }}" class="btn" style="padding: 15px 50px;">
         Ver Todo o Catálogo
@@ -312,8 +318,7 @@
 </div>
 
 <style>
-
-#cookie-banner {
+    #cookie-banner {
         position: fixed;
         bottom: 0;
         left: 0;
@@ -326,10 +331,11 @@
         align-items: center;
         gap: 10px;
         font-size: 0.9rem;
-        z-index: 99999; /* reforçado */
+        z-index: 99999;
         backdrop-filter: blur(5px);
         transition: transform 0.4s ease, opacity 0.4s ease;
     }
+    
     #cookie-banner button {
         border: none;
         color: white;
@@ -339,16 +345,20 @@
         font-weight: 600;
         transition: background 0.3s, transform 0.3s;
     }
+    
     #accept-cookies {
         background: var(--primary);
     }
+    
     #accept-cookies:hover {
-        background: #004aad; /* azul mais escuro no hover */
+        background: #004aad;
         transform: scale(1.05);
     }
+    
     #decline-cookies {
         background: var(--primary);
     }
+    
     #decline-cookies:hover {
         background: #004aad;
         transform: scale(1.05);
@@ -357,6 +367,7 @@
 
 <div id="cookie-banner">
     <span>🍪 Usamos cookies para melhorar sua experiência. Você pode aceitar ou recusar.</span>
+    
     <div style="display: flex; gap: 10px;">
         <button id="accept-cookies">Aceitar</button>
         <button id="decline-cookies">Recusar</button>
@@ -389,7 +400,5 @@
         fecharBanner();
     });
 </script>
-
-
 
 {% endblock %}
