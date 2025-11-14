@@ -580,7 +580,7 @@
 
     <!-- BOTÃO FLUTUANTE DO CHAT -->
 <div id="chatbot-btn">
-    ?
+    🤖
 </div>
 
 <!-- JANELA DO CHATBOT -->
@@ -715,9 +715,20 @@
     const chatbotInput = document.getElementById('chatbot-input');
     const chatbotMessages = document.getElementById('chatbot-messages');
 
-    // Abrir e fechar
-    chatbotBtn.onclick = () => chatbotWindow.style.display = "flex";
-    chatbotClose.onclick = () => chatbotWindow.style.display = "none";
+
+// Abrir/fechar pelo botão do bot (toggle)
+chatbotBtn.onclick = () => {
+    if (chatbotWindow.style.display === "flex") {
+        chatbotWindow.style.display = "none"; // fecha
+    } else {
+        chatbotWindow.style.display = "flex"; // abre
+    }
+};
+
+// Fechar pelo X
+chatbotClose.onclick = () => {
+    chatbotWindow.style.display = "none";
+};
 
     // Respostas prontas do bot
     function botResponse(text) {
@@ -727,38 +738,47 @@
             "login": "Para fazer login, clique em 'Entrar' no menu superior.",
             "cadastro": "Você pode criar sua conta no menu de cadastro.",
             "senha": "Você quer trocar de senha? Responda com: quero trocar minha senha",
-            "produto": "Nossos produtos podem ser vistos na área de vendas.",
+            "nova senha": "Caso você queira trocar de senha, contrate um administrador",
+            "produtos": "Nossos produtos podem ser vistos na área de vendas.",
             "ajuda": "Estou aqui para ajudar! Pergunte algo :)",
-            "quero trocar minha senha": "Caso você queira trocar de senha, contrate um administrador",
-            "horario": "Nosso atendimento é de segunda a sexta, das 9h às 18h.",
-            "pagamento": "Aceitamos Pix, cartão de crédito (em até 3x sem juros) e boleto bancário.",
-            "rastreio": "Para rastrear seu pedido, insira o código na página de Rastreamento.",
+            "horarios": "Nosso atendimento é de segunda a sexta, das 9h às 18h.",
+            "pagamentos": "Aceitamos Pix, cartão de crédito (em até 3x sem juros) e boleto bancário.",
+            "rastreios": "Para rastrear seu pedido, insira o código na página de Rastreamento.",
             "agradecer": "De nada! Fico feliz em ajudar. Mais alguma dúvida?"
-
         };
 
         text = text.toLowerCase();
-
         return responses[text] || "Desculpe, ainda não sei responder isso 😅";
     }
 
-    // Enviar mensagem
-    chatbotSend.onclick = () => {
+    // Função para enviar mensagem (usada pelo botão e pelo Enter)
+    function enviarMensagem() {
         const msg = chatbotInput.value.trim();
         if (!msg) return;
 
-        // Mensagem do usuário
         chatbotMessages.innerHTML += `<div class='msg-user'>${msg}</div>`;
 
-        // Resposta do bot
         setTimeout(() => {
             chatbotMessages.innerHTML += `<div class='msg-bot'>${botResponse(msg)}</div>`;
             chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
         }, 300);
 
         chatbotInput.value = "";
-    };
+    }
+
+    // Botão enviar
+    chatbotSend.onclick = enviarMensagem;
+
+    // ENTER para enviar — SHIFT+ENTER para quebrar linha
+    chatbotInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            if (e.shiftKey) return; // permite quebra de linha
+            e.preventDefault();     // impede quebra de linha normal
+            enviarMensagem();       // envia
+        }
+    });
 </script>
+
 
 
 
