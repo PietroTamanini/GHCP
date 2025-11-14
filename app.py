@@ -12,7 +12,6 @@ from werkzeug.utils import secure_filename
 import qrcode
 import io
 import base64
-from chatbot import responder
 
 
 

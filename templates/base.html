@@ -630,7 +630,7 @@
         right: 25px;
         width: 320px;
         height: 420px;
-        background: var(--glass-light);
+        background: var(--glass-white);
         border-radius: 18px;
         box-shadow: var(--shadow-lg);
         backdrop-filter: var(--blur);
@@ -722,13 +722,15 @@
     // Respostas prontas do bot
     function botResponse(text) {
         const responses = {
-            "oi": "Olá! Como posso ajudar?",
+            "oi": "Oi! Como posso ajudar?",
             "ola": "Olá! Tudo certo?",
             "login": "Para fazer login, clique em 'Entrar' no menu superior.",
             "cadastro": "Você pode criar sua conta no menu de cadastro.",
-            "senha": "Caso tenha esquecido sua senha, peça ao administrador.",
+            "senha": "Você quer trocar de senha? Responda com: quero trocar minha senha",
             "produto": "Nossos produtos podem ser vistos na área de vendas.",
-            "ajuda": "Estou aqui para ajudar! Pergunte algo :)"
+            "ajuda": "Estou aqui para ajudar! Pergunte algo :)",
+            "quero trocar minha senha": "Caso você queira trocar de senha, contrate um administrador"
+
         };
 
         text = text.toLowerCase();
