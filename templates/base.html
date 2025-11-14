@@ -577,5 +577,184 @@
 
         setTimeout(()=>{ document.querySelectorAll('.flashes li').forEach(el=>el.remove()); }, 5000);
     </script>
+
+    <!-- BOTÃO FLUTUANTE DO CHAT -->
+<div id="chatbot-btn">
+    ?
+</div>
+
+<!-- JANELA DO CHATBOT -->
+    <div id="chatbot-window">
+        <div id="chatbot-header">
+            <h3>Assistente</h3>
+            <span id="chatbot-close">&times;</span>
+        </div>
+
+        <div id="chatbot-messages"></div>
+
+        <div id="chatbot-input-box">
+            <input type="text" id="chatbot-input" placeholder="Digite sua pergunta...">
+            <button id="chatbot-send">Enviar</button>
+        </div>
+    </div>
+
+<style>
+    #chatbot-btn {
+        position: fixed;
+        bottom: 25px;
+        right: 25px;
+        background: var(--primary-dark);
+        color: white;
+        font-size: 28px;
+        width: 55px;
+        height: 55px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        box-shadow: var(--shadow-lg);
+        transition: var(--transition);
+        z-index: 9999;
+    }
+
+    #chatbot-btn:hover {
+        transform: scale(1.1);
+        background: var(--primary);
+    }
+
+    /* JANELA DO CHAT */
+    #chatbot-window {
+        position: fixed;
+        bottom: 100px;
+        right: 25px;
+        width: 320px;
+        height: 420px;
+        background: var(--glass-light);
+        border-radius: 18px;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: var(--blur);
+        display: none;
+        flex-direction: column;
+        z-index: 9999;
+    }
+
+    /* HEADER DO CHAT */
+    #chatbot-header {
+        background: var(--primary-dark);
+        padding: 12px;
+        color: white;
+        border-radius: 18px 18px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* MENSAGENS */
+    #chatbot-messages {
+        padding: 12px;
+        height: 280px;
+        overflow-y: auto;
+        font-size: 14px;
+        color: var(--text-dark);
+    }
+
+    /* INPUT */
+    #chatbot-input-box {
+        display: flex;
+        border-top: 1px solid #ddd;
+    }
+
+    #chatbot-input {
+        flex: 1;
+        border: none;
+        padding: 10px;
+        outline: none;
+        background: transparent;
+        color: var(--text-dark);
+    }
+
+    #chatbot-send {
+        background: var(--primary-dark);
+        color: white;
+        padding: 10px;
+        border: none;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    #chatbot-send:hover {
+        background: var(--primary);
+    }
+
+    /* BOLHAS DE MENSAGEM */
+    .msg-user {
+        background: var(--primary);
+        color: white;
+        padding: 8px;
+        border-radius: 12px;
+        margin: 6px 0;
+        text-align: right;
+    }
+
+    .msg-bot {
+        background: var(--glass);
+        padding: 8px;
+        border-radius: 12px;
+        margin: 6px 0;
+        color: var(--text-dark);
+    }
+
+</style>
+
+<script>
+    const chatbotBtn = document.getElementById('chatbot-btn');
+    const chatbotWindow = document.getElementById('chatbot-window');
+    const chatbotClose = document.getElementById('chatbot-close');
+    const chatbotSend = document.getElementById('chatbot-send');
+    const chatbotInput = document.getElementById('chatbot-input');
+    const chatbotMessages = document.getElementById('chatbot-messages');
+
+    // Abrir e fechar
+    chatbotBtn.onclick = () => chatbotWindow.style.display = "flex";
+    chatbotClose.onclick = () => chatbotWindow.style.display = "none";
+
+    // Respostas prontas do bot
+    function botResponse(text) {
+        const responses = {
+            "oi": "Olá! Como posso ajudar?",
+            "ola": "Olá! Tudo certo?",
+            "login": "Para fazer login, clique em Acessar no menu superior.",
+            "cadastro": "Você pode criar sua conta no menu de cadastro.",
+            "senha": "Caso tenha esquecido sua senha, peça ao administrador.",
+            "produto": "Nossos produtos podem ser vistos na área de vendas.",
+            "ajuda": "Estou aqui para ajudar! Pergunte algo :)"
+        };
+
+        text = text.toLowerCase();
+
+        return responses[text] || "Desculpe, ainda não sei responder isso 😅";
+    }
+
+    // Enviar mensagem
+    chatbotSend.onclick = () => {
+        const msg = chatbotInput.value.trim();
+        if (!msg) return;
+
+        // Mensagem do usuário
+        chatbotMessages.innerHTML += `<div class='msg-user'>${msg}</div>`;
+
+        // Resposta do bot
+        setTimeout(() => {
+            chatbotMessages.innerHTML += `<div class='msg-bot'>${botResponse(msg)}</div>`;
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+        }, 300);
+
+        chatbotInput.value = "";
+    };
+</script>
+
+
+
 </body>
 </html>
