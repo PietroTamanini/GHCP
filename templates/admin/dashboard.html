@@ -124,51 +124,6 @@
     </div>
 </div>
 
-<!-- Diagnósticos Recentes -->
-<div class="data-table">
-    <div class="table-header">
-        <h3>🔧 Diagnósticos Recentes</h3>
-        <div class="table-actions">
-            <a href="{{ url_for('admin_diagnosticos') }}" class="btn btn-info btn-sm">Ver Todos</a>
-        </div>
-    </div>
-    <table>
-        <thead>
-            <tr>
-                <th>Equipamento</th>
-                <th>Cliente</th>
-                <th>Data</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% if diagnosticos_recentes %}
-                {% for diagnostico in diagnosticos_recentes %}
-                <tr>
-                    <td>{{ diagnostico.tipo_equipamento }} - {{ diagnostico.marca }}</td>
-                    <td>{{ diagnostico.nome_cliente }}</td>
-                    <td>{{ diagnostico.data_entrada.strftime('%d/%m/%Y') }}</td>
-                    <td>
-                        <span class="badge 
-                            {% if diagnostico.status == 'concluido' %}badge-success
-                            {% elif diagnostico.status == 'em_analise' %}badge-warning
-                            {% else %}badge-info{% endif %}">
-                            {{ diagnostico.status|replace('_', ' ')|title }}
-                        </span>
-                    </td>
-                </tr>
-                {% endfor %}
-            {% else %}
-                <tr>
-                    <td colspan="4" style="text-align: center; color: var(--text-light); padding: 20px;">
-                        🔧 Nenhum diagnóstico recente
-                    </td>
-                </tr>
-            {% endif %}
-        </tbody>
-    </table>
-</div>
-
 <style>
     .content-grid {
         display: grid;

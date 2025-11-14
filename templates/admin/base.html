@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Painel Administrativo GHCP - Gerenciamento completo da loja">
-    <title>Admin GHCP - {% block title %}Dashboard{% endblock %}</title>
+    <meta name="description" content="Painel Administrativo GameChip - Gerenciamento completo da loja">
+    <title>Admin GameChip - {% block title %}Dashboard{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
     <link rel="icon" href="{{ url_for('static', filename='logos/favicon.ico') }}">
     <style>
@@ -680,7 +680,7 @@
     <div class="admin-container">
         <nav class="admin-sidebar" id="adminSidebar">
             <div class="sidebar-header">
-                <h2>🏠 GHCP Admin</h2>
+                <h2>🏠 GameChip Admin</h2>
                 <p>Painel Administrativo</p>
             </div>
             <ul class="sidebar-menu">
@@ -693,8 +693,6 @@
                 <li><a href="{{ url_for('admin_clientes') }}" class="{% if request.endpoint == 'admin_clientes' %}active{% endif %}">
                     👥 Clientes
                 </a></li>
-                <li><a href="{{ url_for('admin_diagnosticos') }}" class="{% if request.endpoint == 'admin_diagnosticos' %}active{% endif %}">
-                    🔧 Diagnósticos
                 </a></li>
                 <li><a href="{{ url_for('admin_relatorios') }}" class="{% if request.endpoint == 'admin_relatorios' %}active{% endif %}">
                     📈 Relatórios

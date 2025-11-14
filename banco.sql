@@ -2,8 +2,11 @@ CREATE DATABASE IF NOT EXISTS loja_informatica;
 USE loja_informatica;
 
 -- Remover tabelas existentes (em ordem correta para evitar problemas de FK)
-DROP TABLE IF EXISTS combo_produtos;
+DROP TABLE IF EXISTS produtos_empresa;
 DROP TABLE IF EXISTS combos;
+DROP TABLE IF EXISTS combos_produto;
+DROP TABLE IF EXISTS combo;
+DROP TABLE IF EXISTS combo_produto;
 DROP TABLE IF EXISTS produtos_empresa;
 DROP TABLE IF EXISTS avaliacoes_empresas;
 DROP TABLE IF EXISTS itens_pedido;
@@ -277,30 +280,7 @@ CREATE TABLE funcionarios (
     INDEX idx_cargo (cargo)
 );
 
--- Tabela diagnosticos
-CREATE TABLE diagnosticos (
-    id_diagnostico INT PRIMARY KEY AUTO_INCREMENT,
-    id_cliente INT,
-    nome_cliente VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    telefone VARCHAR(20),
-    tipo_equipamento VARCHAR(100) NOT NULL,
-    marca VARCHAR(100),
-    modelo VARCHAR(100),
-    problema TEXT NOT NULL,
-    sintomas TEXT,
-    data_entrada TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status ENUM('recebido', 'em_analise', 'diagnosticado', 'orcamento', 'aprovado', 'reparacao', 'concluido', 'entregue') DEFAULT 'recebido',
-    relatorio_final TEXT,
-    pecas_defeito TEXT,
-    orcamento DECIMAL(10, 2) DEFAULT 0,
-    observacoes TEXT,
-    tecnico_responsavel INT,
-    data_conclusao TIMESTAMP NULL,
-    FOREIGN KEY (tecnico_responsavel) REFERENCES funcionarios(id_funcionario) ON DELETE SET NULL,
-    INDEX idx_status (status),
-    INDEX idx_data (data_entrada)
-);
+
 
 -- Tabela logs_sistema
 CREATE TABLE logs_sistema (
@@ -343,32 +323,7 @@ CREATE TABLE produtos_empresa (
     UNIQUE KEY unique_produto_empresa (id_empresa, id_produto)
 );
 
--- Tabela de Combos
-CREATE TABLE combos (
-    id_combo INT PRIMARY KEY AUTO_INCREMENT,
-    nome VARCHAR(255) NOT NULL,
-    descricao TEXT,
-    marca VARCHAR(100),
-    categoria VARCHAR(100),
-    estoque INT DEFAULT 0,
-    destaque BOOLEAN DEFAULT FALSE,
-    preco DECIMAL(10, 2) NOT NULL,
-    ativo BOOLEAN DEFAULT TRUE,
-    imagem VARCHAR(255),
-    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
 
--- Tabela de relação entre Combos e Produtos (CORRIGIDA - nome correto)
-CREATE TABLE combo_produto (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    id_combo INT NOT NULL,
-    id_produto INT NOT NULL,
-    quantidade INT NOT NULL DEFAULT 1,
-    FOREIGN KEY (id_combo) REFERENCES combos(id_combo) ON DELETE CASCADE,
-    FOREIGN KEY (id_produto) REFERENCES produto(id_produto) ON DELETE CASCADE,
-    UNIQUE KEY unique_combo_produto (id_combo, id_produto)
-);
 
 -- PRO PIX FUNCIONAR
 CREATE TABLE pagamentos (
