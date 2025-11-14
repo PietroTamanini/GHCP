@@ -12,6 +12,9 @@ from werkzeug.utils import secure_filename
 import qrcode
 import io
 import base64
+from chatbot import responder
+
+
 
 app = Flask(__name__)
 app.secret_key = 'GHCP-2o25'
@@ -3801,6 +3804,16 @@ if __name__ == '__main__':
     
     # Criar admin padrão
     criar_admin_padrao()
+
+
+    #CHAT BOOT DE AJUDA!!!
+
+    @app.route("/ajuda", methods=["GET"])
+    def ajuda():
+        pergunta = request.args.get("q", "")
+        resposta = responder(pergunta)
+        return jsonify({"resposta": resposta})
+
     
     print("✅ Servidor Flask iniciado com sucesso!")
     print(f"🌐 Site: http://localhost:5000")

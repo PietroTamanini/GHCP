@@ -317,7 +317,83 @@
     </a>
 </div>
 
+
+<button id="btn-ajuda" class="help-btn">❓ Ajuda</button>
+
+
+<div id="chat-modal" class="chat-modal">
+  <div class="chat-box">
+      <h3>Ajuda</h3>
+      <div id="chat-output" class="chat-output"></div>
+
+      <input id="chat-input" type="text" placeholder="Digite sua dúvida...">
+      <button id="enviar">Enviar</button>
+  </div>
+</div>
+
 <style>
+
+    .help-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #0066ff;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 25px;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .chat-modal {
+        display: none;
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+    }
+
+    .chat-box {
+        width: 300px;
+        background: white;
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 0 15px rgba(0,0,0,.3);
+    }
+
+    .chat-output {
+        height: 200px;
+        overflow-y: auto;
+        background: #f1f1f1;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+
+    </style>
+
+    <script>
+        document.getElementById("btn-ajuda").onclick = () => {
+            document.getElementById("chat-modal").style.display = "block";
+        };
+
+        document.getElementById("enviar").onclick = async () => {
+            const pergunta = document.getElementById("chat-input").value;
+
+            const resp = await fetch(`/ajuda?q=${encodeURIComponent(pergunta)}`);
+            const data = await resp.json();
+
+            document.getElementById("chat-output").innerHTML += `
+                <p><b>Você:</b> ${pergunta}</p>
+                <p><b>Bot:</b> ${data.resposta}</p>
+            `;
+
+            document.getElementById("chat-input").value = "";
+        };
+    </script>
+
+    <style>
+
     #cookie-banner {
         position: fixed;
         bottom: 0;
