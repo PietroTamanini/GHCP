@@ -521,7 +521,7 @@
 
         <div class="footer-bottom">
             <p style="font-weight:600; font-size:15px; color:rgba(255,255,255,0.9); margin-bottom:12px;">© 2025 Loja GAMECHIP - Informática e Tecnologia</p>
-            <p>Desenvolvido com ❤️ por Guilherme Silveira | Henrique Nau | Caetano Petry | Pietro Tamanini</p>
+            <p>Desenvolvido com ❤️ por GAME CHIP</p>
             <p style="margin-top:12px; font-size:12px;">🔒 Ambiente 100% Seguro | 📦 Entrega Garantida | ⭐ Atendimento Premium</p>
         </div>
     </div>
@@ -578,25 +578,25 @@
         setTimeout(()=>{ document.querySelectorAll('.flashes li').forEach(el=>el.remove()); }, 5000);
     </script>
 
-    <!-- BOTÃO FLUTUANTE DO CHAT -->
+<!-- BOTÃO FLUTUANTE DO CHAT -->
 <div id="chatbot-btn">
     🤖
 </div>
 
 <!-- JANELA DO CHATBOT -->
-    <div id="chatbot-window">
-        <div id="chatbot-header">
-            <h3>Assistente</h3>
-            <span id="chatbot-close">&times;</span>
-        </div>
-
-        <div id="chatbot-messages"></div>
-
-        <div id="chatbot-input-box">
-            <input type="text" id="chatbot-input" placeholder="Digite sua pergunta...">
-            <button id="chatbot-send">Enviar</button>
-        </div>
+<div id="chatbot-window">
+    <div id="chatbot-header">
+        <h3>Assistente</h3>
+        <span id="chatbot-close">&times;</span>
     </div>
+
+    <div id="chatbot-messages"></div>
+
+    <div id="chatbot-input-box">
+        <input type="text" id="chatbot-input" placeholder="Digite sua pergunta...">
+        <button id="chatbot-send">Enviar</button>
+    </div>
+</div>
 
 <style>
     #chatbot-btn {
@@ -705,16 +705,45 @@
         color: var(--text-dark);
     }
 
+    /* ANIMAÇÃO DE DIGITAÇÃO */
+    .typing {
+        background: var(--glass);
+        padding: 8px;
+        border-radius: 12px;
+        margin: 6px 0;
+        color: var(--text-dark);
+        width: 60px;
+        display: flex;
+        gap: 4px;
+    }
+
+    .typing span {
+        animation: blink 1.4s infinite both;
+        opacity: 0;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .typing span:nth-child(1) { animation-delay: 0s; }
+    .typing span:nth-child(2) { animation-delay: 0.2s; }
+    .typing span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes blink {
+        0% { opacity: 0; }
+        50% { opacity: 1; }
+        100% { opacity: 0; }
+    }
 </style>
 
 <script>
-    const chatbotBtn = document.getElementById('chatbot-btn');
-    const chatbotWindow = document.getElementById('chatbot-window');
-    const chatbotClose = document.getElementById('chatbot-close');
-    const chatbotSend = document.getElementById('chatbot-send');
-    const chatbotInput = document.getElementById('chatbot-input');
-    const chatbotMessages = document.getElementById('chatbot-messages');
+const chatbotBtn = document.getElementById('chatbot-btn');
+const chatbotWindow = document.getElementById('chatbot-window');
+const chatbotClose = document.getElementById('chatbot-close');
+const chatbotSend = document.getElementById('chatbot-send');
+const chatbotInput = document.getElementById('chatbot-input');
+const chatbotMessages = document.getElementById('chatbot-messages');
 
+let welcomeSent = false;
 
 // Abrir/fechar pelo botão do bot (toggle)
 chatbotBtn.onclick = () => {
@@ -722,6 +751,12 @@ chatbotBtn.onclick = () => {
         chatbotWindow.style.display = "none"; // fecha
     } else {
         chatbotWindow.style.display = "flex"; // abre
+
+        // Enviar boas-vindas só na primeira abertura
+        if (!welcomeSent) {
+            welcomeSent = true;
+            botWelcomeMessage();
+        }
     }
 };
 
@@ -730,57 +765,83 @@ chatbotClose.onclick = () => {
     chatbotWindow.style.display = "none";
 };
 
-    // Respostas prontas do bot
-    function botResponse(text) {
-        const responses = {
-            "oi": "Oi! Como posso ajudar?",
-            "ola": "Olá! Tudo certo?",
-            "login": "Para fazer login, clique em 'Entrar' no menu superior.",
-            "cadastro": "Você pode criar sua conta no menu de cadastro.",
-            "senha": "Você quer trocar de senha? Responda com: quero trocar minha senha",
-            "nova senha": "Caso você queira trocar de senha, contrate um administrador",
-            "produtos": "Nossos produtos podem ser vistos na área de vendas.",
-            "ajuda": "Estou aqui para ajudar! Pergunte algo :)",
-            "horarios": "Nosso atendimento é de segunda a sexta, das 9h às 18h.",
-            "pagamentos": "Aceitamos Pix, cartão de crédito (em até 3x sem juros) e boleto bancário.",
-            "rastreios": "Para rastrear seu pedido, insira o código na página de Rastreamento.",
-            "agradecer": "De nada! Fico feliz em ajudar. Mais alguma dúvida?"
-        };
+// MENSAGEM DE BOAS-VINDAS
+function botWelcomeMessage() {
+    const typing = createTypingBubble();
+    chatbotMessages.appendChild(typing);
 
-        text = text.toLowerCase();
-        return responses[text] || "Desculpe, ainda não sei responder isso 😅";
+    setTimeout(() => {
+        typing.remove();
+        chatbotMessages.innerHTML += `
+            <div class="msg-bot">
+                Olá! 👋 Bem-vindo ao atendimento da GameChip. Como posso te ajudar hoje?
+            </div>`;
+        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+    }, 1200);
+}
+
+// Criar animação de digitando
+function createTypingBubble() {
+    const typingBubble = document.createElement("div");
+    typingBubble.className = "msg-bot typing";
+    typingBubble.innerHTML = "<span>.</span><span>.</span><span>.</span>";
+    return typingBubble;
+}
+
+// Respostas prontas
+function botResponse(text) {
+    const responses = {
+        "oi": "Oi! Como posso ajudar?",
+        "ola": "Olá! Tudo certo?",
+        "login": "Para fazer login, clique em 'Entrar' no menu superior.",
+        "cadastro": "Você pode criar sua conta no menu de cadastro.",
+        "senha": "Você quer trocar de senha? Responda com: quero trocar minha senha",
+        "nova senha": "Caso você queira trocar de senha, contrate um administrador",
+        "produtos": "Nossos produtos podem ser vistos na área de vendas.",
+        "ajuda": "Estou aqui para ajudar! Pergunte algo :)",
+        "horarios": "Nosso atendimento é das 9h às 18h, de segunda a sexta.",
+        "pagamentos": "Aceitamos Pix, cartão e boleto.",
+        "rastreios": "Para rastrear seu pedido, insira o código na página de Rastreamento.",
+        "agradecer": "De nada! 😊"
+    };
+
+    text = text.toLowerCase();
+    return responses[text] || "Desculpe, ainda não sei responder isso 😅";
+}
+
+// ENVIAR MENSAGEM
+function enviarMensagem() {
+    const msg = chatbotInput.value.trim();
+    if (!msg) return;
+
+    chatbotMessages.innerHTML += `<div class='msg-user'>${msg}</div>`;
+    chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+
+    const typing = createTypingBubble();
+    chatbotMessages.appendChild(typing);
+    chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+
+    setTimeout(() => {
+        typing.remove();
+        chatbotMessages.innerHTML += `<div class='msg-bot'>${botResponse(msg)}</div>`;
+        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+    }, 1200);
+
+    chatbotInput.value = "";
+}
+
+// Botão enviar
+chatbotSend.onclick = enviarMensagem;
+
+// ENTER envia — SHIFT+ENTER quebra linha
+chatbotInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+        if (e.shiftKey) return;
+        e.preventDefault();
+        enviarMensagem();
     }
-
-    // Função para enviar mensagem (usada pelo botão e pelo Enter)
-    function enviarMensagem() {
-        const msg = chatbotInput.value.trim();
-        if (!msg) return;
-
-        chatbotMessages.innerHTML += `<div class='msg-user'>${msg}</div>`;
-
-        setTimeout(() => {
-            chatbotMessages.innerHTML += `<div class='msg-bot'>${botResponse(msg)}</div>`;
-            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
-        }, 300);
-
-        chatbotInput.value = "";
-    }
-
-    // Botão enviar
-    chatbotSend.onclick = enviarMensagem;
-
-    // ENTER para enviar — SHIFT+ENTER para quebrar linha
-    chatbotInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-            if (e.shiftKey) return; // permite quebra de linha
-            e.preventDefault();     // impede quebra de linha normal
-            enviarMensagem();       // envia
-        }
-    });
+});
 </script>
-
-
-
 
 </body>
 </html>

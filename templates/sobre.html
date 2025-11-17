@@ -4,22 +4,24 @@
 
 {% block conteudo %}
 <style>
-    /* Estilos Específicos para a Página Sobre */
+    /* Estilos Específicos para a Página Sobre - VERSÃO MELHORADA */
     .sobre-container {
         max-width: 1200px;
         margin: 0 auto;
         padding: 40px 20px;
     }
 
-    /* Hero Section */
+    /* Hero Section Melhorada */
     .sobre-hero {
         text-align: center;
-        padding: 80px 0 60px;
+        padding: 100px 0 80px;
         position: relative;
         overflow: hidden;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        border-radius: 0 0 30px 30px;
+        margin-bottom: 60px;
     }
 
-    /* Ajuste para Fundo com Tema Gamer: AGORA USA VARIÁVEIS! */
     .sobre-hero::before {
         content: '';
         position: absolute;
@@ -27,33 +29,56 @@
         left: 0;
         right: 0;
         bottom: 0;
-        /* Usando cores do tema com baixa opacidade */
         background: 
-            radial-gradient(circle at 20% 80%, var(--accent) 0%, transparent 50%), 
-            radial-gradient(circle at 80% 20%, var(--primary) 0%, transparent 50%); 
-        opacity: 0.1; /* Opacidade aplicada a todo o fundo de gradiente */
-        z-index: -1;
+            radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%), 
+            radial-gradient(circle at 80% 20%, rgba(255,255,255,0.05) 0%, transparent 50%);
+        z-index: 1;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
     }
 
     .hero-content h1 {
         font-size: 3.5rem;
         font-weight: 800;
-        margin-bottom: 20px;
-        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        margin-bottom: 25px;
+        color: white;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        animation: fadeInDown 0.8s ease-out;
+    }
+
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .hero-subtitle {
         font-size: 1.3rem;
-        color: var(--text-light);
+        color: rgba(255,255,255,0.9);
         margin-bottom: 50px;
-        font-weight: 500;
-        max-width: 700px;
+        font-weight: 400;
+        max-width: 800px;
         margin-left: auto;
         margin-right: auto;
         line-height: 1.6;
+        animation: fadeIn 1s ease-out 0.3s both;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
     }
 
     .hero-stats {
@@ -61,98 +86,189 @@
         justify-content: center;
         gap: 80px;
         margin-top: 50px;
+        padding: 40px;
+        border-radius: 20px;
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.2);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        animation: fadeInUp 1s ease-out 0.5s both;
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .stat {
         text-align: center;
+        position: relative;
+        transition: var(--transition);
+    }
+
+    .stat:hover {
+        transform: scale(1.1);
+    }
+
+    .stat:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        right: -40px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 1px;
+        height: 60%;
+        background: rgba(255,255,255,0.3);
     }
 
     .stat-number {
         display: block;
-        font-size: 2.8rem;
+        font-size: 3rem;
         font-weight: 800;
-        color: var(--accent); 
+        color: white;
         line-height: 1;
         margin-bottom: 8px;
+        text-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
     .stat-label {
-        font-size: 0.85rem;
-        color: var(--text-light);
+        font-size: 1rem;
+        color: rgba(255,255,255,0.8);
         font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 0.5px;
     }
 
-    /* Seções */
+    /* Seções Melhoradas */
     .sobre-section {
-        margin: 100px 0;
+        margin: 120px 0;
         position: relative;
     }
     
-    /* --- Estilo: Seção de História (Storytelling) --- */
+    /* --- Estilo: Seção de História (Storytelling) Melhorada --- */
     .historia-storytelling {
         max-width: 900px;
         margin: 0 auto;
-        padding: 50px;
-        border-radius: 24px;
-        background: var(--glass); /* Usa var(--glass) para adaptação */
+        padding: 60px 50px;
+        border-radius: 20px;
+        background: var(--glass);
         backdrop-filter: blur(20px);
-        border: 1px solid var(--border); /* Usa var(--border) para adaptação */
+        border: 1px solid var(--border);
         box-shadow: var(--shadow-lg);
         position: relative;
         overflow: hidden;
-        font-size: 1.15rem;
-        line-height: 2.0;
+        font-size: 1.1rem;
+        line-height: 1.8;
         color: var(--text);
         font-weight: 400;
+        transition: var(--transition);
+    }
+
+    .historia-storytelling:hover {
+        box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+        transform: translateY(-5px);
+    }
+
+    .historia-storytelling::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 5px;
+        height: 100%;
+        background: linear-gradient(to bottom, var(--primary), var(--accent));
     }
 
     .historia-storytelling p strong {
         color: var(--primary);
         font-weight: 700;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 
     .historia-storytelling blockquote {
         border-left: 5px solid var(--accent);
-        padding-left: 25px;
-        margin: 30px 0;
+        padding: 25px 30px;
+        margin: 40px 0;
         font-style: italic;
         color: var(--text-light);
-        font-size: 1.25rem;
+        font-size: 1.3rem;
         line-height: 1.6;
+        background: rgba(0,0,0,0.02);
+        border-radius: 0 10px 10px 0;
+        position: relative;
+    }
+
+    .historia-storytelling blockquote::before {
+        content: '"';
+        position: absolute;
+        top: -10px;
+        left: 10px;
+        font-size: 4rem;
+        color: var(--accent);
+        opacity: 0.2;
+        font-family: Georgia, serif;
     }
 
     .historia-storytelling h3 {
-        font-size: 2rem;
-        font-weight: 800;
+        font-size: 1.8rem;
+        font-weight: 700;
         color: var(--primary);
-        margin-top: 40px;
-        margin-bottom: 20px;
+        margin-top: 50px;
+        margin-bottom: 25px;
         text-align: center;
+        position: relative;
+        padding-bottom: 15px;
+    }
+
+    .historia-storytelling h3::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 3px;
+        background: linear-gradient(to right, var(--primary), var(--accent));
+        border-radius: 2px;
     }
     
     .historia-storytelling .legado-final {
         text-align: center;
-        margin-top: 40px;
-        font-weight: 600;
-        font-size: 1.4rem;
-        color: var(--accent);
-        border-top: 2px dashed var(--border);
+        margin-top: 50px;
+        font-weight: 700;
+        font-size: 1.3rem;
+        color: var(--primary);
+        border-top: 1px solid var(--border);
         padding-top: 30px;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
-    /* --- FIM Estilo História --- */
+    /* --- FIM Estilo História Melhorada --- */
 
     .section-header {
         text-align: center;
-        margin-bottom: 70px;
+        margin-bottom: 80px;
     }
 
     .section-header h2 {
-        font-size: 2.8rem;
+        font-size: 2.5rem;
         font-weight: 800;
         color: var(--text);
-        margin-bottom: 20px;
+        margin-bottom: 25px;
         position: relative;
         display: inline-block;
     }
@@ -165,20 +281,19 @@
         transform: translateX(-50%);
         width: 100px;
         height: 4px;
-        /* Usa var() para o gradiente de linha */
-        background: linear-gradient(90deg, var(--primary), var(--accent));
+        background: linear-gradient(to right, var(--primary), var(--accent));
         border-radius: 2px;
     }
 
     .section-header p {
-        font-size: 1.2rem;
+        font-size: 1.15rem;
         color: var(--text-light);
         max-width: 700px;
         margin: 30px auto 0;
         line-height: 1.6;
     }
 
-    /* Diferenciais Gamer */
+    /* Diferenciais Gamer Melhorados */
     .diferenciais-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -187,7 +302,7 @@
     }
 
     .diferencial-card {
-        padding: 40px 30px;
+        padding: 45px 30px;
         text-align: center;
         border-radius: 20px;
         background: var(--glass);
@@ -195,6 +310,9 @@
         transition: var(--transition);
         position: relative;
         overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
     .diferencial-card::before {
@@ -204,15 +322,18 @@
         left: -100%;
         width: 100%;
         height: 100%;
-        /* A cor branca do brilho foi substituída por rgba(var(--text), 0.1) ou mantida transparente */
         background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
         transition: var(--transition);
     }
 
+    .diferencial-card:hover::before {
+        left: 100%;
+    }
+
     .diferencial-card:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--shadow);
-        border-color: var(--primary-light);
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        border-color: var(--primary);
     }
 
     .diferencial-icon {
@@ -220,19 +341,33 @@
         margin-bottom: 25px;
         display: inline-block;
         padding: 20px;
-        border-radius: 20px;
+        border-radius: 15px;
         background: var(--secondary);
-        border: 2px solid var(--border);
+        border: 1px solid var(--border);
         transition: var(--transition);
     }
 
     .diferencial-card:hover .diferencial-icon {
-        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        background: linear-gradient(135deg, var(--primary), var(--accent));
         color: white;
-        transform: scale(1.1);
+        transform: scale(1.1) rotate(5deg);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .diferencial-card h4 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 15px;
+    }
+
+    .diferencial-card p {
+        color: var(--text-light);
+        line-height: 1.6;
+        font-size: 1rem;
     }
     
-    /* Pilares */
+    /* Pilares Melhorados */
     .pilares-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -241,8 +376,8 @@
     }
 
     .pilar-card {
-        padding: 50px 40px;
-        border-radius: 24px;
+        padding: 45px 35px;
+        border-radius: 20px;
         background: var(--glass);
         border: 1px solid var(--border);
         transition: var(--transition);
@@ -251,35 +386,63 @@
         display: flex; 
         flex-direction: column; 
         align-items: center;
+        overflow: hidden;
+    }
+
+    .pilar-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background: linear-gradient(to right, var(--primary), var(--accent));
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: var(--transition);
+    }
+
+    .pilar-card:hover::after {
+        transform: scaleX(1);
+    }
+
+    .pilar-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        border-color: var(--primary);
     }
 
     .pilar-icon {
         font-size: 3rem;
         padding: 20px;
-        border-radius: 20px;
+        border-radius: 15px;
         background: var(--secondary);
-        border: 2px solid var(--border);
+        border: 1px solid var(--border);
         display: inline-block;
-        margin-bottom: 20px;
+        margin-bottom: 25px;
         transition: var(--transition);
+        z-index: 1;
     }
 
     .pilar-card:hover .pilar-icon {
-        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        background: linear-gradient(135deg, var(--primary), var(--accent));
         color: white;
-        transform: rotate(5deg);
+        transform: scale(1.1);
     }
 
     .pilar-card h3 {
-        font-size: 1.6rem;
+        font-size: 1.5rem;
         font-weight: 700;
         color: var(--text);
         margin: 0;
+        z-index: 1;
     }
     
     .pilar-card p {
         flex-grow: 1; 
         line-height: 1.6;
+        z-index: 1;
+        margin-top: 15px;
     }
 
     .valores-list {
@@ -287,10 +450,12 @@
         padding: 0;
         text-align: left;
         width: 100%;
+        z-index: 1;
+        margin-top: 20px;
     }
 
     .valores-list li {
-        padding: 12px 0;
+        padding: 15px 0;
         color: var(--text);
         display: flex;
         align-items: center;
@@ -298,13 +463,20 @@
         font-weight: 500;
         font-size: 1rem;
         border-bottom: 1px solid var(--border);
+        transition: var(--transition);
+    }
+
+    .valores-list li:hover {
+        padding-left: 10px;
+        background: rgba(0,0,0,0.02);
+        border-radius: 8px;
     }
 
     .valores-list li::before {
-        content: '✓';
+        content: '✔';
         color: var(--success);
         font-weight: bold;
-        font-size: 1.2rem;
+        font-size: 1rem;
         background: var(--secondary);
         width: 30px;
         height: 30px;
@@ -313,67 +485,122 @@
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
+        transition: var(--transition);
     }
 
-    /* Estilo Equipe Grid */
+    .valores-list li:hover::before {
+        background: var(--success);
+        color: white;
+        transform: scale(1.1);
+    }
+
+    /* Estilo Equipe Grid Melhorado */
     .equipe-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 30px;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 35px;
         margin-top: 50px;
     }
 
     .membro-card {
         text-align: center;
-        padding: 30px;
+        padding: 40px 30px;
         border-radius: 20px;
         background: var(--glass);
         border: 1px solid var(--border);
         box-shadow: var(--shadow);
         transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .membro-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        opacity: 0;
+        transition: var(--transition);
+        z-index: 0;
+    }
+
+    .membro-card:hover::before {
+        opacity: 0.05;
+    }
+
+    .membro-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        border-color: var(--primary);
+    }
+
+    .membro-card > * {
+        position: relative;
+        z-index: 1;
     }
 
     .membro-foto {
-        width: 150px;
-        height: 150px;
+        width: 140px;
+        height: 140px;
         border-radius: 50%;
         object-fit: cover;
-        margin-bottom: 20px;
-        border: 4px solid var(--accent);
-        /* Usando cores do tema para o box-shadow */
-        box-shadow: 0 0 0 6px var(--accent); 
+        margin-bottom: 25px;
+        border: 4px solid var(--primary);
         transition: var(--transition);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
     
     .membro-card:hover .membro-foto {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 6px var(--primary);
+        transform: scale(1.1);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        border-color: var(--accent);
     }
 
     .membro-card h4 {
-        font-size: 1.5rem;
+        font-size: 1.4rem;
         font-weight: 700;
         color: var(--text);
-        margin-bottom: 5px;
+        margin-bottom: 8px;
+        transition: var(--transition);
+    }
+
+    .membro-card:hover h4 {
+        color: var(--primary);
     }
 
     .membro-card span {
         display: block;
-        font-weight: 600;
+        font-weight: 700;
         color: var(--primary);
         text-transform: uppercase;
         font-size: 0.8rem;
-        letter-spacing: 1px;
+        letter-spacing: 0.5px;
+        margin-bottom: 15px;
+        background: rgba(0,0,0,0.05);
+        padding: 5px 15px;
+        border-radius: 20px;
     }
 
-    /* Contato */
+    .membro-card p {
+        color: var(--text-light);
+        line-height: 1.6;
+        font-size: 1rem;
+    }
+
+    /* Contato Melhorado */
     .contato-section {
         text-align: center;
-        padding: 70px 50px;
-        border-radius: 28px;
+        padding: 70px 40px;
+        border-radius: 20px;
         background: var(--glass);
         border: 1px solid var(--border);
-        margin-top: 80px;
+        margin-top: 100px;
         position: relative;
         overflow: hidden;
     }
@@ -385,15 +612,29 @@
         left: 0;
         width: 100%;
         height: 5px;
-        /* Usa var() para o gradiente de topo */
-        background: linear-gradient(90deg, var(--primary), var(--accent), var(--success));
+        background: linear-gradient(to right, var(--primary), var(--accent));
     }
 
     .contato-section h3 {
-        font-size: 2.2rem;
+        font-size: 2rem;
         font-weight: 700;
         color: var(--text);
         margin-bottom: 20px;
+    }
+
+    .contato-section p {
+        font-size: 1.1rem;
+        color: var(--text-light);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .contato-buttons {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 40px;
     }
 
     .contato-btn {
@@ -401,21 +642,23 @@
         align-items: center;
         gap: 12px;
         padding: 16px 28px;
-        background: var(--primary);
+        background: linear-gradient(135deg, var(--primary), var(--accent));
         color: white;
         text-decoration: none;
-        border-radius: 12px;
-        font-weight: 600;
+        border-radius: 10px;
+        font-weight: 700;
         transition: var(--transition);
-        border: 2px solid var(--primary);
+        border: 2px solid transparent;
         font-size: 1rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
 
     .contato-btn:hover {
         background: transparent;
         color: var(--primary);
-        transform: translateY(-3px);
-        box-shadow: var(--shadow-lg);
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        border-color: var(--primary);
     }
 
     .contato-btn.secondary {
@@ -425,20 +668,100 @@
     }
 
     .contato-btn.secondary:hover {
-        background: var(--primary);
+        background: linear-gradient(135deg, var(--primary), var(--accent));
         color: white;
+        border-color: transparent;
     }
 
-    /* Responsividade (mantido) */
-    @media (max-width: 968px) {
+    /* Elementos de Destaque Adicionais */
+    .destaque-badge {
+        position: absolute;
+        top: -10px;
+        right: 20px;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        z-index: 10;
+    }
+
+    /* Responsividade Melhorada */
+    @media (max-width: 1100px) {
         .hero-stats {
-            gap: 40px;
+            gap: 50px;
+        }
+        .hero-content h1 {
+            font-size: 3rem;
         }
     }
+    
+    @media (max-width: 900px) {
+        .pilares-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
     @media (max-width: 768px) {
         .hero-stats {
             flex-direction: column;
-            gap: 30px;
+            gap: 35px;
+            padding: 30px 20px;
+        }
+        .stat:not(:last-child)::after {
+            display: none;
+        }
+        .hero-content h1 {
+            font-size: 2.5rem;
+        }
+        .hero-subtitle {
+            font-size: 1.1rem;
+        }
+        .historia-storytelling {
+            padding: 40px 25px;
+        }
+        .section-header h2 {
+            font-size: 2rem;
+        }
+        .contato-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+        .contato-btn {
+            width: 100%;
+            max-width: 300px;
+            justify-content: center;
+        }
+        .sobre-hero {
+            padding: 80px 0 60px;
+        }
+        .sobre-section {
+            margin: 80px 0;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .hero-content h1 {
+            font-size: 2rem;
+        }
+        .hero-subtitle {
+            font-size: 1rem;
+        }
+        .stat-number {
+            font-size: 2.5rem;
+        }
+        .section-header h2 {
+            font-size: 1.8rem;
+        }
+        .historia-storytelling {
+            padding: 30px 20px;
+        }
+        .diferencial-card, .pilar-card, .membro-card {
+            padding: 30px 20px;
         }
     }
 </style>
@@ -447,7 +770,9 @@
     <section class="sobre-hero">
         <div class="hero-content">
             <h1>Sobre a Gamechip</h1>
-            <p class="hero-subtitle">Um legado de família, transformando o sonho do fliperama em uma ponte digital para o universo gamer.</p>
+            <p class="hero-subtitle">
+                Um legado de família, transformando o sonho do fliperama em uma ponte digital para o universo gamer.
+            </p>
             <div class="hero-stats">
                 <div class="stat">
                     <span class="stat-number">10K+</span>
@@ -467,26 +792,24 @@
 
     <section class="sobre-section">
         <div class="section-header">
-            <h2 class="font-gamer-main">De um Sonho Antigo a um Legado Gamer Moderno</h2>
+            <h2>De um Sonho Antigo a um Legado Gamer Moderno</h2>
             <p>A Gamechip não é só uma loja. É a concretização de uma paixão de família que atravessou gerações.</p>
         </div>
         
         <div class="historia-storytelling">
             <p>Tudo começou com a paixão do meu pai pelo universo dos jogos. O sonho dele era ter sua própria lan house, um espaço onde a comunidade gamer pudesse se reunir e se divertir—um sonho que, com o tempo, ficou apenas na memória.</p>
             
-            <div class="bloco-destaque">
-                <p>
-                    Aquele sonho de juventude, forjado na nostalgia do fliperama, acabou se tornando a inspiração para reescrevermos essa história.
-                </p>
-            </div>
+            <blockquote>
+                Aquele sonho de juventude, forjado na nostalgia do fliperama, acabou se tornando a inspiração para reescrevermos essa história.
+            </blockquote>
             
-            <p>Decidi resgatar essa paixão e adaptá-la para o mundo de hoje. Assim nasceu a **Gamechip**: uma plataforma online moderna, ágil e focada em conectar jogadores aos seus conteúdos favoritos. De Game Pass e Gift Cards a contas premium e recargas mobile, oferecemos tudo o que o gamer precisa.</p>
+            <p>Decidi resgatar essa paixão e adaptá-la para o mundo de hoje. Assim nasceu a <strong>Gamechip</strong>: uma plataforma online moderna, ágil e focada em conectar jogadores aos seus conteúdos favoritos. De Game Pass e Gift Cards a contas premium e recargas mobile, oferecemos tudo o que o gamer precisa.</p>
     
-            <h3 class="font-gamer-sub">A Gamechip: Um Legado Vivo</h3>
+            <h3>A Gamechip: Um Legado Vivo</h3>
     
             <p>Somos mais do que um e-commerce; somos o elo entre a nostalgia do passado e a conveniência do futuro. Cada transação e cada cliente satisfeito é a prova de que a visão do meu pai está mais viva do que nunca. Nossa missão é ser a ponte digital, oferecendo uma plataforma intuitiva, segura e com atendimento premium.</p>
     
-            <p class="legado-final font-gamer-main">
+            <p class="legado-final">
                 Na Gamechip, vendemos mais que produtos...<br>
                 Nós entregamos Paixão, Conexão e a Continuação de um Sonho.
             </p>
@@ -534,26 +857,20 @@
         
         <div class="pilares-grid">
             <div class="pilar-card">
-                <div class="pilar-header">
-                    <div class="pilar-icon">🎯</div>
-                    <h3>Missão</h3>
-                </div>
+                <div class="pilar-icon">🎯</div>
+                <h3>Missão</h3>
                 <p>Ser a ponte mais rápida, segura e intuitiva entre o jogador e a diversão, garantindo acesso facilitado aos melhores conteúdos e créditos do universo gamer.</p>
             </div>
             
             <div class="pilar-card">
-                <div class="pilar-header">
-                    <div class="pilar-icon">👁️</div>
-                    <h3>Visão</h3>
-                </div>
+                <div class="pilar-icon">👁️</div>
+                <h3>Visão</h3>
                 <p>Transformar a Gamechip na plataforma de recargas e gift cards preferida dos gamers brasileiros, consolidando nosso legado de confiança, agilidade e paixão pelos jogos.</p>
             </div>
             
             <div class="pilar-card">
-                <div class="pilar-header">
-                    <div class="pilar-icon">💖</div>
-                    <h3>Valores</h3>
-                </div>
+                <div class="pilar-icon">💖</div>
+                <h3>Valores</h3>
                 <ul class="valores-list">
                     <li>Paixão por Jogos (Game DNA)</li>
                     <li>Agilidade e Entrega Imediata</li>
@@ -606,6 +923,15 @@
                 <span>Gerente de Suporte</span>
                 <h4>Pietro Tamanini</h4>
                 <p>Lidera a equipe de suporte, garantindo um atendimento humanizado e rápido.</p>
+            </div>
+
+            <div class="membro-card">
+                <a href="https://github.com/eduardo-047" target="_blank" rel="noopener noreferrer" title="Github de Eduardo Ribeiro">
+                    <img src="/static/equipe/eduardo.png" alt="Foto de Eduardo Ribeiro" class="membro-foto" onerror="this.onerror=null; this.src='https://via.placeholder.com/150/808080/FFFFFF?text=NOVO'">
+                </a>
+                <span>Gerente Administrativo</span>
+                <h4>Eduardo Ribeiro</h4>
+                <p>Lidera a parte administrativa da empresa, garantindo a prestação de contas certas.</p>
             </div>
         </div>
     </section>
