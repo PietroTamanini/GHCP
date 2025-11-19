@@ -3804,15 +3804,6 @@ if __name__ == '__main__':
     # Criar admin padrão
     criar_admin_padrao()
 
-
-    #CHAT BOOT DE AJUDA!!!
-
-    @app.route("/ajuda", methods=["GET"])
-    def ajuda():
-        pergunta = request.args.get("q", "")
-        resposta = responder(pergunta)
-        return jsonify({"resposta": resposta})
-
     
     print("✅ Servidor Flask iniciado com sucesso!")
     print(f"🌐 Site: http://localhost:5000")
