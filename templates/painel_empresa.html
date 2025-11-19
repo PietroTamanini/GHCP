@@ -571,8 +571,7 @@
                     <td style="text-align: center;">
                         <div style="display: flex; gap: 8px; justify-content: center;">
                             <button class="btn btn-primary btn-sm" 
-                                    onclick="editarProduto({{ prod.id_produto_empresa }}, '{{ prod.nome }}', {{ prod.preco_empresa }}, {{ prod.estoque_empresa }}, {{ 'true' if prod.ativo else 'false' }})">
-                                ✏️ Editar
+                                    onclick="editarProduto({{ prod.id_produto_empresa }}, '{{ prod.nome }}', {{ prod.preco_empresa }}, {{ prod.estoque_empresa }}, {{ 'true' if prod.ativo else 'false' }})">✏️ Editar
                             </button>
                             <form method="POST" action="{{ url_for('remover_produto_empresa', id_produto_empresa=prod.id_produto_empresa) }}" 
                                   style="display: inline;" onsubmit="return confirm('Tem certeza que deseja remover este produto da sua loja?')">
