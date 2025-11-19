@@ -238,45 +238,55 @@
                 <h4>Filtrar Produtos</h4>
 
                 <form method="GET" action="{{ url_for('listar_produtos') }}">
+
+                    <!-- Buscar -->
                     <div style="margin-bottom: 20px;">
                         <label for="search" class="form-label">🔍 Buscar por Nome</label>
                         <input type="text" id="search" name="busca" class="form-control"
-                               placeholder="Ex: Monitor, Mouse" value="{{ request.args.get('busca', '') }}">
+                               placeholder="Ex: CS2, Valorant, Google Play" 
+                               value="{{ request.args.get('busca', '') }}">
                     </div>
 
+                    <!-- Categoria -->
                     <div style="margin-bottom: 20px;">
-                        <label for="categoria" class="form-label">📂 Categoria</label>
+                        <label for="categoria" class="form-label">🎮 Categorias</label>
                         <select id="categoria" name="categoria" class="form-select">
                             <option value="">Todas as Categorias</option>
                             {% for cat in categorias %}
-                                <option value="{{ cat }}" {% if request.args.get('categoria') == cat %}selected{% endif %}>
+                                <option value="{{ cat }}" 
+                                {% if request.args.get('categoria') == cat %}selected{% endif %}>
                                     {{ cat }}
                                 </option>
                             {% endfor %}
                         </select>
                     </div>
 
+                    <!-- Preço -->
                     <div style="margin-bottom: 20px;">
-                        <label for="marca" class="form-label">🏷️ Marca</label>
-                        <select id="marca" name="marca" class="form-select">
-                            <option value="">Todas as Marcas</option>
-                            {% for m in marcas %}
-                                <option value="{{ m }}" {% if request.args.get('marca') == m %}selected{% endif %}>
-                                    {{ m }}
-                                </option>
-                            {% endfor %}
-                        </select>
+                        <label class="form-label">💰 Preço (R$)</label>
+
+                        <div style="display: flex; gap: 10px;">
+                            <input type="number" id="preco_min" name="preco_min" class="form-control"
+                                   placeholder="Mín" step="0.01" min="0"
+                                   value="{{ request.args.get('preco_min', '') }}">
+
+                            <input type="number" id="preco_max" name="preco_max" class="form-control"
+                                   placeholder="Máx" step="0.01" min="0"
+                                   value="{{ request.args.get('preco_max', '') }}">
+                        </div>
                     </div>
 
+                    <!-- Botões -->
                     <button type="submit" class="btn-primary" style="margin-bottom: 10px;">
                         Aplicar Filtros
                     </button>
 
-                    {% if request.args.get('marca') or request.args.get('categoria') or request.args.get('busca') %}
+                    {% if request.args %}
                         <a href="{{ url_for('listar_produtos') }}" class="btn-outline-secondary">
                             Limpar Filtros
                         </a>
                     {% endif %}
+
                 </form>
             </div>
         </div>
@@ -330,6 +340,7 @@
                                     </button>
                                 </form>
                             </div>
+
                         </div>
                     {% endfor %}
                 </div>
@@ -343,4 +354,24 @@
     </div>
 </div>
 
-{% endblock %}  
+
+<!-- 🔧 Validação inteligente -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const min = document.getElementById("preco_min");
+    const max = document.getElementById("preco_max");
+
+    function validar() {
+        if (min.value && max.value && Number(min.value) > Number(max.value)) {
+            max.setCustomValidity("O preço máximo não pode ser menor que o mínimo.");
+        } else {
+            max.setCustomValidity("");
+        }
+    }
+
+    min.addEventListener("input", validar);
+    max.addEventListener("input", validar);
+});
+</script>
+
+{% endblock %}

@@ -101,42 +101,42 @@
             align-items: center; 
             gap: 40px;
         }
-        .logo { 
-            display: flex; 
-            align-items: center; 
-            flex-shrink: 0; 
-        }
-        /* O CONTAINER DO LINK DEVE SER FLEX PARA EMPILHAR OS ELEMENTOS */
+        .logo {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
         .logo-link-container {
-            display: flex; 
-            flex-direction: column; /* Empilha a imagem e o subtítulo verticalmente */
-            align-items: flex-start; /* Alinha o conteúdo à esquerda */
-            line-height: 1; /* Para controle fino do espaçamento */
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centraliza verticalmente a logo e o subtítulo */
             text-decoration: none;
-            color: var(--text); 
-            padding: 2px 0;
+            color: var(--text);
+            padding: 4px 0;
+            line-height: 1;
         }
-    
-        /* ESTILO DA IMAGEM */
+
+        /* AUMENTA A LOGO E MANTÉM PROPORÇÃO */
         .logo-navbar-img {
-            height: 45px; /* Altura da logo principal */
-            width: auto; 
-            display: block; 
-            margin-bottom: 2px; /* Espaço entre a imagem e o subtítulo */
+            height: 70px; /* 🔥 aumente aqui o tamanho (antes era 45px) */
+            width: auto;
+            display: block;
+            margin-bottom: 4px;
             transition: transform 0.3s ease;
         }
+
         .logo-link-container:hover .logo-navbar-img {
-            transform: scale(1.02); 
+            transform: scale(1.05);
         }
-    
-        /* ESTILO DO SUBTÍTULO (SLOGAN) */
+
+        /* SLOGAN AJUSTADO ABAIXO DA LOGO */
         .logo-subtitle {
-            font-size: 10px;
-            color: var(--text-light); 
-            font-weight: 500;
+            font-size: 12px; /* leve aumento pra acompanhar a nova logo */
+            color: var(--text-light);
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 2px !important;
-            line-height: 1.2;
+            letter-spacing: 2px;
         }
         /* FIM DOS AJUSTES DO LOGO */
     
@@ -577,5 +577,271 @@
 
         setTimeout(()=>{ document.querySelectorAll('.flashes li').forEach(el=>el.remove()); }, 5000);
     </script>
+
+<!-- BOTÃO FLUTUANTE DO CHAT -->
+<div id="chatbot-btn">
+    🤖
+</div>
+
+<!-- JANELA DO CHATBOT -->
+<div id="chatbot-window">
+    <div id="chatbot-header">
+        <h3>Assistente</h3>
+        <span id="chatbot-close">&times;</span>
+    </div>
+
+    <div id="chatbot-messages"></div>
+
+    <div id="chatbot-input-box">
+        <input type="text" id="chatbot-input" placeholder="Digite sua pergunta...">
+        <button id="chatbot-send">Enviar</button>
+    </div>
+</div>
+
+<style>
+    #chatbot-btn {
+        position: fixed;
+        bottom: 25px;
+        right: 25px;
+        background: var(--primary-dark);
+        color: white;
+        font-size: 28px;
+        width: 55px;
+        height: 55px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        box-shadow: var(--shadow-lg);
+        transition: var(--transition);
+        z-index: 9999;
+    }
+
+    #chatbot-btn:hover {
+        transform: scale(1.1);
+        background: var(--primary);
+    }
+
+    /* JANELA DO CHAT */
+    #chatbot-window {
+        position: fixed;
+        bottom: 100px;
+        right: 25px;
+        width: 320px;
+        height: 420px;
+        background: var(--glass-white);
+        border-radius: 18px;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: var(--blur);
+        display: none;
+        flex-direction: column;
+        z-index: 9999;
+    }
+
+    /* HEADER DO CHAT */
+    #chatbot-header {
+        background: var(--primary-dark);
+        padding: 12px;
+        color: white;
+        border-radius: 18px 18px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* MENSAGENS */
+    #chatbot-messages {
+        padding: 12px;
+        height: 280px;
+        overflow-y: auto;
+        font-size: 14px;
+        color: var(--text-dark);
+    }
+
+    /* INPUT */
+    #chatbot-input-box {
+        display: flex;
+        border-top: 1px solid #ddd;
+    }
+
+    #chatbot-input {
+        flex: 1;
+        border: none;
+        padding: 10px;
+        outline: none;
+        background: transparent;
+        color: var(--text-dark);
+    }
+
+    #chatbot-send {
+        background: var(--primary-dark);
+        color: white;
+        padding: 10px;
+        border: none;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    #chatbot-send:hover {
+        background: var(--primary);
+    }
+
+    /* BOLHAS DE MENSAGEM */
+    .msg-user {
+        background: var(--primary);
+        color: white;
+        padding: 8px;
+        border-radius: 12px;
+        margin: 6px 0;
+        text-align: right;
+    }
+
+    .msg-bot {
+        background: var(--glass);
+        padding: 8px;
+        border-radius: 12px;
+        margin: 6px 0;
+        color: var(--text-dark);
+    }
+
+    /* ANIMAÇÃO DE DIGITAÇÃO */
+    .typing {
+        background: var(--glass);
+        padding: 8px;
+        border-radius: 12px;
+        margin: 6px 0;
+        color: var(--text-dark);
+        width: 60px;
+        display: flex;
+        gap: 4px;
+    }
+
+    .typing span {
+        animation: blink 1.4s infinite both;
+        opacity: 0;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .typing span:nth-child(1) { animation-delay: 0s; }
+    .typing span:nth-child(2) { animation-delay: 0.2s; }
+    .typing span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes blink {
+        0% { opacity: 0; }
+        50% { opacity: 1; }
+        100% { opacity: 0; }
+    }
+</style>
+
+<script>
+const chatbotBtn = document.getElementById('chatbot-btn');
+const chatbotWindow = document.getElementById('chatbot-window');
+const chatbotClose = document.getElementById('chatbot-close');
+const chatbotSend = document.getElementById('chatbot-send');
+const chatbotInput = document.getElementById('chatbot-input');
+const chatbotMessages = document.getElementById('chatbot-messages');
+
+let welcomeSent = false;
+
+// Abrir/fechar pelo botão do bot (toggle)
+chatbotBtn.onclick = () => {
+    if (chatbotWindow.style.display === "flex") {
+        chatbotWindow.style.display = "none"; // fecha
+    } else {
+        chatbotWindow.style.display = "flex"; // abre
+
+        // Enviar boas-vindas só na primeira abertura
+        if (!welcomeSent) {
+            welcomeSent = true;
+            botWelcomeMessage();
+        }
+    }
+};
+
+// Fechar pelo X
+chatbotClose.onclick = () => {
+    chatbotWindow.style.display = "none";
+};
+
+// MENSAGEM DE BOAS-VINDAS
+function botWelcomeMessage() {
+    const typing = createTypingBubble();
+    chatbotMessages.appendChild(typing);
+
+    setTimeout(() => {
+        typing.remove();
+        chatbotMessages.innerHTML += `
+            <div class="msg-bot">
+                Olá! 👋 Bem-vindo ao atendimento da GameChip. Como posso te ajudar hoje?
+            </div>`;
+        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+    }, 1200);
+}
+
+// Criar animação de digitando
+function createTypingBubble() {
+    const typingBubble = document.createElement("div");
+    typingBubble.className = "msg-bot typing";
+    typingBubble.innerHTML = "<span>.</span><span>.</span><span>.</span>";
+    return typingBubble;
+}
+
+// Respostas prontas
+function botResponse(text) {
+    const responses = {
+        "oi": "Oi! Como posso ajudar?",
+        "ola": "Olá! Tudo certo?",
+        "login": "Para fazer login, clique em 'Entrar' no menu superior.",
+        "cadastro": "Você pode criar sua conta no menu de cadastro.",
+        "senha": "Você quer trocar de senha? Responda com: quero trocar minha senha",
+        "nova senha": "Caso você queira trocar de senha, contrate um administrador",
+        "produtos": "Nossos produtos podem ser vistos na área de vendas.",
+        "ajuda": "Estou aqui para ajudar! Pergunte algo :)",
+        "horarios": "Nosso atendimento é das 9h às 18h, de segunda a sexta.",
+        "pagamentos": "Aceitamos Pix, cartão e boleto.",
+        "rastreios": "Para rastrear seu pedido, insira o código na página de Rastreamento.",
+        "agradecer": "De nada! 😊"
+    };
+
+    text = text.toLowerCase();
+    return responses[text] || "Desculpe, ainda não sei responder isso 😅";
+}
+
+// ENVIAR MENSAGEM
+function enviarMensagem() {
+    const msg = chatbotInput.value.trim();
+    if (!msg) return;
+
+    chatbotMessages.innerHTML += `<div class='msg-user'>${msg}</div>`;
+    chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+
+    const typing = createTypingBubble();
+    chatbotMessages.appendChild(typing);
+    chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+
+    setTimeout(() => {
+        typing.remove();
+        chatbotMessages.innerHTML += `<div class='msg-bot'>${botResponse(msg)}</div>`;
+        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+    }, 1200);
+
+    chatbotInput.value = "";
+}
+
+// Botão enviar
+chatbotSend.onclick = enviarMensagem;
+
+// ENTER envia — SHIFT+ENTER quebra linha
+chatbotInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+        if (e.shiftKey) return;
+        e.preventDefault();
+        enviarMensagem();
+    }
+});
+</script>
+
 </body>
 </html>

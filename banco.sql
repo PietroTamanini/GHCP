@@ -1,4 +1,3 @@
-
 CREATE DATABASE IF NOT EXISTS loja_informatica;
 USE loja_informatica;
 
