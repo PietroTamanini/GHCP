@@ -473,6 +473,12 @@ END//
 
 DELIMITER ;
 
+
+
+
+
+
+
 -- STORED PROCEDURES
 DELIMITER //
 
@@ -526,11 +532,12 @@ CREATE INDEX idx_produto_estoque ON produto(estoque);
 CREATE INDEX idx_pedidos_data_status ON pedidos(data_pedido, status);
 CREATE INDEX idx_clientes_data_cadastro ON clientes(data_cadastro);
 CREATE INDEX idx_itens_pedido_preco ON itens_pedido(preco_unitario);
-CREATE INDEX idx_combos_ativo ON combos(ativo);
 CREATE INDEX idx_produtos_empresa_empresa ON produtos_empresa(id_empresa);
 CREATE INDEX idx_produtos_empresa_produto ON produtos_empresa(id_produto);
-CREATE INDEX idx_combo_produto_combo ON combo_produto(id_combo);
-CREATE INDEX idx_combo_produto_produto ON combo_produto(id_produto);
+
+
+
+
 
 -- CONFIRMAÇÃO
 SELECT '✅ Banco de dados limpo criado com sucesso!' as Status;
