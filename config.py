@@ -6,10 +6,10 @@ class Config:
     
     # Database Configuration
     DB_CONFIG = {
-        'host': 'localhost',
+        'host': 'tini.click',
         'port': '3306',
-        'user': 'root',
-        'password': '',
+        'user': 'loja_informatica',
+        'password': '7787a5c08b46a3ada35c3a1f7ca7dd9b',
         'database': 'loja_informatica'
     }
     
