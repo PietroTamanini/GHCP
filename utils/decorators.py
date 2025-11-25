@@ -4,7 +4,8 @@ from flask import session, redirect, url_for, flash, request, jsonify
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
+        # Verifica se algum tipo de usuário está logado
+        if not session.get('usuario_id') and not session.get('empresa_id'):
             if request.headers.get('Content-Type') == 'application/json':
                 return jsonify({'error': 'Unauthorized'}), 401
             flash('❌ Você precisa fazer login para acessar esta página.', 'error')
