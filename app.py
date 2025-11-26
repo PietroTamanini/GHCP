@@ -7,11 +7,11 @@ from routes.admin_routes import configure_admin_routes
 from routes.produto_routes import configure_produto_routes
 from routes.carrinho_routes import configure_carrinho_routes
 from utils.helpers import from_json_filter
-from routes.avaliacao_routes import avaliacao_bp  # ← NOVA LINHA
+from routes.avaliacao_routes import avaliacao_bp
 import os
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__, template_folder="view", static_folder="static")
     app.config.from_object(Config)
     
     app.jinja_env.filters['from_json'] = from_json_filter
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     criar_tabelas_necessarias()
     
     # Criar admin padrão
-    criar_admin_padrao()
+    criar_admin_padrao()   
     
     print("✅ Servidor Flask iniciado com sucesso!")
     print(f"🌐 Site: http://localhost:5000")
