@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block conteudo %}
+<div style="min-height: calc(100vh - 200px); display: flex; align-items: center; justify-content: center; padding: 40px 20px;">
+    <div class="auth-container" style="max-width: 500px;">
+        <form method="POST" action="{{ url_for('recuperar_senha') }}" class="auth-form active">
+            <div class="auth-header">
+                <div style="font-size: 60px; margin-bottom: 20px;">🔐</div>
+                <h1>Recuperar Senha</h1>
+                <p>Digite seu e-mail cadastrado e enviaremos as instruções de recuperação</p>
+            </div>
+
+            <div class="form-group">
+                <label for="email">
+                    <span class="label-icon">📧</span>
+                    E-mail Cadastrado
+                </label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    class="form-control" 
+                    placeholder="seu@email.com" 
+                    required
+                    autocomplete="email"
+                    autofocus
+                >
+            </div>
+
+            <button type="submit" class="btn btn-auth">
+                <span>Enviar Instruções</span>
+                <span class="btn-arrow">→</span>
+            </button>
+
+            <div style="text-align: center; margin-top: 24px;">
+                <a href="{{ url_for('login') }}" class="link-secundario">
+                    ← Voltar para o login
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .auth-container {
+        width: 100%;
+        background: white;
+        border-radius: 24px;
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        border: 1px solid var(--border);
+        position: relative;
+    }
+
+    .dark-theme .auth-container {
+        background: var(--dark);
+    }
+
+    .auth-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 6px;
+        background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 50%, var(--success) 100%);
+    }
+
+    .auth-form {
+        padding: 50px 40px;
+        display: block;
+        animation: fadeInUp 0.4s ease;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: 32px;
+    }
+
+    .auth-header h1 {
+        font-size: 28px;
+        font-weight: 800;
+        margin-bottom: 12px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .auth-header p {
+        color: var(--text-light);
+        font-size: 15px;
+        line-height: 1.6;
+    }
+
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .form-group label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: var(--text);
+        font-size: 14px;
+    }
+
+    .label-icon {
+        font-size: 16px;
+    }
+
+    .btn-auth {
+        width: 100%;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 16px 28px;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        transition: var(--transition);
+        box-shadow: var(--shadow);
+        margin-bottom: 24px;
+    }
+
+    .btn-auth:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .btn-arrow {
+        font-size: 20px;
+        transition: var(--transition);
+    }
+
+    .btn-auth:hover .btn-arrow {
+        transform: translateX(4px);
+    }
+
+    .link-secundario {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        transition: var(--transition);
+    }
+
+    .link-secundario:hover {
+        color: var(--primary-dark);
+        text-decoration: underline;
+    }
+
+    @media (max-width: 640px) {
+        .auth-form {
+            padding: 40px 30px;
+        }
+
+        .auth-header h1 {
+            font-size: 24px;
+        }
+    }
+</style>
+{% endblock %}

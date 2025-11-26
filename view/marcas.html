@@ -1,0 +1,219 @@
+{% extends 'base.html' %} 
+
+{% set titulo = "Nossas Parcerias e Produtos Digitais" %}
+
+{% block conteudo %}
+
+<style>
+    .page-header {
+        background-color: var(--secondary);
+        padding: 40px 20px;
+        margin-bottom: 40px;
+        border-radius: var(--radius);
+        text-align: center;
+        box-shadow: var(--shadow-sm);
+    }
+    .page-header h1 {
+        font-size: 2.5rem;
+        color: var(--primary-dark);
+        margin-bottom: 10px;
+    }
+    .page-header p {
+        color: var(--text-light);
+        font-size: 1.1rem;
+    }
+    .brand-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 30px;
+    }
+    .brand-card {
+        background: var(--glass);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        text-align: center;
+        transition: var(--transition);
+        box-shadow: var(--shadow-sm);
+        cursor: pointer;
+    }
+    .brand-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+    .brand-logo {
+        font-size: 3rem;
+        margin-bottom: 10px;
+    }
+    .brand-card h3 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--primary-dark);
+    }
+    .brand-card p {
+        font-size: 0.9rem;
+        color: var(--text-light);
+    }
+
+    .brand-logo-img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+</style>
+
+<div class="page-header">
+    <h1><span style="color: var(--primary);">🎮</span> Jogos, Gift Cards e Contas Digitais</h1>
+    <p>Na GAME CHIP Store, você encontra recargas, passes e produtos digitais dos maiores jogos e plataformas do mundo!</p>
+</div>
+
+<h2 class="card-header">📱 Jogos Mobile — Campeões de Recarga</h2>
+
+<div class="brand-grid">
+    <div class="brand-card">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQhU9P4BcW9WVfdMkQsPypq__NHpr6vS3Y7lfsXlJ-t26XktS4Xc07Ipf9lR_kf8rvSiPY&usqp=CAU" class="brand-logo-img" alt="Free Fire Logo">
+        <h3>Free Fire</h3>
+        <p>Venda de diamantes, passes e contas completas.</p>
+    </div>
+    <div class="brand-card">
+        <img src="https://cdn.brandfetch.io/idwl84-2_S/w/400/h/400/theme/dark/icon.jpeg?c=1dxbfHSJFAPEGdCLU4o5B" class="brand-logo-img" alt="PUBG Mobile Logo">
+        <h3>PUBG Mobile</h3>
+        <p>UCs e passes de batalha com entrega rápida.</p>
+    </div>
+    <div class="brand-card">
+        <img src="https://cdn.brandfetch.io/idD9JU0j92/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" class="brand-logo-img" alt="Mobile Legends Logo">
+        <h3>Mobile Legends</h3>
+        <p>Diamantes para personalizar heróis e skins.</p>
+    </div>
+    <div class="brand-card">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT2LsTwbwtkjXTmboihTMfUP4o2out8Xajg0Q&s" class="brand-logo-img" alt="Call of Duty Mobile Logo">
+        <h3>Call of Duty Mobile</h3>
+        <p>Recargas de CP Points e pacotes premium.</p>
+    </div>
+    <div class="brand-card">
+        <img src="https://cdn.brandfetch.io/ideo6liEp6/w/400/h/400/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1759214939937" class="brand-logo-img" alt="Clash Of Clans Logo">
+        <h3>Clash of Clans</h3>
+        <p>Gemas para acelerar construções e tropas.</p>
+    </div>
+    <div class="brand-card">
+        <div class="brand-logo">
+            <img src="https://supercell.com/images/74/5/clashroyale_logo.5f065b76.webp">
+        </div>
+        <h3>Clash Royale</h3>
+        <p>Gemas e passes para aprimorar seus decks.</p>
+    </div>
+    
+    
+    
+</div>
+
+<h2 class="card-header" style="margin-top: 50px;">🖥️ Jogos de Console e PC</h2>
+
+<div class="brand-grid">
+    <div class="brand-card">
+        <img src="https://cdn2.steamgriddb.com/icon_thumb/101b3e88e84b3d92b07d65e76cca60ed.png" class="brand-logo-img" alt="Fortnite Logo">
+        <h3>Fortnite</h3>
+        <p>V-Bucks, skins e passes de batalha originais.</p>
+    </div>
+    <div class="brand-card">
+        <img src="https://cdn.worldvectorlogo.com/logos/minecraft-launcher.svg" class="brand-logo-img" alt="Minecraft Logo">
+        <h3>Minecraft</h3>
+        <p>Contas, realms e gift cards para PC e console.</p>
+    </div>
+    <div class="brand-card">
+        <img src="https://static.vecteezy.com/system/resources/thumbnails/027/127/540/small_2x/grand-theft-auto-gta-v-logo-grand-theft-auto-gta-v-icon-transparent-free-png.png" class="brand-logo-img" alt="GTA V Logo">
+        <h3>GTA V / Online</h3>
+        <p>Shark Cards e contas completas para PC e console.</p>
+    </div>
+    <div class="brand-card">
+        <img src="https://img.icons8.com/?size=100&id=aUZxT3Erwill&format=png&color=000000" class="brand-logo-img" alt="Valorant Logo">
+        <h3>Valorant</h3>
+        <p>VP Points para skins, pacotes e passes de agente.</p>
+    </div>
+    <div class="brand-card">
+        <img src="https://www.rw-designer.com/icon-image/21516-256x256x32.png" class="brand-logo-img" alt="League of Legends Logo">
+        <h3>League of Legends</h3>
+        <p>RP Points para skins, passes e campeões.</p>
+    </div>
+    <div class="brand-card">
+        <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/counter-strike-2.png" class="brand-logo-img" alt="Counter Strike 2 Logo">
+        <h3>CS2 (Counter-Strike 2)</h3>
+        <p>Skins, passes e chaves oficiais.</p>
+    </div>
+</div>
+
+<h2 class="card-header" style="margin-top: 50px;">💳 Plataformas e Gift Cards</h2>
+
+<div class="brand-grid">
+    <div class="brand-card">
+        <img src="https://storage.ko-fi.com/cdn/useruploads/post/27fa5de8-fa00-442d-b5c9-3ad820b1e1c7_steam_icon_logo.svg.png" class="brand-logo-img" alt="Steam Gift Card Logo">
+        <h3>Steam Gift Card</h3>
+        <p>Adicione créditos e compre qualquer jogo na Steam.</p>
+    </div>
+    <div class="brand-card">
+        <img src="https://www.logo.wine/a/logo/Google_Play/Google_Play-Icon-Logo.wine.svg" class="brand-logo-img" alt="Google Play Logo">
+        <h3>Google Play</h3>
+        <p>Compre apps, jogos e filmes com créditos instantâneos.</p>
+    </div>
+    <div class="brand-card">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/App_Store_%28iOS%29.svg/768px-App_Store_%28iOS%29.svg.png?20201023145313" class="brand-logo-img" alt="Apple Logo">
+        <h3>Apple Gift Card</h3>
+        <p>Créditos para App Store, iTunes e serviços Apple.</p>
+    </div>
+    <div class="brand-card">
+        <img src="https://www.svgrepo.com/show/452087/playstation.svg" class="brand-logo-img" alt="PlayStation Logo">
+        <h3>PlayStation Store</h3>
+        <p>Compre jogos, passes e créditos PS Plus.</p>
+    </div>
+    <div class="brand-card">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Xbox_one_logo.svg/88px-Xbox_one_logo.svg.png" class="brand-logo-img" alt="Xbox Gift Card Logo">
+        <h3>Xbox Gift Card</h3>
+        <p>Créditos e Game Pass para Xbox Series e PC.</p>
+    </div>
+    <div class="brand-card">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Nintendo_Switch_logo.svg/1024px-Nintendo_Switch_logo.svg.png" class="brand-logo-img" alt="Nintendo Shop Logo">
+        <h3>Nintendo eShop</h3>
+        <p>Gift cards oficiais para Switch e jogos digitais.</p>
+    </div>
+</div>
+
+<h2 class="card-header" style="margin-top: 50px;">💎 Contas Premium e Extras</h2>
+
+<div class="brand-grid">
+    <div class="brand-card">
+        <img src="https://www.logo.wine/a/logo/Spotify/Spotify-Icon-Logo.wine.svg" class="brand-logo-img" alt="Spotify Logo">
+        <h3>Spotify Premium</h3>
+        <p>Planos individuais e familiares com entrega via e-mail.</p>
+    </div>
+    <div class="brand-card">
+        <img src="https://cdn4.iconfinder.com/data/icons/logos-and-brands/512/227_Netflix_logo-512.png" class="brand-logo-img" alt="Netflix Logo">
+        <h3>Netflix</h3>
+        <p>Contas premium com suporte a múltiplos perfis.</p>
+    </div>
+    <div class="brand-card">
+        <img src="https://media.pocketgamer.biz/images/106201/74080/game-pass_s470.jpg" class="brand-logo-img" alt="Xbox Game Pass Logo">
+        <h3>Xbox Game Pass</h3>
+        <p>Assinaturas mensais e combos promocionais.</p>
+    </div>
+    <div class="brand-card">
+        <img src="https://www.svgrepo.com/show/343546/crunchyroll-network-connection-communication-interaction.svg" class="brand-logo-img" alt="Crunchyroll Logo">
+        <h3>Crunchyroll Premium</h3>
+        <p>Acesso ilimitado a animes e lançamentos exclusivos.</p>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 50px;">
+    <h2 class="card-header" style="background-color: var(--success-light); border-bottom: 1px solid var(--success);">
+        ✅ Garantia GAME CHIP Store
+    </h2>
+    <div class="card-body">
+        <p>Todos os produtos digitais vendidos pela GAME CHIP possuem garantia de entrega ou reenvio imediato em caso de falha no código ou recarga.</p>
+        <p>Segurança e confiança são prioridade — seu crédito, jogo ou conta chegam garantidos.</p>
+        <a href="/central-garantia" class="btn btn-outline-success" style="margin-top: 15px;">Acessar Central de Garantia</a>
+    </div>
+</div>
+
+{% endblock %}
