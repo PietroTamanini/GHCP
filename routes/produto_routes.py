@@ -88,6 +88,7 @@ def configure_produto_routes(app):
                     print(f"DEBUG - Erro ao processar: {e}")
                     produto['imagens'] = []
             
+            # BUSCAR AVALIAÇÕES E ESTATÍSTICAS
             cursor.execute("""
                 SELECT a.*, c.nome as cliente_nome FROM avaliacoes a
                 JOIN clientes c ON a.id_cliente = c.id_cliente
@@ -95,7 +96,26 @@ def configure_produto_routes(app):
             """, (id_produto,))
             avaliacoes = cursor.fetchall()
             
-            return render_template('produto_detalhes.html', produto=produto, avaliacoes=avaliacoes)
+            # BUSCAR ESTATÍSTICAS DAS AVALIAÇÕES
+            cursor.execute("""
+                SELECT 
+                    AVG(nota) as media,
+                    COUNT(*) as total_avaliacoes,
+                    SUM(CASE WHEN nota = 5 THEN 1 ELSE 0 END) as cinco_estrelas,
+                    SUM(CASE WHEN nota = 4 THEN 1 ELSE 0 END) as quatro_estrelas,
+                    SUM(CASE WHEN nota = 3 THEN 1 ELSE 0 END) as tres_estrelas,
+                    SUM(CASE WHEN nota = 2 THEN 1 ELSE 0 END) as duas_estrelas,
+                    SUM(CASE WHEN nota = 1 THEN 1 ELSE 0 END) as uma_estrela
+                FROM avaliacoes 
+                WHERE id_produto = %s AND aprovado = TRUE
+            """, (id_produto,))
+            
+            media_avaliacoes = cursor.fetchone()
+            
+            return render_template('produto_detalhes.html', 
+                                produto=produto, 
+                                avaliacoes=avaliacoes,
+                                media_avaliacoes=media_avaliacoes)  # ← NOVO PARÂMETRO
         
         except mysql.connector.Error as err:
             flash(f'Erro ao carregar produto: {err}', 'error')
@@ -210,3 +230,49 @@ def configure_produto_routes(app):
             if conn and conn.is_connected():
                 cursor.close()
                 conn.close()
+
+# ... (seu código existente)
+
+# FUNÇÕES PARA AVALIAÇÕES - ADICIONE ISSO NO FINAL DO ARQUIVO
+def buscar_avaliacoes_produto(id_produto):
+    """Busca todas as avaliações de um produto"""
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    cursor.execute("""
+        SELECT a.*, c.nome as cliente_nome 
+        FROM avaliacoes a
+        JOIN clientes c ON a.id_cliente = c.id_cliente
+        WHERE a.id_produto = %s AND a.aprovado = TRUE 
+        ORDER BY a.data_avaliacao DESC
+    """, (id_produto,))
+    
+    avaliacoes = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    
+    return avaliacoes
+
+def calcular_media_avaliacoes(id_produto):
+    """Calcula a média das avaliações de um produto"""
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    cursor.execute("""
+        SELECT 
+            AVG(nota) as media,
+            COUNT(*) as total_avaliacoes,
+            SUM(CASE WHEN nota = 5 THEN 1 ELSE 0 END) as cinco_estrelas,
+            SUM(CASE WHEN nota = 4 THEN 1 ELSE 0 END) as quatro_estrelas,
+            SUM(CASE WHEN nota = 3 THEN 1 ELSE 0 END) as tres_estrelas,
+            SUM(CASE WHEN nota = 2 THEN 1 ELSE 0 END) as duas_estrelas,
+            SUM(CASE WHEN nota = 1 THEN 1 ELSE 0 END) as uma_estrela
+        FROM avaliacoes 
+        WHERE id_produto = %s AND aprovado = TRUE
+    """, (id_produto,))
+    
+    resultado = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    
+    return resultado

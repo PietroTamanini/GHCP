@@ -7,6 +7,7 @@ from routes.admin_routes import configure_admin_routes
 from routes.produto_routes import configure_produto_routes
 from routes.carrinho_routes import configure_carrinho_routes
 from utils.helpers import from_json_filter
+from routes.avaliacao_routes import avaliacao_bp  # ← NOVA LINHA
 import os
 
 def create_app():
@@ -23,6 +24,8 @@ def create_app():
     configure_produto_routes(app)
     configure_carrinho_routes(app)
     
+    # REGISTRAR BLUEPRINT DAS AVALIAÇÕES ← NOVA LINHA
+    app.register_blueprint(avaliacao_bp)
 
     os.makedirs(Config.UPLOAD_FOLDER, exist_ok=True)
     
