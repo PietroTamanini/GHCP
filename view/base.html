@@ -724,6 +724,51 @@
         font-weight: bold;
     }
 
+        /* BOTÕES FLUTUANTES */
+    .floating-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 12px 0;
+    }
+
+    .floating-btn {
+        background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+        color: white;
+        padding: 10px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: var(--transition);
+        flex: 1;
+        min-width: calc(50% - 8px);
+        text-align: center;
+        box-shadow: var(--shadow);
+        border: none;
+        font-weight: 600;
+    }
+
+    .floating-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    }
+
+/* RESPONSIVIDADE DO CHAT */
+@media (max-width: 480px) {
+    #chatbot-window {
+        width: 90vw;
+        right: 5vw;
+        height: 70vh;
+    }
+    
+    .floating-btn {
+        min-width: 100%;
+        font-size: 13px;
+        padding: 12px 16px;
+    }
+}
+
     .typing span:nth-child(1) { animation-delay: 0s; }
     .typing span:nth-child(2) { animation-delay: 0.2s; }
     .typing span:nth-child(3) { animation-delay: 0.4s; }
@@ -765,7 +810,7 @@ chatbotClose.onclick = () => {
     chatbotWindow.style.display = "none";
 };
 
-// MENSAGEM DE BOAS-VINDAS
+// MENSAGEM DE BOAS-VINDAS COM BOTÕES FLUTUANTES
 function botWelcomeMessage() {
     const typing = createTypingBubble();
     chatbotMessages.appendChild(typing);
@@ -774,8 +819,69 @@ function botWelcomeMessage() {
         typing.remove();
         chatbotMessages.innerHTML += `
             <div class="msg-bot">
-                Olá! 👋 Bem-vindo ao atendimento da GameChip. Como posso te ajudar hoje?
+                Olá! 👋 Bem-vindo ao atendimento da GameChip. 
+                Escolha uma opção abaixo ou digite sua dúvida:
             </div>`;
+        
+        // Adicionar botões flutuantes de ações rápidas
+        chatbotMessages.innerHTML += `
+            <div class="floating-buttons">
+                <div class="floating-btn" onclick="sendQuickMessage('🔑 Problema com senha')">
+                    🔑 Senha
+                </div>
+                <div class="floating-btn" onclick="sendQuickMessage('💳 Dúvida sobre pagamento')">
+                    💳 Pagamento
+                </div>
+                <div class="floating-btn" onclick="sendQuickMessage('📦 Rastrear pedido')">
+                    📦 Rastreio
+                </div>
+                <div class="floating-btn" onclick="sendQuickMessage('🛍️ Consultar produtos')">
+                    🛍️ Produtos
+                </div>
+                <div class="floating-btn" onclick="sendQuickMessage('📝 Ajuda com cadastro')">
+                    📝 Cadastro
+                </div>
+                <div class="floating-btn" onclick="sendQuickMessage('⏰ Horário de atendimento')">
+                    ⏰ Horários
+                </div>
+            </div>`;
+        
+        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+    }, 1200);
+}
+
+// Função para enviar mensagem rápida pelos botões flutuantes
+function sendQuickMessage(message) {
+    // Mostrar mensagem do usuário
+    chatbotMessages.innerHTML += `<div class='msg-user'>${message}</div>`;
+    chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+
+    const typing = createTypingBubble();
+    chatbotMessages.appendChild(typing);
+    chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+
+    setTimeout(() => {
+        typing.remove();
+        
+        // Determinar a resposta baseada na mensagem
+        let response = "";
+        if (message.includes('senha')) {
+            response = "🔑 <strong>Problema com senha?</strong><br>Para trocar sua senha:<br>1) Acesse 'Minha Conta'<br>2) Clique em 'Segurança'<br>3) Selecione 'Alterar Senha'<br>4) Digite a nova senha";
+        } else if (message.includes('pagamento')) {
+            response = "💳 <strong>Formas de pagamento:</strong><br>• <strong>PIX</strong> - Aprovação instantânea<br>• <strong>Cartão</strong> - Crédito e Débito<br>• <strong>Boleto</strong> - Vence em 3 dias";
+        } else if (message.includes('rastreio') || message.includes('pedido')) {
+            response = "📦 <strong>Rastrear pedido:</strong><br>1) Acesse 'Meus Pedidos'<br>2) Clique no pedido desejado<br>3) Use o código de rastreamento fornecido";
+        } else if (message.includes('produtos')) {
+            response = "🛍️ <strong>Nossos produtos:</strong><br>• Navegue por categorias<br>• Filtre por marca<br>• Use a busca para encontrar específicos";
+        } else if (message.includes('cadastro')) {
+            response = "📝 <strong>Fazer cadastro:</strong><br>1) Clique em 'Cadastrar' no menu<br>2) Preencha seus dados<br>3) Confirme seu email<br>4) Pronto! Sua conta será criada";
+        } else if (message.includes('horário') || message.includes('horarios')) {
+            response = "⏰ <strong>Horário de atendimento:</strong><br>Segunda a Sexta: 9h às 18h<br>Sábado: 9h às 13h<br>Domingo: Fechado";
+        } else {
+            response = "Como posso ajudar com isso?";
+        }
+        
+        chatbotMessages.innerHTML += `<div class='msg-bot'>${response}</div>`;
         chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
     }, 1200);
 }
@@ -788,30 +894,25 @@ function createTypingBubble() {
     return typingBubble;
 }
 
-// Respostas prontas
+// Respostas prontas para mensagens digitadas
 function botResponse(text) {
     const responses = {
         "oi": "Oi! Como posso ajudar?",
         "ola": "Olá! Tudo certo?",
         "login": "Para fazer login, clique em 'Entrar' no menu superior.",
         "cadastro": "Você pode criar sua conta no menu de cadastro.",
-        "senha": "Você quer trocar de senha? Responda com: nova senha",
-        "nova senha": "Caso você queira trocar de senha, vá para a área 'Minha Conta', clique na área de 'Segurança' e clique no botão 'Alterar Senha'",
-        "produtos": "Nossos produtos podem ser vistos na área de vendas.",
-        "ajuda": "Estou aqui para ajudar! Pergunte algo :)",
-        "horarios": "Nosso atendimento é das 9h às 18h, de segunda a sexta.",
-        "pagamentos": "Aceitamos Pix, cartão de crédito e débito e boleto.",
-        "rastreios": "Para rastrear seu pedido, insira o código na página de Rastreamento.",
-        "agradecer": "De nada! 😊",
-        "obrigado": "De nada! 😊",
-        "obrigada": "De nada! 😊"
+        "senha": "Para problemas com senha, use o botão '🔑 Senha' acima!",
+        "pagamento": "Para informações sobre pagamento, use o botão '💳 Pagamento'!",
+        "agradecer": "De nada! 😊 Precisa de mais alguma coisa?",
+        "obrigado": "De nada! 😊 Fico feliz em ajudar!",
+        "obrigada": "De nada! 😊 Fico feliz em ajudar!"
     };
 
     text = text.toLowerCase();
-    return responses[text] || "Desculpe, ainda não sei responder isso 😅";
+    return responses[text] || "Desculpe, ainda não sei responder isso 😅<br>Experimente usar os botões acima!";
 }
 
-// ENVIAR MENSAGEM
+// ENVIAR MENSAGEM DIGITADA
 function enviarMensagem() {
     const msg = chatbotInput.value.trim();
     if (!msg) return;

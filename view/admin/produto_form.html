@@ -24,7 +24,7 @@
             </div>
 
             <div class="form-group">
-                <label for="categoria">📂 Categoria *</label>
+                <label for="categoria">📂 Tipo *</label>
                 <input type="text" id="categoria" name="categoria" class="form-control" 
                        value="{{ produto.categoria if produto }}" 
                        placeholder="Ex: Notebooks, Periféricos, Hardware..." required>
@@ -41,18 +41,7 @@
                        value="{{ produto.estoque if produto }}" required>
             </div>
 
-            <div class="form-group">
-                <label for="peso">⚖️ Peso (kg)</label>
-                <input type="number" id="peso" name="peso" class="form-control" step="0.01" min="0"
-                       value="{{ produto.peso if produto }}">
-            </div>
 
-            <div class="form-group">
-                <label for="dimensoes">📏 Dimensões (LxAxP)</label>
-                <input type="text" id="dimensoes" name="dimensoes" class="form-control" 
-                       value="{{ produto.dimensoes if produto }}" 
-                       placeholder="Ex: 30x20x10 cm">
-            </div>
             <div class="form-group full-width">
                 <h3 style="margin-bottom: 1rem; color: var(--primary);">⚙️ Configurações</h3>
             </div>
