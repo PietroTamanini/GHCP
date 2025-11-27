@@ -61,41 +61,46 @@
         margin-top: 30px;
         box-shadow: var(--shadow-sm);
     }
+    .delivery-icon {
+        font-size: 1.5rem;
+        margin-right: 10px;
+        vertical-align: middle;
+    }
 </style>
 
 <div class="page-header">
-    <h1><span style="color: var(--primary);">📦</span> Prazos e Modalidades de Entrega</h1>
-    <p>Compromisso GHCP: Agilidade e segurança para você receber seus produtos o mais rápido possível.</p>
+    <h1><span style="color: var(--primary);">⚡</span> Entrega Instantânea Digital</h1>
+    <p>GHCP Digital: Seus produtos entregues diretamente no e-mail em poucos minutos!</p>
 </div>
 
 <div class="row">
     <div class="col-md-7">
-        <h2 class="card-header">Detalhes do Processo</h2>
+        <h2 class="card-header">Como Funciona a Entrega Digital</h2>
         <div class="timeline">
             
             <div class="timeline-item">
-                <h3>1. Confirmação do Pagamento</h3>
-                <p>O prazo de entrega começa a contar a partir da aprovação do pagamento. Para Pix e Cartão, é imediato. Para Boleto, pode levar até 2 dias úteis.</p>
+                <h3><span class="delivery-icon">✅</span> 1. Confirmação do Pagamento</h3>
+                <p>O processo inicia automaticamente após a aprovação do pagamento. Para Pix e Cartão é imediato. Para Boleto, pode levar até 2 dias úteis.</p>
             </div>
             
             <div class="timeline-item">
-                <h3>2. Separação e Embalagem (1 Dia Útil)</h3>
-                <p>Seu produto é separado, inspecionado e embalado com o máximo de cuidado em nosso centro de distribuição.</p>
+                <h3><span class="delivery-icon">🤖</span> 2. Processamento Automático</h3>
+                <p>Nosso sistema processa automaticamente seu pedido e prepara a entrega digital dos códigos, chaves ou acesso aos produtos.</p>
             </div>
 
             <div class="timeline-item">
-                <h3>3. Expedição e Rastreio</h3>
-                <p>Após a coleta pela transportadora, o código de rastreio é enviado ao seu e-mail em até 24 horas.</p>
+                <h3><span class="delivery-icon">📧</span> 3. Entrega por E-mail (1-15 minutos)</h3>
+                <p>Seu produto é enviado automaticamente para o e-mail cadastrado na compra. Gift Cards, moedas digitais e assinaturas chegam em poucos minutos!</p>
             </div>
 
             <div class="timeline-item">
-                <h3>4. Entrega Rápida (1 a 3 Dias Úteis)</h3>
-                <p>Disponível para capitais das regiões Sul e Sudeste. É a nossa modalidade prioritária.</p>
+                <h3><span class="delivery-icon">🔑</span> 4. Ativação Imediata</h3>
+                <p>Ao receber o e-mail, você já pode utilizar seus códigos, chaves de ativação ou acessar suas assinaturas imediatamente.</p>
             </div>
 
             <div class="timeline-item">
-                <h3>5. Entrega Padrão (5 a 15 Dias Úteis)</h3>
-                <p>Modalidade padrão para demais regiões e áreas rurais do Brasil. O prazo exato será informado no checkout.</p>
+                <h3><span class="delivery-icon">🎁</span> 5. Produtos Disponíveis</h3>
+                <p>Gift Cards • Spotify Premium • Moedas Digitais • Assinaturas • Códigos de Games • Licenças de Software • E muito mais!</p>
             </div>
             
         </div>
@@ -103,18 +108,29 @@
     
     <div class="col-md-5">
         <div class="info-card">
-            <h2 style="color: var(--accent); margin-top: 0;">Frete Grátis</h2>
-            <p>Em compras acima de R$ 200,00 para todo o Brasil.</p>
-            <p>Em compras acima de R$ 100,00 para a Região Sul.</p>
+            <h2 style="color: var(--accent); margin-top: 0;">🎯 Entrega Garantida</h2>
+            <p><strong>Entrega Instantânea:</strong> 1-15 minutos após aprovação do pagamento</p>
+            <p><strong>Formato:</strong> E-mail com códigos, chaves ou instruções de acesso</p>
+            <p><strong>Disponibilidade:</strong> 24 horas por dia, 7 dias por semana</p>
             <a href="{{ url_for('listar_produtos') }}" class="btn btn-outline" style="width: 100%; margin-top: 15px;">
-                Começar a Comprar
+                Comprar Agora
             </a>
         </div>
         
         <div class="info-card">
-            <h2 style="color: var(--danger); margin-top: 0;">Atenção!</h2>
-            <p>O prazo de entrega é calculado automaticamente na página do carrinho, com base no CEP do destino e na disponibilidade do produto em estoque.</p>
-            <p>Em caso de dúvidas, <a href="/contato" style="color: var(--primary); font-weight: bold;">entre em contato</a> com o nosso suporte.</p>
+            <h2 style="color: var(--danger); margin-top: 0;">⚠️ Atenção!</h2>
+            <p><strong>Verifique sua caixa de spam:</strong> Caso não receba em até 30 minutos, verifique a caixa de spam/lixo eletrônico do seu e-mail.</p>
+            <p><strong>E-mail correto:</strong> Certifique-se de cadastrar o e-mail correto durante a compra.</p>
+            <p>Problemas com a entrega? <a href="/contato" style="color: var(--primary); font-weight: bold;">Entre em contato</a> com nosso suporte.</p>
+        </div>
+
+        <div class="info-card">
+            <h2 style="color: var(--success); margin-top: 0;">📱 Vantagens Digitais</h2>
+            <p>• Entrega imediata 24/7</p>
+            <p>• Sem custos de frete</p>
+            <p>• Produto disponível instantaneamente</p>
+            <p>• Ecologicamente correto</p>
+            <p>• Acesso de qualquer lugar</p>
         </div>
     </div>
 </div>

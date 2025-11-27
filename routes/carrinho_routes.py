@@ -3,6 +3,7 @@ from models.database import get_db_connection
 from utils.decorators import login_required
 from utils.qrcode_generator import gerar_qrcode_pix
 import mysql.connector
+import json
 
 def configure_carrinho_routes(app):
     
@@ -31,6 +32,19 @@ def configure_carrinho_routes(app):
             carrinho = session['carrinho']
             produto_no_carrinho = next((item for item in carrinho if item['id_produto'] == id_produto), None)
             quantidade = int(request.form.get('quantidade', 1))
+            
+            # 🔥 CORREÇÃO: Processar imagens corretamente
+            imagens_produto = []
+            if produto.get('imagens'):
+                try:
+                    imagens_produto = json.loads(produto['imagens'])
+                except:
+                    # Se não for JSON, usa como array vazio
+                    imagens_produto = []
+            # Se não tiver imagens mas tiver imagem singular, usa ela
+            elif produto.get('imagem'):
+                imagens_produto = [produto['imagem']]
+            
             if produto_no_carrinho:
                 produto_no_carrinho['quantidade'] += quantidade
             else:
@@ -39,7 +53,7 @@ def configure_carrinho_routes(app):
                     'nome': produto['nome'],
                     'preco': float(produto['preco']),
                     'quantidade': quantidade,
-                    'imagem': produto['imagem'],
+                    'imagens': imagens_produto,  # ← MUDOU para 'imagens' (plural)
                     'categoria': produto['categoria']
                 })
             session['carrinho'] = carrinho
@@ -101,9 +115,19 @@ def configure_carrinho_routes(app):
     def finalizar_carrinho():
         if 'usuario_id' not in session:
             flash('⚠️ Faça login para finalizar sua compra.', 'warning')
-            return redirect(url_for('auth.login', next=url_for('finalizar_carrinho')))
+            return redirect(url_for('login', next=url_for('finalizar_carrinho')))
 
         produtos_carrinho = session.get('carrinho', [])
+        
+        # 🔥 CORREÇÃO: Garantir que todos os produtos tenham 'imagens' como array
+        for produto in produtos_carrinho:
+            # Se o produto tiver 'imagem' mas não 'imagens', migrar
+            if 'imagem' in produto and ('imagens' not in produto or not produto['imagens']):
+                produto['imagens'] = [produto['imagem']]
+            # Garantir que 'imagens' sempre seja um array
+            if 'imagens' not in produto:
+                produto['imagens'] = []
+        
         total_geral = sum(item['preco'] * item['quantidade'] for item in produtos_carrinho)
 
         if request.method == 'POST':
@@ -182,8 +206,8 @@ def configure_carrinho_routes(app):
                     conn.close()
 
         return render_template('finalizar-carrinho.html',
-                               produtos_carrinho=produtos_carrinho,
-                               total_geral=total_geral)
+                            produtos_carrinho=produtos_carrinho,
+                            total_geral=total_geral)
 
     @app.route('/compra-sucedida')
     def compra_sucedida():
