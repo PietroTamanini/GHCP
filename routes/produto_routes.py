@@ -6,29 +6,6 @@ import mysql.connector
 
 def configure_produto_routes(app):
     
-    def usuario_comprou_produto(usuario_id, produto_id):
-        """Verifica se o usuário comprou o produto"""
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            
-            cursor.execute("""
-                SELECT 1 FROM itens_pedido ip
-                JOIN pedidos p ON ip.id_pedido = p.id_pedido
-                WHERE p.id_cliente = %s AND ip.id_produto = %s AND p.status = 'entregue'
-            """, (usuario_id, produto_id))
-            
-            resultado = cursor.fetchone()
-            return resultado is not None
-            
-        except mysql.connector.Error as err:
-            print(f"Erro ao verificar compra: {err}")
-            return False
-        finally:
-            if conn and conn.is_connected():
-                cursor.close()
-                conn.close()
-    
     @app.route('/produtos')
     def listar_produtos():
         try:
@@ -135,22 +112,10 @@ def configure_produto_routes(app):
             
             media_avaliacoes = cursor.fetchone()
             
-            # GARANTIR QUE media_avaliacoes NÃO SEJA None
-            if not media_avaliacoes:
-                media_avaliacoes = {
-                    'media': 0,
-                    'total_avaliacoes': 0,
-                    'cinco_estrelas': 0,
-                    'quatro_estrelas': 0,
-                    'tres_estrelas': 0,
-                    'duas_estrelas': 0,
-                    'uma_estrela': 0
-                }
-            
             return render_template('produto_detalhes.html', 
                                 produto=produto, 
                                 avaliacoes=avaliacoes,
-                                media_avaliacoes=media_avaliacoes)
+                                media_avaliacoes=media_avaliacoes)  # ← NOVO PARÂMETRO
         
         except mysql.connector.Error as err:
             flash(f'Erro ao carregar produto: {err}', 'error')
@@ -164,11 +129,6 @@ def configure_produto_routes(app):
     @app.route('/avaliar-produto/<int:id_produto>', methods=['POST'])
     @login_required
     def avaliar_produto(id_produto):
-        # VERIFICAR SE O USUÁRIO COMPROU O PRODUTO
-        if 'usuario_id' in session and not usuario_comprou_produto(session['usuario_id'], id_produto):
-            flash('❌ Você precisa ter comprado este produto para avaliá-lo.', 'error')
-            return redirect(url_for('detalhes_produto', id_produto=id_produto))
-        
         nota = request.form.get('nota', type=int)
         titulo = request.form.get('titulo', '').strip()
         comentario = request.form.get('comentario', '').strip()
@@ -226,46 +186,7 @@ def configure_produto_routes(app):
         
         return redirect(url_for('detalhes_produto', id_produto=id_produto))
 
-    @app.route('/minhas-avaliacoes-pendentes')
-    @login_required
-    def minhas_avaliacoes_pendentes():
-        """Lista produtos comprados que ainda não foram avaliados"""
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor(dictionary=True)
-            
-            # Buscar produtos comprados mas não avaliados
-            cursor.execute("""
-                SELECT DISTINCT p.*, ip.id_pedido 
-                FROM itens_pedido ip
-                JOIN pedidos pd ON ip.id_pedido = pd.id_pedido
-                JOIN produto p ON ip.id_produto = p.id_produto
-                LEFT JOIN avaliacoes a ON p.id_produto = a.id_produto AND a.id_cliente = %s
-                WHERE pd.id_cliente = %s AND pd.status = 'entregue' AND a.id_avaliacao IS NULL
-            """, (session['usuario_id'], session['usuario_id']))
-            
-            produtos_para_avaliar = cursor.fetchall()
-            
-            # PROCESSAR IMAGENS JSON
-            for produto in produtos_para_avaliar:
-                if produto.get('imagens'):
-                    try:
-                        produto['imagens'] = json.loads(produto['imagens'])
-                    except:
-                        produto['imagens'] = []
-            
-            # 🔥 CORREÇÃO: Usar o nome correto do template
-            return render_template('avaliacoes-pendentes.html', 
-                                produtos=produtos_para_avaliar)
-            
-        except mysql.connector.Error as err:
-            flash(f'Erro ao carregar produtos: {err}', 'error')
-            return redirect(url_for('listar_produtos'))
-        finally:
-            if conn and conn.is_connected():
-                cursor.close()
-                conn.close()
-
+    # Outras rotas de produtos...
     @app.route('/categorias')
     def categorias():
         try:
@@ -309,6 +230,8 @@ def configure_produto_routes(app):
             if conn and conn.is_connected():
                 cursor.close()
                 conn.close()
+
+# ... (seu código existente)
 
 # FUNÇÕES PARA AVALIAÇÕES - ADICIONE ISSO NO FINAL DO ARQUIVO
 def buscar_avaliacoes_produto(id_produto):
