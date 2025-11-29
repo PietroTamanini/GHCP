@@ -318,30 +318,6 @@
     </div>
 </div>
 
-<!-- Seção de Avaliações -->
-<section class="reviews-section" style="margin-top: 60px;">
-    <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-        <h2 style="font-size: 24px; font-weight: 700; color: var(--text);">📝 Avaliações dos Clientes</h2>
-        
-        {% if session.get('usuario_id') %}
-            <a href="{{ url_for('avaliacao.criar_avaliacao', id_produto=produto.id_produto) }}" 
-               class="btn-avaliar" 
-               style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-                      color: white; padding: 12px 24px; border-radius: 10px; text-decoration: none;
-                      font-weight: 600; transition: var(--transition);">
-                ✍️ Avaliar Produto
-            </a>
-        {% else %}
-            <a href="{{ url_for('login', next=url_for('detalhes_produto', id_produto=produto.id_produto)) }}" 
-               class="btn-avaliar" 
-               style="background: var(--secondary); color: var(--text); padding: 12px 24px; 
-                      border-radius: 10px; text-decoration: none; font-weight: 600; 
-                      border: 2px solid var(--border); transition: var(--transition);">
-                🔒 Faça login para avaliar
-            </a>
-        {% endif %}
-    </div>
-
     <!-- Resumo das Avaliações -->
     {% if media_avaliacoes and media_avaliacoes.total_avaliacoes > 0 %}
     <div class="resumo-avaliacoes" 
