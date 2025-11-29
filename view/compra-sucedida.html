@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
-{% set titulo = "Compra Concluída" %}
+{% set titulo = "Aguardando Pagamento" %}
 {% block conteudo %}
 
 <style>
-  .success-container {
+  .payment-container {
       max-width: 600px;
       margin: 80px auto;
       background: var(--glass);
@@ -14,56 +14,92 @@
       text-align: center;
   }
 
-  .success-title {
+  .payment-title {
       font-size: 2.5em;
       font-weight: 800;
-      color: var(--success);
+      background: linear-gradient(135deg, var(--warning) 0%, #ff9900 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
       margin-bottom: 20px;
   }
 
-  .success-message {
+  .payment-message {
       font-size: 1.2em;
       color: var(--text);
       margin-bottom: 30px;
+      line-height: 1.6;
   }
 
   .pix-section {
       margin-top: 30px;
-      background: rgba(0, 255, 170, 0.05);
+      background: rgba(0, 255, 170, 0.08);
       border-radius: 15px;
-      padding: 25px;
-      border: 1px solid var(--border);
+      padding: 30px;
+      border: 2px solid var(--success);
+      box-shadow: var(--shadow-sm);
+  }
+
+  .pix-section h3 {
+      color: var(--success);
+      margin-bottom: 15px;
+      font-size: 1.4em;
   }
 
   .pix-section img {
       width: 240px;
       border-radius: 12px;
-      margin-bottom: 15px;
+      margin: 15px 0;
+      border: 2px solid var(--border);
+      box-shadow: var(--shadow);
   }
 
   .pix-section textarea {
       width: 100%;
       height: 100px;
       resize: none;
-      padding: 10px;
+      padding: 12px;
       border-radius: 10px;
       border: 2px solid var(--border);
       background: var(--secondary);
       color: var(--text);
       font-weight: 600;
+      font-family: monospace;
+      margin: 10px 0;
+  }
+
+  .btn-confirm {
+      background: linear-gradient(135deg, var(--success) 0%, #00b36e 100%);
+      color: white;
+      padding: 15px 30px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 1.1em;
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+      margin: 20px 0;
+      box-shadow: var(--shadow);
+      width: 100%;
+  }
+
+  .btn-confirm:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
   }
 
   .btn-copy {
-      background: linear-gradient(135deg, var(--success) 0%, #00b36e 100%);
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
       color: white;
-      padding: 10px 20px;
+      padding: 12px 24px;
       border-radius: 10px;
       font-weight: 600;
       font-size: 1em;
       border: none;
       cursor: pointer;
       transition: var(--transition);
-      margin-top: 10px;
+      margin: 10px 5px;
+      box-shadow: var(--shadow-sm);
   }
 
   .btn-copy:hover {
@@ -83,7 +119,8 @@
       transition: var(--transition);
       text-decoration: none;
       display: inline-block;
-      margin-top: 20px;
+      margin: 10px;
+      box-shadow: var(--shadow-sm);
   }
 
   .btn-home:hover {
@@ -91,36 +128,206 @@
       box-shadow: var(--shadow);
   }
 
+  .btn-avaliar {
+      background: linear-gradient(135deg, var(--warning) 0%, #ff9900 100%);
+      color: white;
+      padding: 15px 30px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 1.1em;
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+      text-decoration: none;
+      display: inline-block;
+      margin: 10px;
+      box-shadow: var(--shadow-sm);
+  }
+
+  .btn-avaliar:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow);
+  }
+
+  .status-info {
+      background: rgba(255, 184, 0, 0.1);
+      border: 2px solid var(--warning);
+      border-radius: 10px;
+      padding: 20px;
+      margin: 20px 0;
+      text-align: center;
+  }
+
+  .success-section {
+      background: rgba(0, 208, 132, 0.1);
+      border: 2px solid var(--success);
+      border-radius: 15px;
+      padding: 30px;
+      margin: 20px 0;
+      text-align: center;
+      display: none;
+  }
+
+  .success-section h3 {
+      color: var(--success);
+      margin-bottom: 15px;
+      font-size: 1.8em;
+  }
+
+  .steps {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 25px 0;
+      flex-wrap: wrap;
+  }
+
+  .step {
+      text-align: center;
+      flex: 1;
+      min-width: 120px;
+  }
+
+  .step-number {
+      background: var(--primary);
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 10px;
+      font-weight: bold;
+      font-size: 1.2em;
+  }
+
+  .step.active .step-number {
+      background: var(--success);
+  }
+
+  .step-text {
+      font-size: 0.9em;
+      color: var(--text-light);
+      font-weight: 600;
+  }
+
+  .step.active .step-text {
+      color: var(--success);
+      font-weight: 700;
+  }
+
   @media (max-width: 600px) {
-      .success-container {
+      .payment-container {
           padding: 25px;
+          margin: 40px auto;
       }
-      .success-title {
+      .payment-title {
           font-size: 2em;
+      }
+      .steps {
+          flex-direction: column;
+          gap: 15px;
+      }
+      .step {
+          min-width: auto;
       }
   }
 </style>
 
-<div class="success-container">
-    <div class="success-title">🎉 Compra Concluída!</div>
-    <div class="success-message">
-        Obrigado por comprar conosco.<br>
-        Seu pedido foi processado com sucesso!
+<div class="payment-container">
+    <div class="payment-title">⏳ Aguardando Pagamento</div>
+    
+    <div class="payment-message">
+        Seu pedido <strong>#{{ pedido_id }}</strong> foi criado com sucesso!<br>
+        Complete o pagamento para confirmar sua compra.
+    </div>
+
+    <!-- Passos do Processo -->
+    <div class="steps">
+        <div class="step active">
+            <div class="step-number">1</div>
+            <div class="step-text">Pedido Criado</div>
+        </div>
+        <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-text">Pagamento</div>
+        </div>
+        <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-text">Concluído</div>
+        </div>
     </div>
 
     {% if qr_base64 %}
     <div class="pix-section">
         <h3>💸 Pagamento via PIX</h3>
         <p>Valor total: <strong>R$ {{ "%.2f"|format(valor) }}</strong></p>
+        
+        <div class="status-info">
+            <h4>⚠️ Pagamento Pendente</h4>
+            <p>Escaneie o QR Code abaixo ou copie o código PIX para finalizar o pagamento.</p>
+        </div>
+
         <img src="data:image/png;base64,{{ qr_base64 }}" alt="QR Code PIX">
 
         <p><strong>Código PIX (Copia e Cola):</strong></p>
         <textarea readonly id="pix-code">{{ copia_cola }}</textarea>
-        <button class="btn-copy" onclick="copiarPix()">📋 Copiar Código</button>
+        
+        <div>
+            <button class="btn-copy" onclick="copiarPix()">📋 Copiar Código</button>
+            <button class="btn-copy" onclick="abrirAppBanco()">🏦 Abrir App do Banco</button>
+        </div>
+
+        <!-- BOTÃO CONFIRMAR PAGAMENTO -->
+        <button class="btn-confirm" onclick="confirmarPagamento()">
+            ✅ Confirmar Pagamento
+        </button>
+
+        <div style="margin-top: 20px; font-size: 0.9em; color: var(--text-light);">
+            <strong>📱 Como pagar:</strong><br>
+            1. Copie o código PIX ou escaneie o QR Code<br>
+            2. Abra o app do seu banco<br>
+            3. Cole o código na área PIX<br>
+            4. Confirme o pagamento<br>
+            5. Volte aqui e clique em "Confirmar Pagamento"
+        </div>
     </div>
     {% endif %}
 
-    <a href="{{ url_for('listar_produtos') }}" class="btn-home">🏠 Voltar ao Início</a>
+    <!-- SEÇÃO DE SUCESSO (aparece após confirmar pagamento) -->
+    <div id="success-section" class="success-section">
+        <h3>🎉 Pagamento Confirmado!</h3>
+        <div class="payment-message">
+            Seu pagamento foi processado com sucesso!<br>
+            Obrigado por comprar conosco. Sua opinião é muito importante para nós.
+        </div>
+
+        <div style="margin: 25px 0;">
+            <h4>O que você gostaria de fazer agora?</h4>
+            <a href="{{ url_for('minhas_avaliacoes_pendentes') }}" class="btn-avaliar">
+                ⭐ Avaliar Produtos Comprados
+            </a>
+            <a href="{{ url_for('listar_produtos') }}" class="btn-home">
+                🏠 Voltar às Compras
+            </a>
+        </div>
+
+        <div style="padding: 15px; background: rgba(0, 102, 255, 0.05); border-radius: 8px; border-left: 4px solid var(--primary); margin-top: 20px;">
+            <strong>📦 Acompanhe seu pedido:</strong><br>
+            • Número do pedido: <strong>#{{ pedido_id }}</strong><br>
+            • Status: <strong style="color: var(--success);">Pagamento confirmado</strong><br>
+            • Você receberá atualizações por email
+        </div>
+    </div>
+
+    <div style="margin-top: 25px; padding: 15px; background: rgba(0, 102, 255, 0.05); border-radius: 8px; border-left: 4px solid var(--primary);">
+        <strong>ℹ️ Informações:</strong><br>
+        • Após o pagamento, clique em "Confirmar Pagamento"<br>
+        • Você receberá um email de confirmação<br>
+        • Tempo de aprovação: até 30 minutos<br>
+        • Dúvidas? Entre em contato com nosso suporte
+    </div>
 </div>
 
 <script>
@@ -128,8 +335,76 @@ function copiarPix() {
     const codigo = document.getElementById('pix-code');
     codigo.select();
     navigator.clipboard.writeText(codigo.value);
-    alert("✅ Código PIX copiado!");
+    
+    // Feedback visual
+    const btn = event.target;
+    const originalText = btn.textContent;
+    btn.textContent = '✅ Copiado!';
+    btn.style.background = 'linear-gradient(135deg, var(--success) 0%, #00b36e 100%)';
+    
+    setTimeout(() => {
+        btn.textContent = originalText;
+        btn.style.background = '';
+    }, 2000);
 }
+
+function abrirAppBanco() {
+    if(confirm('Abra o app do seu banco e cole o código PIX copiado.\n\nDeseja abrir a Store para baixar um app bancário?')) {
+        window.open('https://play.google.com/store/search?q=banco&c=apps', '_blank');
+    }
+}
+
+function confirmarPagamento() {
+    // Mostrar loading no botão
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '⏳ Processando...';
+    btn.disabled = true;
+
+    // Simular processamento do pagamento
+    setTimeout(() => {
+        // 1. Esconder a seção do PIX
+        document.querySelector('.pix-section').style.display = 'none';
+        
+        // 2. Mostrar a seção de sucesso
+        document.getElementById('success-section').style.display = 'block';
+        
+        // 3. Atualizar os passos
+        document.querySelectorAll('.step')[1].classList.add('active');
+        document.querySelectorAll('.step')[2].classList.add('active');
+        
+        // 4. Atualizar o título
+        document.querySelector('.payment-title').textContent = '✅ Pagamento Confirmado';
+        document.querySelector('.payment-title').style.background = 'linear-gradient(135deg, var(--success) 0%, #00b36e 100%)';
+        
+        // 5. Atualizar a mensagem
+        document.querySelector('.payment-message').innerHTML = 
+            'Seu pagamento foi confirmado com sucesso!<br>Obrigado por comprar conosco.';
+            
+        // 6. Rolar para a seção de sucesso
+        document.getElementById('success-section').scrollIntoView({ 
+            behavior: 'smooth' 
+        });
+
+        // 🔥 MARCAR NA SESSION QUE O PAGAMENTO FOI CONFIRMADO
+        // Isso permitirá o acesso à página de avaliações
+        fetch('/confirmar-pagamento', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }).then(response => response.json())
+          .then(data => {
+              console.log('Pagamento confirmado na session');
+          });
+
+    }, 1500);
+}
+
+// Auto-seleciona o código PIX quando clicar na textarea
+document.getElementById('pix-code').addEventListener('click', function() {
+    this.select();
+});
 </script>
 
 {% endblock %}

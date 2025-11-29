@@ -162,10 +162,10 @@
                 <h3 class="produto-nome">{{ produto.nome }}</h3>
                 <div class="produto-marca">{{ produto.marca }}</div>
                 <div class="produto-categoria">{{ produto.categoria }}</div>
-                
-                <a href="{{ url_for('detalhes_produto', id_produto=produto.id_produto) }}" 
-                   class="btn-avaliar">
-                    ✍️ Avaliar Produto
+                        
+                <a href="{{ url_for('avaliacao.criar_avaliacao', id_produto=produto.id_produto) }}" 
+                class="btn-avaliar">
+                    ⭐ Avaliar Produto
                 </a>
             </div>
             {% endfor %}

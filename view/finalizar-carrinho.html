@@ -58,13 +58,60 @@
     transform: translateY(-3px);
     box-shadow: var(--shadow);
 }
+.btn-avaliar {
+    background: linear-gradient(135deg, var(--warning) 0%, #ff9900 100%);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 15px;
+}
+.btn-avaliar:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
 .hidden {
     display: none;
+}
+.status-pendente {
+    background: linear-gradient(135deg, var(--warning) 0%, #ff9900 100%);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 600;
+    margin: 20px 0;
+}
+.info-box {
+    background: var(--secondary);
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary);
+    margin: 20px 0;
 }
 </style>
 
 <div class="checkout-container">
     <h2>💳 Finalizar Compra</h2>
+    
+    <div class="status-pendente">
+        ⏳ Aguardando Pagamento
+    </div>
+
+    <div class="info-box">
+        <strong>📦 Itens do seu pedido:</strong>
+        <ul style="margin: 10px 0; padding-left: 20px;">
+            {% for produto in produtos_carrinho %}
+            <li>{{ produto.nome }} - {{ produto.quantidade }}x - R$ {{ "%.2f"|format(produto.preco * produto.quantidade) }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
     <form method="POST" action="{{ url_for('finalizar_carrinho') }}">
         <label>Nome Completo</label>
         <input type="text" name="nome" required>
@@ -104,11 +151,21 @@
         <p>Total a Pagar: 
             <strong id="total">R$ {{ "%.2f"|format(total_geral) }}</strong>
         </p>
+        
         <button type="submit" class="btn-finalizar">💰 Confirmar Compra</button>
+        
+        <!-- 🔥 BOTÃO PARA AVALIAR PRODUTOS (só aparece nesta página) -->
+        {% if session.get('chegou_finalizar_carrinho') %}
+        <a href="{{ url_for('minhas_avaliacoes_pendentes') }}" class="btn-avaliar">
+            ⭐ Avaliar Produtos do Carrinho
+        </a>
+        {% endif %}
     </form>
 </div>
 
 <script>
+
+
 const pagamento = document.getElementById('pagamento');
 const cartaoInfo = document.getElementById('cartao-info');
 const tipoCartao = document.getElementById('tipo-cartao');

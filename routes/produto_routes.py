@@ -230,21 +230,52 @@ def configure_produto_routes(app):
     @login_required
     def minhas_avaliacoes_pendentes():
         """Lista produtos comprados que ainda não foram avaliados"""
+        
+        # 🔥 VERIFICAR SE O USUÁRIO VEIO DA PÁGINA FINALIZAR CARRINHO
+        if not session.get('chegou_finalizar_carrinho'):
+            flash('❌ Você precisa passar pela finalização de compra para acessar esta página.', 'error')
+            return redirect(url_for('listar_produtos'))
+        
+        # 🔥 VERIFICAR SE O PAGAMENTO FOI CONFIRMADO
+        if not session.get('pagamento_confirmado'):
+            flash('❌ Você precisa confirmar o pagamento antes de avaliar os produtos.', 'error')
+            return redirect(url_for('listar_produtos'))
+        
         try:
             conn = get_db_connection()
             cursor = conn.cursor(dictionary=True)
             
-            # Buscar produtos comprados mas não avaliados
+            # 🔥 ATUALIZAR: Buscar produtos do carrinho atual (não precisa ser "entregue" ainda)
+            # Como o pagamento acabou de ser confirmado, vamos buscar os produtos do pedido mais recente
             cursor.execute("""
-                SELECT DISTINCT p.*, ip.id_pedido 
+                SELECT p.*, ip.id_pedido, ip.quantidade 
                 FROM itens_pedido ip
                 JOIN pedidos pd ON ip.id_pedido = pd.id_pedido
                 JOIN produto p ON ip.id_produto = p.id_produto
                 LEFT JOIN avaliacoes a ON p.id_produto = a.id_produto AND a.id_cliente = %s
-                WHERE pd.id_cliente = %s AND pd.status = 'entregue' AND a.id_avaliacao IS NULL
-            """, (session['usuario_id'], session['usuario_id']))
+                WHERE pd.id_cliente = %s 
+                AND pd.id_pedido = (
+                    SELECT MAX(id_pedido) FROM pedidos WHERE id_cliente = %s
+                )
+                AND a.id_avaliacao IS NULL
+            """, (session['usuario_id'], session['usuario_id'], session['usuario_id']))
             
             produtos_para_avaliar = cursor.fetchall()
+            
+            # Se não encontrou produtos no pedido recente, busca produtos do carrinho da session
+            if not produtos_para_avaliar and session.get('carrinho'):
+                produtos_ids = [str(item['id_produto']) for item in session['carrinho']]
+                if produtos_ids:
+                    placeholders = ','.join(['%s'] * len(produtos_ids))
+                    cursor.execute(f"""
+                        SELECT p.*, 0 as id_pedido, 1 as quantidade
+                        FROM produto p
+                        LEFT JOIN avaliacoes a ON p.id_produto = a.id_produto AND a.id_cliente = %s
+                        WHERE p.id_produto IN ({placeholders})
+                        AND a.id_avaliacao IS NULL
+                    """, [session['usuario_id']] + produtos_ids)
+                    
+                    produtos_para_avaliar = cursor.fetchall()
             
             # PROCESSAR IMAGENS JSON
             for produto in produtos_para_avaliar:
@@ -254,7 +285,11 @@ def configure_produto_routes(app):
                     except:
                         produto['imagens'] = []
             
-            # 🔥 CORREÇÃO: Usar o nome correto do template
+            # 🔥 ADICIONAR: Se não há produtos para avaliar, mostrar mensagem
+            if not produtos_para_avaliar:
+                flash('ℹ️ Todos os produtos do seu pedido já foram avaliados!', 'info')
+                return redirect(url_for('listar_produtos'))
+            
             return render_template('avaliacoes-pendentes.html', 
                                 produtos=produtos_para_avaliar)
             

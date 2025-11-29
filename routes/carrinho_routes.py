@@ -130,6 +130,9 @@ def configure_carrinho_routes(app):
         
         total_geral = sum(item['preco'] * item['quantidade'] for item in produtos_carrinho)
 
+        # 🔥 ADICIONAR: Marcar que o usuário chegou na página finalizar carrinho
+        session['chegou_finalizar_carrinho'] = True
+
         if request.method == 'POST':
             nome = request.form.get('nome')
             email = request.form.get('email')
@@ -194,7 +197,7 @@ def configure_carrinho_routes(app):
                     )
                 else:
                     flash('💳 Pagamento por cartão/boleto ainda não implementado.', 'info')
-                    return redirect(url_for('main.inicio'))
+                    return redirect(url_for('inicio'))
 
             except mysql.connector.Error as err:
                 conn.rollback()
@@ -209,6 +212,44 @@ def configure_carrinho_routes(app):
                             produtos_carrinho=produtos_carrinho,
                             total_geral=total_geral)
 
+
+    @app.route('/confirmar-pagamento', methods=['POST'])
+    @login_required
+    def confirmar_pagamento():
+        """Marca o pagamento como confirmado - VERSÃO CORRIGIDA"""
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            
+            # ✅ ATUALIZA PARA 'concluido' (SEU ENUM CORRETO)
+            cursor.execute("""
+                UPDATE pedidos 
+                SET status = 'concluido' 
+                WHERE id_cliente = %s 
+                AND id_pedido = (
+                    SELECT MAX(id_pedido) FROM pedidos WHERE id_cliente = %s
+                )
+            """, (session['usuario_id'], session['usuario_id']))
+            
+            conn.commit()
+            
+            # ✅ MARCA NA SESSION TAMBÉM
+            session['pagamento_confirmado'] = True
+            session['chegou_finalizar_carrinho'] = True
+            session.modified = True
+            
+            print(f"✅ Pagamento CONCLUÍDO para usuário {session['usuario_id']}")
+            
+            return {'status': 'success', 'message': 'Pagamento confirmado com sucesso!'}
+            
+        except Exception as err:
+            print(f"❌ Erro ao confirmar pagamento: {err}")
+            return {'status': 'error', 'message': f'Erro ao confirmar pagamento: {err}'}
+        finally:
+            if conn and conn.is_connected():
+                cursor.close()
+                conn.close()
+    
     @app.route('/compra-sucedida')
     def compra_sucedida():
         return render_template('compra-sucedida.html')

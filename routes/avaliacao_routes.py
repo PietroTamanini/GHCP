@@ -8,7 +8,12 @@ avaliacao_bp = Blueprint('avaliacao', __name__)
 @avaliacao_bp.route('/produto/<int:id_produto>/avaliar', methods=['GET', 'POST'])
 @login_required
 def criar_avaliacao(id_produto):
-    # Buscar produto
+    # ✅ VERIFICAÇÃO CORRIGIDA - Usa a mesma função
+    if not verificar_pagamento_banco(session['usuario_id']):
+        flash('❌ Você precisa confirmar o pagamento antes de avaliar os produtos', 'error')
+        return redirect(url_for('finalizar_carrinho'))
+    
+    # 🔹 SEU CÓDIGO ATUAL CONTINUA A PARTIR DAQUI
     produto = buscar_produto_por_id(id_produto)
     if not produto:
         flash('Produto não encontrado', 'error')
@@ -43,6 +48,57 @@ def criar_avaliacao(id_produto):
             flash('Erro ao enviar avaliação. Tente novamente.', 'error')
     
     return render_template('avaliacoes.html', produto=produto)
+
+@avaliacao_bp.route('/minhas-avaliacoes-pendentes')
+@login_required
+def minhas_avaliacoes_pendentes():
+    """Página que mostra produtos comprados para avaliar - VERSÃO CORRIGIDA"""
+    
+    # ✅ VERIFICAÇÃO CORRIGIDA - Usa a mesma função
+    if not verificar_pagamento_banco(session['usuario_id']):
+        flash('❌ Confirme o pagamento antes de avaliar os produtos', 'error')
+        return redirect(url_for('finalizar_carrinho'))
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # ✅ BUSCA PRODUTOS COM STATUS 'concluido'
+        cursor.execute("""
+            SELECT DISTINCT p.id_produto, p.nome, p.marca, p.categoria, p.imagens
+            FROM itens_pedido ip
+            JOIN pedidos pd ON ip.id_pedido = pd.id_pedido
+            JOIN produto p ON ip.id_produto = p.id_produto
+            WHERE pd.id_cliente = %s 
+            AND pd.status = 'concluido'  -- ✅ CORRIGIDO: 'concluido' em vez de 'aprovado'
+            AND p.id_produto NOT IN (
+                SELECT id_produto 
+                FROM avaliacoes 
+                WHERE id_cliente = %s
+            )
+        """, (session['usuario_id'], session['usuario_id']))
+        
+        produtos = cursor.fetchall()
+        
+        # Processar imagens
+        for produto in produtos:
+            if produto.get('imagens'):
+                try:
+                    produto['imagens'] = json.loads(produto['imagens'])
+                except:
+                    produto['imagens'] = []
+        
+        cursor.close()
+        conn.close()
+        
+        print(f"✅ Produtos para avaliação: {len(produtos)}")
+        
+        return render_template('avaliacoes-pendentes.html', produtos=produtos)
+                             
+    except Exception as e:
+        print(f"❌ Erro ao buscar avaliações pendentes: {e}")
+        flash('Erro ao carregar produtos para avaliação', 'error')
+        return redirect(url_for('listar_produtos'))
 
 # Funções auxiliares para avaliações
 def buscar_produto_por_id(id_produto):
@@ -107,4 +163,44 @@ def salvar_avaliacao(id_cliente, id_produto, nota, titulo, comentario):
         return True
     except Exception as e:
         print(f"Erro ao salvar avaliação: {e}")
+        return False
+
+# 🔥 FUNÇÃO CORRIGIDA - SUBSTITUI A ANTERIOR
+def verificar_pagamento_banco(id_cliente):
+    """Verifica se o pagamento foi confirmado - VERSÃO CORRIGIDA para 'concluido'"""
+    try:
+        # 1️⃣ Verifica na SESSION (mais rápido)
+        if session.get('pagamento_confirmado'):
+            return True
+        
+        # 2️⃣ Verifica no BANCO (backup)
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute("""
+            SELECT id_pedido, status 
+            FROM pedidos 
+            WHERE id_cliente = %s 
+            ORDER BY id_pedido DESC 
+            LIMIT 1
+        """, (id_cliente,))
+        
+        pedido = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        
+        print(f"🔍 DEBUG - Pedido encontrado: {pedido}")
+        
+        # ✅ CORREÇÃO: Verifica por 'concluido' em vez de 'aprovado'
+        if pedido and pedido.get('status') == 'concluido':
+            session['pagamento_confirmado'] = True
+            print(f"✅ Pedido {pedido['id_pedido']} está CONCLUÍDO - Permite avaliação")
+            return True
+        else:
+            status_atual = pedido.get('status') if pedido else 'Nenhum pedido'
+            print(f"❌ Pedido não está concluído. Status atual: {status_atual}")
+            return False
+        
+    except Exception as e:
+        print(f"Erro ao verificar pagamento: {e}")
         return False
