@@ -378,6 +378,11 @@ def configure_admin_routes(app):
                 cursor.close()
                 conn.close()
 
+    @app.route('/admin/documentacao')
+    @admin_required
+    def documentation():
+        return render_template('admin/documentation.html')
+    
     # CONTATOS - Admin e Gerente
     @app.route('/admin/contatos')
     @permission_required(['admin', 'gerente'])

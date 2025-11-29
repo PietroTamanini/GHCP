@@ -708,6 +708,9 @@
                 <li><a href="{{ url_for('admin_funcionarios') }}" class="{% if request.endpoint == 'admin_funcionarios' %}active{% endif %}">
                     👨‍💼 Funcionários
                 </a></li>
+                <li><a href="{{ url_for('documentation') }}" class="{% if request.endpoint == 'documentation' %}active{% endif %}">
+                    📚 Documentação
+                </a></li>
                 {% endif %}
             </ul>
             <div class="sidebar-footer">

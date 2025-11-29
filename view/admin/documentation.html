@@ -1,0 +1,75 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Documentação{% endblock %}
+
+{% block page_title %}Documentação do Sistema{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2>📚 Documentação do Sistema</h2>
+    
+    <div class="documentation-content">
+        
+        <div class="download-section" style="margin: 20px 0;">
+            <h4>👀 Vizualizar PDF´s</h4>
+            <div class="download-links" style="display: flex; gap: 10px; flex-wrap: wrap; margin: 15px 0;">
+            <div class="pdf-actions" style="margin: 15px 0;">
+                <a href="{{ url_for('static', filename='docs/pdf/Documentacao-SA-Requisitos-Regra-de-Negocio.pdf') }}" 
+                   target="_blank" 
+                   class="btn btn-primary btn-sm">
+                    📄 Requisitos e Regra de Negocio
+                </a>
+                
+                <a href="{{ url_for('static', filename='docs/guia-rapido.pdf') }}" 
+                   download="Guia_Rapido_GameChip.pdf" 
+                   class="btn btn-primary btn-sm">
+                    📄 Canvas
+                </a>
+                
+                <a href="{{ url_for('static', filename='docs/checklist.pdf') }}" 
+                   download class="btn btn-primary btn-sm">
+                    📄 WireFrame
+                </a>
+                
+                <a href="{{ url_for('static', filename='docs/checklist.pdf') }}" 
+                   download class="btn btn-primary btn-sm">
+                    📄 Diagramas de Classes/Casos de Uso
+                </a>
+
+                <a href="{{ url_for('static', filename='docs/checklist.pdf') }}" 
+                   download class="btn btn-primary btn-sm">
+                    📄 Código
+                </a>
+            </div>
+        </div>
+
+        <div class="video-section" style="margin: 30px 0;">
+            <h4>🎬 Vídeo Pitch</h4>
+            <div class="video-player" style="margin: 15px 0;">
+                <video width="100%" controls poster="{{ url_for('static', filename='docs/video/pitch.mp4') }}">
+                    <source src="{{ url_for('static', filename='docs/video/pitch.mp4') }}" type="video/mp4">
+                    Seu navegador não suporta o elemento de vídeo.
+                    <a href="{{ url_for('static', filename='docs/video/pitch.mp4') }}">Baixe o vídeo</a>.
+                </video>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.download-section, .video-section, .pdf-viewer-section, .image-gallery {
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 20px;
+    background: rgba(0,102,255,0.02);
+}
+
+.download-section h4, .video-section h4, .pdf-viewer-section h4, .image-gallery h4 {
+    color: var(--primary);
+    margin-bottom: 15px;
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 8px;
+}
+</style>
+{% endblock %}
